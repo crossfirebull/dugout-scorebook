@@ -2,6 +2,7 @@
 <title>Dugout Scorebook</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Scorebook">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap">
 <style>
@@ -191,129 +192,164 @@ table.book tfoot td { font-family: var(--f-label); font-weight: 700; font-size: 
 .primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* Views: Game / Season / Roster */
+.nav { display: inline-flex; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.nav button { border: 0; background: transparent; min-height: 44px; padding: 0 16px; font-weight: 600; }
+.nav button[aria-selected="true"] { background: var(--ink); color: var(--paper); }
+.view { display: grid; gap: 14px; }
+.empty { text-align: center; padding: 40px 16px; display: grid; gap: 12px; justify-items: center; }
+.empty h2 { font-family: var(--f-display); font-weight: 800; font-size: 30px; text-transform: uppercase; color: var(--ink); letter-spacing: .02em; margin: 0; }
+.empty p { margin: 0; color: var(--muted); max-width: 46ch; }
+.banner { background: var(--rule-soft); border: 1px solid var(--rule); border-radius: 8px; padding: 10px 14px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 15px; }
+.banner .spacer { flex: 1; }
+.gamebar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.gamebar .spacer { flex: 1; }
+
+/* Stats tables */
+.sbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
+.sbar .spacer { flex: 1; }
+.sbar label { font-size: 14px; color: var(--muted); display: inline-flex; gap: 6px; align-items: center; }
+.sbar select { font: inherit; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); }
+.tscroll { overflow-x: auto; border: 1px solid var(--rule); border-radius: 6px; }
+table.stats { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; font-size: 15px; }
+table.stats th, table.stats td { padding: 8px 8px; text-align: right; border-bottom: 1px solid var(--rule-soft); white-space: nowrap; }
+table.stats th { font-family: var(--f-label); font-weight: 700; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); background: var(--paper); }
+table.stats th button { border: 0; background: none; padding: 0; font: inherit; color: inherit; letter-spacing: inherit; text-transform: inherit; }
+table.stats th.sorted { color: var(--ink-blue); }
+table.stats th:first-child, table.stats td:first-child { text-align: left; position: sticky; left: 0; background: var(--surface); }
+table.stats th:first-child { background: var(--paper); }
+table.stats td.num { color: var(--muted); font-family: var(--f-label); font-weight: 600; width: 36px; }
+table.stats td.best { color: var(--safe); font-weight: 700; }
+table.stats tfoot td { font-weight: 700; background: var(--paper); border-top: 2px solid var(--rule); border-bottom: 0; }
+table.stats tfoot td:first-child { background: var(--paper); }
+.gloss { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 6px 16px; font-size: 14px; color: var(--muted); margin-top: 12px; }
+.gloss b { color: var(--ink); font-family: var(--f-label); font-size: 15px; margin-right: 4px; }
+.lower3 { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) { .lower3 { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); align-items: start; } }
+.games { list-style: none; margin: 0; padding: 0; display: grid; }
+.games li { display: flex; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--rule-soft); flex-wrap: wrap; }
+.games .res { font-family: var(--f-display); font-weight: 800; font-size: 20px; width: 28px; }
+.games .res.w { color: var(--safe); } .games .res.l { color: var(--stitch); } .games .res.t { color: var(--muted); }
+.games .who { flex: 1; min-width: 0; }
+.games .who small { display: block; color: var(--muted); font-size: 13px; }
+.games .tbtn { min-height: 36px; padding: 0 10px; font-size: 14px; }
+
+/* Roster + lineup builder */
+.rows { display: grid; gap: 6px; }
+.prow { display: grid; grid-template-columns: 30px minmax(0, 1fr) 84px 70px 40px; gap: 6px; align-items: center; }
+.prow.lu { grid-template-columns: 26px minmax(0, 1fr) 84px 36px 36px 36px; }
+.prow .n { font-family: var(--f-display); font-weight: 700; font-size: 18px; color: var(--muted); text-align: center; }
+.prow input, .prow select { font: inherit; font-size: 15px; padding: 8px; border-radius: 6px; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); width: 100%; min-width: 0; }
+.prow .ibtn { min-height: 38px; border-radius: 6px; border: 1px solid var(--rule); background: var(--surface); padding: 0; }
+.prow.head { font-family: var(--f-label); font-weight: 700; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.roster-top { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; margin-bottom: 12px; }
+.roster-top .field { flex: 1; min-width: 200px; }
+.sheet.wide { max-width: 720px; }
+.bbrow { display: flex; gap: 6px; flex-wrap: wrap; }
+.bbrow button { min-height: 44px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--rule); background: var(--surface); font-weight: 600; }
+.bbrow button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.copyout { width: 100%; min-height: 120px; font-family: ui-monospace, Menlo, monospace; font-size: 12px; padding: 8px; border-radius: 6px; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); }
 </style>
 
 <div class="wrap">
   <header class="topbar">
     <h1 class="brand">Dugout Scorebook</h1>
-    <span class="chip" id="status">Top 1st</span>
-    <span class="chip" id="sampleChip" hidden>Sample game</span>
+    <nav class="nav" id="nav" role="tablist" aria-label="Sections"></nav>
     <span class="spacer"></span>
-    <button class="tbtn" id="undoBtn" data-act="undo" title="Undo last entry">↶ Undo</button>
     <button class="tbtn" id="soundBtn" data-act="sound" aria-pressed="false">Sound off</button>
-    <button class="tbtn" data-act="setup">Setup</button>
   </header>
-
-  <section class="board" id="board" aria-label="Line score"></section>
-  <div id="finalBox"></div>
-
-  <div class="main">
-    <section class="panel" aria-label="Current at-bat">
-      <div class="situ">
-        <svg class="diamond" id="diamond" viewBox="0 0 220 220" role="group" aria-label="Bases. Tap a runner to move them."></svg>
-        <div class="count" id="count"></div>
-      </div>
-      <div class="atbat" id="atbat"></div>
-      <div class="pad" id="pad"></div>
-    </section>
-
-    <section class="panel" aria-label="Scorebook">
-      <div class="bookhead">
-        <h2 style="margin:0">Scorebook</h2>
-        <span class="spacer" style="flex:1"></span>
-        <div class="tabs" role="tablist" id="tabs"></div>
-      </div>
-      <div class="bookscroll"><table class="book" id="book"></table></div>
-      <div class="lower">
-        <div>
-          <h2>Play by play</h2>
-          <ol class="pbp" id="pbp"></ol>
-        </div>
-        <div>
-          <h2>Scorebook marks</h2>
-          <div class="legend">
-            <div><b>1B</b>Single</div><div><b>2B</b>Double</div><div><b>3B</b>Triple</div><div><b>HR</b>Home run</div>
-            <div><b>BB</b>Walk</div><div><b>HBP</b>Hit by pitch</div><div><b>K</b>Strikeout swinging</div><div><b><span class="kc">K</span></b>Strikeout looking</div>
-            <div><b>6-3</b>Grounder, SS to 1B</div><div><b>F8</b>Fly out to CF</div><div><b>L5</b>Line out to 3B</div><div><b>P4</b>Pop out to 2B</div>
-            <div><b>SF7</b>Sacrifice fly</div><div><b>E6</b>Error on SS</div><div><b>FC</b>Fielder's choice</div><div><b>DP</b>Double play</div>
-          </div>
-        </div>
-      </div>
-    </section>
-  </div>
+  <div id="sampleBox"></div>
+  <main id="view" class="view"></main>
 </div>
 
 <div id="overlay"></div>
+<input type="file" id="restoreFile" accept="application/json,.json" hidden>
 
 <script>
 (function () {
 "use strict";
 
-const KEY = "dugout-scorebook.v1";
+/* =====================================================================
+   Constants
+   ===================================================================== */
+const KEY = "dugout-scorebook.v2";
 const POS = [null, "P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "SF"];
 const POS_NAME = [null, "Pitcher", "Catcher", "First base", "Second base", "Third base", "Shortstop", "Left field", "Center field", "Right field", "Short field"];
+const LINEUP_POS = ["P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "SF", "EH", "DP", "Bench"];
 const NEEDS_POS = { GO: "Who fielded the grounder?", FO: "Who caught the fly ball?", LO: "Who caught the liner?", PO: "Who caught the pop-up?", SF: "Who caught the sacrifice fly?", E: "Who made the error?" };
+const HIT_CODES = ["1B", "2B", "3B", "HR"];
+const BASES_FOR = { "1B": 1, "2B": 2, "3B": 3, HR: 4 };
+const BB_OF = { GO: "GB", FO: "FB", LO: "LD", PO: "PU", SF: "FB", DP: "GB", FC: "GB" };   // batted-ball type implied by an out
+const LEFT_SIDE = new Set([5, 6, 7]), RIGHT_SIDE = new Set([3, 4, 9]);                    // for pull / opposite field
 
-/* ---------- Sample game (shown on first open) ---------- */
-function sampleGame() {
-  const P = (r, p) => ({ t: "pa", r, p });
-  const X = k => ({ t: "pitch", k });
-  return {
-    sample: true,
-    settings: { innings: 7, startCount: false, foulOut: false },
-    teams: [
-      { name: "Riverside Thunder", lineup: ["Maya Ortiz", "Jess Kowalski", "Tara Nguyen", "Brooke Adams", "Leah Chen", "Dani Brooks", "Sam Patel", "Riley Moore", "Kendra Hill", "Nora Diaz"] },
-      { name: "Oak Hollow", lineup: ["Ava Ruiz", "Paige Turner", "Lexi Grant", "Morgan Shaw", "Hannah Lee", "Cora Wells", "Emma Stone", "Jada Price", "Quinn Foster", "Zoe Park"] }
-    ],
-    events: [
-      X("B"), X("SS"), P("1B"), P("FO", 8), X("F"), X("F"), P("2B"), P("SF", 7), P("GO", 6),
-      P("1B"), P("HR"), X("SS"), X("SS"), X("SS"), P("GO", 4), P("PO", 2),
-      X("B"), X("B"), X("B"), X("B"), P("FC"), { t: "run", b: 0, a: "sb" }, P("LO", 5), X("CS"), X("B"), X("CS"), X("CS"),
-      P("3B"), P("GO", 6), { t: "run", b: 2, a: "score" }, P("FO", 9), P("E", 6), P("1B"), P("FO", 8),
-      P("1B"), X("B"), X("CS")
-    ]
-  };
+const uid = () => Math.random().toString(36).slice(2, 10);
+const today = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+const ordinal = n => n + (n % 100 >= 11 && n % 100 <= 13 ? "th" : ({ 1: "st", 2: "nd", 3: "rd" }[n % 10] || "th"));
+const esc = v => String(v == null ? "" : v).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const $ = id => document.getElementById(id);
+
+/* =====================================================================
+   Storage
+   store = { team: {name, players:[{id,name,num,pos,bats}]}, games: [...], currentId }
+   game  = { id, date, opponent, ourSide (0 visitors / 1 home), settings, lineups:[[{pid,name,pos}],[...]], events:[], done }
+   ===================================================================== */
+function blankStore() { return { v: 2, sample: false, team: { name: "My Team", players: [] }, games: [], currentId: null }; }
+function load() {
+  try { const raw = localStorage.getItem(KEY); if (raw) { const d = JSON.parse(raw); if (d && d.team && Array.isArray(d.games)) return d; } } catch (e) {}
+  return null;
 }
-function blankGame(prev) {
-  return {
-    sample: false,
-    settings: Object.assign({ innings: 7, startCount: false, foulOut: false }, prev ? prev.settings : {}),
-    teams: prev ? prev.teams.map(t => ({ name: t.name, lineup: t.lineup.slice() })) :
-      [{ name: "Visitors", lineup: [] }, { name: "Home", lineup: [] }],
-    events: []
-  };
+function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} }
+
+// Created at the bottom of the script, once every function below exists.
+let store = null;
+const ui = {
+  view: "stats", sheet: null, sound: false, bookTeam: null, peekId: null,
+  table: "std", sort: { k: "OPS", d: -1 }, minPA: 0, incCur: true, confirm: null, draft: null, bb: null, msg: ""
+};
+
+const player = pid => store.team.players.find(p => p.id === pid);
+const entryName = x => (x.pid && player(x.pid) ? player(x.pid).name : x.name) || "";
+const teamNames = g => g.ourSide === 0 ? [store.team.name, g.opponent || "Opponent"] : [g.opponent || "Opponent", store.team.name];
+const curGame = () => store.games.find(g => g.id === store.currentId) || null;
+const viewGame = () => ui.peekId ? store.games.find(g => g.id === ui.peekId) : curGame();
+
+/* =====================================================================
+   Game engine: replay a game's event log into a state.
+   Stats are always recomputed from the raw plays, so new metrics apply
+   to every game ever scored.
+   ===================================================================== */
+function blankStat() {
+  return { PA: 0, AB: 0, H: 0, "1B": 0, "2B": 0, "3B": 0, HR: 0, TB: 0, R: 0, RBI: 0, BB: 0, HBP: 0, K: 0, SF: 0, SB: 0, ROE: 0,
+           RAB: 0, RH: 0, GB: 0, LD: 0, FB: 0, PU: 0, PULL: 0, CENT: 0, OPPO: 0 };
 }
-
-function load() { try { const raw = localStorage.getItem(KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; } }
-function save() { try { localStorage.setItem(KEY, JSON.stringify(game)); } catch (e) {} }
-
-let game = load() || sampleGame();
-let S = null;
-const ui = { bookTeam: null, sheet: null, confirmNew: false, sound: false };
-
-/* ---------- Game engine: replay the event log into a state ---------- */
-const lineLen = (g, t) => Math.max(g.teams[t].lineup.length, 9);
-const nameOf = (g, t, slot) => g.teams[t].lineup[slot] || ("Batter " + (slot + 1));
-const total = (s, t) => s.runs[t].reduce((a, b) => a + (b || 0), 0);
-const ordinal = n => n + (["th", "st", "nd", "rd"][(n % 100 - 20) % 10] || ["th", "st", "nd", "rd"][n % 100] || "th");
-
 function fresh(g) {
-  return {
+  const s = {
     inning: 1, half: 0, outs: 0, balls: 0, strikes: 0, bases: [null, null, null],
     order: [0, 0], runs: [[0], []], hits: [0, 0], errors: [0, 0],
-    book: [[], []], stats: [{}, {}], final: false, log: [], fx: {}
+    book: [[], []], stats: [{}, {}], field: [{}, {}],
+    lu: g.lineups.map(l => l.map(x => Object.assign({}, x))),
+    final: false, log: [], fx: {}
   };
+  resetCount(s, g);
+  return s;
 }
 function resetCount(s, g) { s.balls = g.settings.startCount ? 1 : 0; s.strikes = g.settings.startCount ? 1 : 0; }
-function curSlot(s, g) { return s.order[s.half] % lineLen(g, s.half); }
-function stat(s, t, slot) { return s.stats[t][slot] || (s.stats[t][slot] = { PA: 0, AB: 0, H: 0, R: 0, RBI: 0, BB: 0, K: 0, HR: 0, SB: 0 }); }
+const lineLen = (s, t) => s.lu[t].length || 9;
+const curSlot = s => s.order[s.half] % lineLen(s, s.half);
+const occ = (s, t, slot) => s.lu[t][slot] || { pid: null, name: "Batter " + (slot + 1), pos: "" };
+const keyOf = (x, t, slot) => x.pid ? "p:" + x.pid : "s:" + t + ":" + slot;
+const nameAt = (s, t, slot) => entryName(occ(s, t, slot));
+const total = (s, t) => s.runs[t].reduce((a, b) => a + (b || 0), 0);
+function stat(s, t, key) { return s.stats[t][key] || (s.stats[t][key] = blankStat()); }
+function fstat(s, t, key) { return s.field[t][key] || (s.field[t][key] = { PL: 0, E: 0 }); }
 function cellOf(s, r) { return s.book[r.team][r.cell]; }
 function log(s, text) { s.log.push({ inn: (s.half ? "B" : "T") + s.inning, text }); }
 
 function scoreRunner(s, g, r) {
   s.runs[r.team][s.inning - 1] = (s.runs[r.team][s.inning - 1] || 0) + 1;
   const c = cellOf(s, r); c.base = 4; c.scored = true;
-  stat(s, r.team, r.slot).R++;
+  stat(s, r.team, r.key).R++;
   s.fx.runs = (s.fx.runs || 0) + 1;
   if (s.half === 1 && s.inning >= g.settings.innings && total(s, 1) > total(s, 0)) s.final = true;
 }
@@ -350,41 +386,61 @@ const VERB = {
   K: "strikes out swinging", KC: "strikes out looking", FC: "reaches on a fielder's choice", DP: "grounds into a double play"
 };
 function verbFor(r, p) {
-  if (VERB[r]) return VERB[r];
   const where = p ? POS_NAME[p].toLowerCase() : "";
+  if (VERB[r]) return VERB[r] + (p && HIT_CODES.includes(r) ? " to " + where : "");
   return { GO: "grounds out to " + where, FO: "flies out to " + where, LO: "lines out to " + where, PO: "pops out to " + where,
            SF: "hits a sacrifice fly to " + where, E: "reaches on an error by the " + where }[r] || r;
 }
+function fielderAt(s, t, p) {
+  const i = s.lu[t].findIndex(x => x.pos === POS[p]);
+  return i < 0 ? null : keyOf(s.lu[t][i], t, i);
+}
 
-function plateAppearance(s, g, r, p, foulK) {
-  const bt = s.half, slot = curSlot(s, g), st = stat(s, bt, slot);
+function plateAppearance(s, g, r, p, bb, foulK) {
+  const bt = s.half, ft = 1 - bt, slot = curSlot(s), who = occ(s, bt, slot), key = keyOf(who, bt, slot), st = stat(s, bt, key);
+  const risp = !!(s.bases[1] || s.bases[2]);
   const cell = { slot, inning: s.inning, code: codeFor(r, p), base: 0, scored: false, out: 0, looking: r === "KC", notes: [] };
   if (foulK) cell.notes.push("FOUL");
   s.book[bt].push(cell);
-  const me = { team: bt, cell: s.book[bt].length - 1, slot };
+  const me = { team: bt, cell: s.book[bt].length - 1, slot, key };
   let runs = 0;
   const sc = x => { scoreRunner(s, g, x); runs++; };
   const advAll = n => { for (let b = 2; b >= 0; b--) { const x = s.bases[b]; if (!x) continue; s.bases[b] = null; const nb = b + n; if (nb >= 3) sc(x); else { s.bases[nb] = x; cellOf(s, x).base = nb + 1; } } };
   const forceAll = () => { if (!s.bases[0]) return; if (s.bases[1]) { if (s.bases[2]) { const x = s.bases[2]; s.bases[2] = null; sc(x); } move(s, 1, 2); } move(s, 0, 1); };
   const put = b => { s.bases[b - 1] = me; cell.base = b; };
-  const hit = ["1B", "2B", "3B", "HR"].includes(r);
+  const hit = HIT_CODES.includes(r);
+  const ab = !["BB", "HBP", "SF"].includes(r);
 
+  // --- counting stats for sabermetrics ---
   st.PA++;
-  if (!["BB", "HBP", "SF"].includes(r)) st.AB++;
-  if (hit) { st.H++; s.hits[bt]++; s.fx.hit = true; }
+  if (ab) { st.AB++; if (risp) st.RAB++; }
+  if (hit) { st.H++; st[r]++; st.TB += BASES_FOR[r]; s.hits[bt]++; s.fx.hit = true; if (risp) st.RH++; }
+  if (r === "E") st.ROE++;
+  const type = hit ? bb : BB_OF[r];
+  if (type) st[type]++;
+  if (p && (hit || NEEDS_POS[r])) {
+    const bats = who.pid && player(who.pid) ? player(who.pid).bats : "";
+    if (bats === "R" || bats === "L") {
+      const side = LEFT_SIDE.has(p) ? "L" : RIGHT_SIDE.has(p) ? "R" : "C";
+      const pullSide = bats === "R" ? "L" : "R";       // a right-handed batter pulls to left field
+      if (side === "C") st.CENT++; else if (side === pullSide) st.PULL++; else st.OPPO++;
+    }
+    const f = fielderAt(s, ft, p);
+    if (f) { if (r === "E") fstat(s, ft, f).E++; else if (!hit) fstat(s, ft, f).PL++; }
+  }
 
   switch (r) {
     case "1B": advAll(1); put(1); break;
     case "2B": advAll(2); put(2); break;
     case "3B": advAll(3); put(3); break;
-    case "HR": advAll(3); sc(me); st.HR++; s.fx.hr = true; break;
-    case "BB": case "HBP": forceAll(); put(1); if (r === "BB") st.BB++; break;
+    case "HR": advAll(3); sc(me); s.fx.hr = true; break;
+    case "BB": case "HBP": forceAll(); put(1); st[r]++; break;
     case "K": case "KC": outRunner(s, me); st.K++; s.fx.k = true; break;
     case "GO": case "FO": case "LO": case "PO": outRunner(s, me); break;
-    case "SF": outRunner(s, me); if (s.outs < 3 && s.bases[2]) { const x = s.bases[2]; s.bases[2] = null; sc(x); } break;
-    case "E": forceAll(); put(1); s.errors[1 - bt]++; break;
+    case "SF": outRunner(s, me); st.SF++; if (s.outs < 3 && s.bases[2]) { const x = s.bases[2]; s.bases[2] = null; sc(x); } break;
+    case "E": forceAll(); put(1); s.errors[ft]++; break;
     case "FC": {
-      let lead = s.bases[0] ? 0 : [2, 1].find(b => s.bases[b]);
+      const lead = s.bases[0] ? 0 : [2, 1].find(b => s.bases[b]);
       if (lead !== undefined) { const x = s.bases[lead]; s.bases[lead] = null; outRunner(s, x); }
       if (s.outs < 3) { forceAll(); put(1); }
       break;
@@ -397,7 +453,7 @@ function plateAppearance(s, g, r, p, foulK) {
     }
   }
   if (!["E", "DP"].includes(r)) st.RBI += runs;
-  log(s, nameOf(g, bt, slot) + " " + verbFor(r, p) + (foulK ? " (foul with two strikes)" : "") + "." + (runs ? ` <span class="run">${runs} run${runs > 1 ? "s" : ""} score${runs > 1 ? "" : "s"}.</span>` : ""));
+  log(s, esc(entryName(who)) + " " + verbFor(r, p) + (foulK ? " (foul with two strikes)" : "") + "." + (runs ? ` <span class="run">${runs} run${runs > 1 ? "s" : ""} score${runs > 1 ? "" : "s"}.</span>` : ""));
   s.order[bt]++;
   resetCount(s, g);
   if (s.outs >= 3 && !s.final) endHalf(s, g);
@@ -405,19 +461,19 @@ function plateAppearance(s, g, r, p, foulK) {
 
 function pitch(s, g, k) {
   if (k === "B") { s.balls++; if (s.balls >= 4) plateAppearance(s, g, "BB"); }
-  else if (k === "F") { if (s.strikes < 2) s.strikes++; else if (g.settings.foulOut) plateAppearance(s, g, "K", null, true); }
+  else if (k === "F") { if (s.strikes < 2) s.strikes++; else if (g.settings.foulOut) plateAppearance(s, g, "K", null, null, true); }
   else { s.strikes++; if (s.strikes >= 3) plateAppearance(s, g, k === "CS" ? "KC" : "K"); }
 }
 
 function runnerMove(s, g, b, a) {
   const x = s.bases[b]; if (!x) return;
-  const who = nameOf(g, x.team, x.slot);
+  const who = esc(nameAt(s, x.team, x.slot));
   if (a === "out") {
     s.bases[b] = null; outRunner(s, x); log(s, who + " is out on the bases.");
     if (s.outs >= 3) endHalf(s, g);
     return;
   }
-  if (a === "sb") { stat(s, x.team, x.slot).SB++; cellOf(s, x).notes.push("SB"); }
+  if (a === "sb") { stat(s, x.team, x.key).SB++; cellOf(s, x).notes.push("SB"); }
   if (a === "score" || b === 2) {
     s.bases[b] = null; scoreRunner(s, g, x);
     log(s, who + (a === "sb" ? " steals home." : " scores.") + ' <span class="run">1 run scores.</span>');
@@ -427,19 +483,160 @@ function runnerMove(s, g, b, a) {
   }
 }
 
+function substitute(s, e) {
+  s.lu[e.team][e.slot] = { pid: e.pid || null, name: e.name, pos: e.pos };
+  log(s, `Lineup: ${esc(entryName(s.lu[e.team][e.slot]))} bats ${ordinal(e.slot + 1)}${e.pos ? ", plays " + esc(e.pos) : ""}.`);
+}
+
 function derive(g) {
-  const s = fresh(g); resetCount(s, g);
+  const s = fresh(g);
   for (const e of g.events) {
+    if (e.t === "sub") { substitute(s, e); continue; }
     if (s.final) break;
     s.fx = {};
     if (e.t === "pitch") pitch(s, g, e.k);
-    else if (e.t === "pa") plateAppearance(s, g, e.r, e.p);
+    else if (e.t === "pa") plateAppearance(s, g, e.r, e.p, e.bb);
     else if (e.t === "run") runnerMove(s, g, e.b, e.a);
   }
   return s;
 }
 
-/* ---------- Sound (synthesized, no files needed) ---------- */
+/* =====================================================================
+   Season stats (sabermetrics)
+   ===================================================================== */
+function season() {
+  const rows = {}, rec = { W: 0, L: 0, T: 0 };
+  let games = 0;
+  const row = pid => rows[pid] || (rows[pid] = Object.assign({ pid, G: 0, PL: 0, E: 0, pos: {} }, blankStat()));
+  for (const g of store.games) {
+    const live = g.id === store.currentId;
+    if (!g.done && !(live && ui.incCur)) continue;
+    games++;
+    const s = derive(g), t = g.ourSide;
+    if (g.done) { const us = total(s, t), them = total(s, 1 - t); rec[us > them ? "W" : us < them ? "L" : "T"]++; }
+    for (const [k, st] of Object.entries(s.stats[t])) {
+      if (!k.startsWith("p:")) continue;
+      const r = row(k.slice(2));
+      if (st.PA) r.G++;
+      for (const f in st) r[f] += st[f];
+    }
+    for (const [k, f] of Object.entries(s.field[t])) {
+      if (!k.startsWith("p:")) continue;
+      const r = row(k.slice(2)); r.PL += f.PL; r.E += f.E;
+    }
+    const seen = new Set();
+    const addPos = x => { if (x.pid && x.pos && x.pos !== "Bench" && !seen.has(x.pid + x.pos)) { seen.add(x.pid + x.pos); const r = row(x.pid); r.pos[x.pos] = (r.pos[x.pos] || 0) + 1; } };
+    g.lineups[t].forEach(addPos);
+    g.events.forEach(e => { if (e.t === "sub" && e.team === t) addPos(e); });
+  }
+  const list = Object.values(rows).map(r => {
+    const p = player(r.pid);
+    return withRates(Object.assign(r, { name: p ? p.name : "Former player", num: p ? p.num : "" }));
+  });
+  return { list, games, rec };
+}
+function withRates(t) {
+  const d = (a, b) => b > 0 ? a / b : null;
+  t.AVG = d(t.H, t.AB);
+  t.OBP = d(t.H + t.BB + t.HBP, t.AB + t.BB + t.HBP + t.SF);
+  t.SLG = d(t.TB, t.AB);
+  t.OPS = t.OBP != null && t.SLG != null ? t.OBP + t.SLG : null;
+  t.ISO = t.SLG != null ? t.SLG - t.AVG : null;
+  t.BABIP = d(t.H - t.HR, t.AB - t.K - t.HR + t.SF);
+  // wOBA with MLB-style linear weights. Softball has no published weights, so read it as a relative ranking.
+  t.wOBA = d(.69 * t.BB + .72 * t.HBP + .88 * t["1B"] + 1.25 * t["2B"] + 1.59 * t["3B"] + 2.05 * t.HR, t.AB + t.BB + t.SF + t.HBP);
+  t.Kp = d(t.K, t.PA); t.BBp = d(t.BB, t.PA); t.BBK = d(t.BB, t.K);
+  t.RISP = d(t.RH, t.RAB);
+  t.RC = t.AB + t.BB + t.HBP > 0 ? (t.H + t.BB + t.HBP) * t.TB / (t.AB + t.BB + t.HBP) : null;
+  t.BIP = t.GB + t.LD + t.FB + t.PU;
+  t.GBp = d(t.GB, t.BIP); t.LDp = d(t.LD, t.BIP); t.FBp = d(t.FB, t.BIP); t.PUp = d(t.PU, t.BIP);
+  const dir = t.PULL + t.CENT + t.OPPO;
+  t.PULLp = d(t.PULL, dir); t.CENTp = d(t.CENT, dir); t.OPPOp = d(t.OPPO, dir);
+  t.FLD = d(t.PL, t.PL + t.E);
+  t.POS = Object.entries(t.pos || {}).sort((a, b) => b[1] - a[1]).map(([p, n]) => n > 1 ? `${p} (${n})` : p).join(", ");
+  return t;
+}
+const fmt = {
+  int: v => v == null ? "—" : String(v),
+  avg: v => v == null ? "—" : (v >= 1 ? v.toFixed(3) : v.toFixed(3).slice(1)),
+  pct: v => v == null ? "—" : Math.round(v * 100) + "%",
+  dec: v => v == null ? "—" : v.toFixed(1),
+  dec2: v => v == null ? "—" : v.toFixed(2),
+  txt: v => v ? esc(v) : "—"
+};
+// better: 1 = higher is better, -1 = lower is better, 0 = no leader highlight
+const TABLES = {
+  std: { label: "Standard", cols: [["G", "int"], ["PA", "int"], ["AB", "int"], ["R", "int", 1], ["H", "int", 1], ["2B", "int", 1], ["3B", "int", 1], ["HR", "int", 1], ["RBI", "int", 1], ["BB", "int", 1], ["K", "int"], ["SB", "int", 1], ["AVG", "avg", 1], ["OBP", "avg", 1], ["SLG", "avg", 1], ["OPS", "avg", 1]] },
+  adv: { label: "Advanced", cols: [["PA", "int"], ["OPS", "avg", 1], ["wOBA", "avg", 1], ["ISO", "avg", 1], ["BABIP", "avg", 0], ["Kp", "pct", -1, "K%"], ["BBp", "pct", 1, "BB%"], ["BBK", "dec2", 1, "BB/K"], ["RISP", "avg", 1, "RISP AVG"], ["RC", "dec", 1], ["ROE", "int", 0]] },
+  bb: { label: "Batted ball", cols: [["BIP", "int"], ["GBp", "pct", 0, "GB%"], ["LDp", "pct", 1, "LD%"], ["FBp", "pct", 0, "FB%"], ["PUp", "pct", -1, "IFFB%"], ["PULLp", "pct", 0, "Pull%"], ["CENTp", "pct", 0, "Cent%"], ["OPPOp", "pct", 0, "Oppo%"]] },
+  fld: { label: "Fielding", cols: [["POS", "txt", 0, "Positions"], ["PL", "int", 1, "Plays"], ["E", "int", -1], ["FLD", "pct", 1, "Fld%"]] }
+};
+const GLOSS = {
+  std: [["AVG", "Hits per at-bat."], ["OBP", "How often a batter reaches base on a hit, walk or HBP."], ["SLG", "Total bases per at-bat. A double counts 2, a homer 4."], ["OPS", "OBP + SLG. The quickest single number for a hitter."]],
+  adv: [["wOBA", "Weights each way of reaching base by how many runs it's worth. Scaled like OBP. Uses MLB weights, so compare players with each other, not with MLB."], ["ISO", "Raw power: SLG minus AVG."], ["BABIP", "Average on balls in play. Very high or low values are often luck and drift back."], ["K% / BB%", "Strikeouts and walks per plate appearance."], ["RISP AVG", "Average with runners on 2nd or 3rd."], ["RC", "Runs created, Bill James' basic formula."], ["ROE", "Times reached on an error. Not counted as a hit."]],
+  bb: [["GB / LD / FB / IFFB", "Share of balls in play that were grounders, line drives, fly balls or infield pop-ups. Line drives turn into hits most often."], ["Pull / Cent / Oppo", "Where balls in play went, relative to which side the batter hits from. Set bats R/L on the Roster tab."], ["BIP", "Balls put in play."]],
+  fld: [["Plays", "Outs made where this player fielded the ball (credited by the position number you tap)."], ["E", "Errors charged."], ["Fld%", "Plays ÷ (plays + errors). A simplified fielding percentage."], ["Positions", "Positions played, with game counts."]]
+};
+
+/* =====================================================================
+   Sample season (generated by simulating games with the real engine)
+   ===================================================================== */
+function sampleStore() {
+  let seed = 20261022;
+  const rng = () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  const pickW = list => { const sum = list.reduce((a, x) => a + x[1], 0); let r = rng() * sum; for (const [v, w] of list) { if ((r -= w) <= 0) return v; } return list[list.length - 1][0]; };
+  const players = [
+    ["Maya Ortiz", "2", "SS", "R", 1.25], ["Jess Kowalski", "7", "2B", "L", 1.1], ["Tara Nguyen", "12", "CF", "R", 1.35], ["Brooke Adams", "24", "1B", "R", 1.3],
+    ["Leah Chen", "5", "3B", "S", 1.0], ["Dani Brooks", "9", "LF", "L", 1.05], ["Sam Patel", "15", "C", "R", 0.85], ["Riley Moore", "18", "RF", "R", 0.8],
+    ["Kendra Hill", "21", "P", "R", 0.75], ["Nora Diaz", "3", "SF", "L", 0.95], ["Ellie Moss", "11", "RF", "R", 0.9]
+  ].map(([name, num, pos, bats, sk], i) => ({ id: "p" + (i + 1), name, num, pos, bats, sk }));
+  const skill = {}; players.forEach(p => { skill[p.id] = p.sk; delete p.sk; });
+  const s0 = blankStore();
+  s0.sample = true;
+  s0.team = { name: "Riverside Thunder", players };
+  store = s0;                                   // the engine looks players up in the store while simulating
+  const lineupFor = swap => players.slice(0, 10).map(p => (swap && p.id === "p8") ? players[10] : p).map(p => ({ pid: p.id, name: p.name, pos: p.pos }));
+  const posFor = (type, r) => type === "GB" ? pickW([[6, 5], [4, 4], [5, 3], [3, 2], [1, 1]])
+    : type === "PU" ? pickW([[2, 1], [3, 2], [4, 2], [5, 2], [6, 2], [1, 1]])
+    : type === "LD" ? pickW([[7, 3], [8, 3], [9, 2], [10, 2], [6, 1], [4, 1], [5, 1]])
+    : r === "HR" ? pickW([[7, 4], [8, 3], [9, 2]]) : pickW([[7, 3], [8, 3], [9, 2], [10, 2]]);
+
+  function sim(g, stop) {
+    let s = derive(g), guard = 0;
+    while (!s.final && guard++ < 500 && !(stop && s.inning > stop)) {
+      const t = s.half, who = occ(s, t, curSlot(s));
+      const sk = who.pid ? (skill[who.pid] || 1) : 0.95;
+      if (s.bases[0] && !s.bases[1] && rng() < .06) { g.events.push({ t: "run", b: 0, a: "sb" }); s = derive(g); continue; }
+      let r = pickW([["1B", .19 * sk], ["2B", .055 * sk], ["3B", .012 * sk], ["HR", .025 * sk * sk], ["BB", .07 * sk], ["HBP", .006], ["E", .04],
+                     ["K", .07 / sk], ["GO", .2], ["FO", .17 / sk], ["LO", .06], ["PO", .05 / sk]]);
+      if (r === "FO" && s.bases[2] && s.outs < 2 && rng() < .6) r = "SF";
+      else if (r === "GO" && s.bases[0] && s.outs < 2) r = pickW([["GO", .5], ["DP", .3], ["FC", .2]]);
+      const e = { t: "pa", r };
+      if (HIT_CODES.includes(r)) { e.bb = r === "HR" ? "FB" : pickW([["GB", .3], ["LD", .45], ["FB", .25]]); e.p = posFor(e.bb, r); }
+      else if (NEEDS_POS[r]) e.p = posFor({ GO: "GB", FO: "FB", LO: "LD", PO: "PU", SF: "FB", E: "GB" }[r], r);
+      g.events.push(e); s = derive(g);
+      if (!s.final && r === "GO" && s.bases[2] && rng() < .5) { g.events.push({ t: "run", b: 2, a: "score" }); s = derive(g); }
+    }
+  }
+  const opps = [["Lakeside Lightning", "2026-09-12"], ["Mill Creek Hornets", "2026-09-19"], ["Westbrook Blaze", "2026-09-26"],
+                ["Pine Ridge Rebels", "2026-10-03"], ["Harbor City Heat", "2026-10-10"], ["Lakeside Lightning", "2026-10-17"]];
+  const settings = () => ({ innings: 7, startCount: false, foulOut: false, askHits: true });
+  opps.forEach(([opponent, date], i) => {
+    const ourSide = i % 2, lineups = [[], []];
+    lineups[ourSide] = lineupFor(i === 1 || i === 4);
+    const g = { id: "g" + (i + 1), date, opponent, ourSide, settings: settings(), lineups, events: [], done: true };
+    sim(g); s0.games.push(g);
+  });
+  const lineups = [lineupFor(false), ["Ava Ruiz", "Paige Turner", "Lexi Grant", "Morgan Shaw", "Hannah Lee", "Cora Wells", "Emma Stone", "Jada Price", "Quinn Foster", "Zoe Park"].map(name => ({ pid: null, name, pos: "" }))];
+  const live = { id: "g7", date: today(), opponent: "Oak Hollow Sluggers", ourSide: 0, settings: settings(), lineups, events: [], done: false };
+  sim(live, 3);
+  s0.games.push(live); s0.currentId = live.id;
+  return s0;
+}
+
+/* =====================================================================
+   Sound and screen wake
+   ===================================================================== */
 let actx = null;
 function audio() {
   if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } }
@@ -470,64 +667,122 @@ function playFx(fx) {
   if (fx.runs) setTimeout(SFX.run, fx.hit ? 200 : 0);
   if (fx.side) setTimeout(SFX.side, fx.k || fx.hit ? 500 : 0);
 }
-
-/* Keep the screen awake in the dugout where supported */
 let wakeLock = null;
 async function keepAwake() {
   try { if ("wakeLock" in navigator && !wakeLock) { wakeLock = await navigator.wakeLock.request("screen"); wakeLock.addEventListener("release", () => { wakeLock = null; }); } } catch (e) {}
 }
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") keepAwake(); });
 
-/* ---------- Rendering ---------- */
-const $ = id => document.getElementById(id);
-const esc = v => String(v).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+/* =====================================================================
+   Rendering: shell
+   ===================================================================== */
+let G = null, S = null, shellKey = "";
+
+function render() {
+  $("nav").innerHTML = [["game", "Game"], ["stats", "Season"], ["roster", "Roster"]]
+    .map(([v, l]) => `<button role="tab" aria-selected="${ui.view === v}" data-act="view" data-v="${v}">${l}</button>`).join("");
+  $("sampleBox").innerHTML = store.sample ? `<div class="banner"><span>This is a <b>made-up sample season</b> so you can see how the stats work.</span><span class="spacer"></span>
+    <button class="tbtn ${ui.confirm === "clear" ? "danger" : ""}" data-act="clearsample">${ui.confirm === "clear" ? "Tap again to erase sample data" : "Clear sample data"}</button></div>` : "";
+  if (ui.view === "game") renderGameView();
+  else if (ui.view === "stats") { shellKey = ""; renderStats(); }
+  else { shellKey = ""; renderRoster(); }
+  renderSheet();
+}
+
+/* ---------- Game view ---------- */
+function renderGameView() {
+  G = viewGame();
+  if (!G) {
+    shellKey = "";
+    const noRoster = !store.team.players.length;
+    $("view").innerHTML = `<section class="panel empty"><h2>No game in progress</h2>
+      <p>${noRoster ? "Add your players on the Roster tab first. Then start a game and pick the batting order." : "Start a game to pick today's batting order and positions."}</p>
+      ${noRoster ? `<button class="tbtn primary" data-act="view" data-v="roster">Go to roster</button>` : `<button class="tbtn primary" data-act="newgame">Start a game</button>`}</section>`;
+    return;
+  }
+  S = derive(G);
+  const key = "game:" + G.id;
+  if (shellKey !== key) {
+    shellKey = key;
+    $("view").innerHTML = `
+      <div class="gamebar" id="gamebar"></div>
+      <section class="board" id="board" aria-label="Line score"></section>
+      <div id="finalBox"></div>
+      <div class="main">
+        <section class="panel" aria-label="Current at-bat">
+          <div class="situ">
+            <svg class="diamond" id="diamond" viewBox="0 0 220 220" role="group" aria-label="Bases. Tap a runner to move them."></svg>
+            <div class="count" id="count"></div>
+          </div>
+          <div class="atbat" id="atbat"></div>
+          <div class="pad" id="pad"></div>
+        </section>
+        <section class="panel" aria-label="Scorebook">
+          <div class="bookhead"><h2 style="margin:0">Scorebook</h2><span style="flex:1"></span><div class="tabs" role="tablist" id="tabs"></div></div>
+          <div class="bookscroll"><table class="book" id="book"></table></div>
+          <div class="lower">
+            <div><h2>Play by play</h2><ol class="pbp" id="pbp"></ol></div>
+            <div><h2>Scorebook marks</h2>
+              <div class="legend">
+                <div><b>1B</b>Single</div><div><b>2B</b>Double</div><div><b>3B</b>Triple</div><div><b>HR</b>Home run</div>
+                <div><b>BB</b>Walk</div><div><b>HBP</b>Hit by pitch</div><div><b>K</b>Strikeout swinging</div><div><b><span class="kc">K</span></b>Strikeout looking</div>
+                <div><b>6-3</b>Grounder, SS to 1B</div><div><b>F8</b>Fly out to CF</div><div><b>L5</b>Line out to 3B</div><div><b>P4</b>Pop out to 2B</div>
+                <div><b>SF7</b>Sacrifice fly</div><div><b>E6</b>Error on SS</div><div><b>FC</b>Fielder's choice</div><div><b>DP</b>Double play</div>
+              </div></div>
+          </div>
+        </section>
+      </div>`;
+  }
+  renderGamebar(); renderBoard(); renderDiamond(); renderCount(); renderAtBat(); renderPad(); renderBook(); renderLog();
+}
+
+function renderGamebar() {
+  const names = teamNames(G), peek = !!ui.peekId;
+  const status = peek ? "Final" : S.final ? "Final" : (S.half ? "Bottom " : "Top ") + ordinal(S.inning);
+  $("gamebar").innerHTML = `<span class="chip ${peek || S.final ? "" : "live"}">${status}</span>
+    <span>${esc(names[0])} at ${esc(names[1])} · ${esc(G.date)}</span><span class="spacer"></span>
+    ${peek ? `<button class="tbtn" data-act="unpeek">Back to season</button>
+              <button class="tbtn" data-act="reopen" ${store.currentId ? "disabled title=\"Finish the game in progress first\"" : ""}>Reopen to edit</button>`
+           : `<button class="tbtn" data-act="undo" ${G.events.length ? "" : "disabled"}>↶ Undo</button>
+              <button class="tbtn" data-act="lineups">Lineups</button>
+              <button class="tbtn" data-act="gamemenu">Game</button>`}`;
+}
 
 function renderBoard() {
-  const cols = Math.max(game.settings.innings, S.inning);
+  const names = teamNames(G), cols = Math.max(G.settings.innings, S.inning), live = !S.final && !ui.peekId;
   let h = '<table><thead><tr><th class="team">Team</th>';
   for (let i = 1; i <= cols; i++) h += `<th>${i}</th>`;
   h += '<th class="tot">R</th><th>H</th><th>E</th></tr></thead><tbody>';
   [0, 1].forEach(t => {
-    h += `<tr class="${!S.final && S.half === t ? "batting" : ""}"><td class="team"><span class="bat"></span>${esc(game.teams[t].name)}</td>`;
+    h += `<tr class="${live && S.half === t ? "batting" : ""}"><td class="team"><span class="bat"></span>${esc(names[t])}</td>`;
     for (let i = 0; i < cols; i++) {
-      const v = S.runs[t][i];
-      const now = !S.final && S.half === t && S.inning === i + 1;
+      const v = S.runs[t][i], now = live && S.half === t && S.inning === i + 1;
       let txt = v === undefined ? "" : v;
       if (S.final && t === 1 && v === undefined && S.runs[0][i] !== undefined) txt = "X";
-      h += `<td class="${now ? "now" : ""} ${v === undefined && txt !== "X" ? "empty" : ""}">${txt === "" ? "·" : txt}</td>`;
+      h += `<td class="${now ? "now" : ""} ${txt === "" ? "empty" : ""}">${txt === "" ? "·" : txt}</td>`;
     }
     h += `<td class="tot">${total(S, t)}</td><td class="tot" style="border:0">${S.hits[t]}</td><td class="tot" style="border:0">${S.errors[t]}</td></tr>`;
   });
   $("board").innerHTML = h + "</tbody></table>";
-
-  $("status").textContent = S.final ? "Final" : (S.half ? "Bottom " : "Top ") + ordinal(S.inning);
-  $("status").className = "chip" + (S.final ? "" : " live");
-  $("sampleChip").hidden = !game.sample;
-  $("undoBtn").disabled = game.events.length === 0;
-
-  if (S.final) {
+  const ended = S.final && !ui.peekId;
+  if (ended) {
     const a = total(S, 0), hm = total(S, 1), w = a > hm ? 0 : 1;
-    $("finalBox").innerHTML = `<div class="final"><b>Final</b><span>${esc(game.teams[w].name)} win ${Math.max(a, hm)}–${Math.min(a, hm)}.</span><span style="flex:1"></span><button class="tbtn" data-act="setup">Start a new game</button></div>`;
+    $("finalBox").innerHTML = `<div class="final"><b>Final</b><span>${esc(names[w])} win ${Math.max(a, hm)}–${Math.min(a, hm)}.</span><span style="flex:1"></span>
+      <button class="tbtn" data-act="endgame">Save to season</button></div>`;
   } else $("finalBox").innerHTML = "";
 }
 
 function renderDiamond() {
-  const P = [[180, 110], [110, 40], [40, 110]];
-  const labelPos = [[180, 148, "middle"], [110, 18, "middle"], [40, 148, "middle"]];
+  const P = [[180, 110], [110, 40], [40, 110]], labelPos = [[180, 148], [110, 18], [40, 148]];
   let h = `<path d="M110 200 L195 110 L110 25 L25 110 Z" fill="var(--grass)" />
     <path d="M110 182 L178 110 L110 42 L42 110 Z" fill="var(--infield)" />
     <path d="M110 180 L180 110 L110 40 L40 110 Z" fill="none" stroke="var(--surface)" stroke-width="3" />
     <path d="M102 176 h16 v6 l-8 8 l-8 -8 z" fill="var(--surface)" stroke="var(--muted)" stroke-width="2" />`;
   P.forEach(([x, y], b) => {
     const r = S.bases[b];
-    h += `<g class="base ${r ? "on" : ""}" data-act="base" data-b="${b}" role="button" tabindex="${r ? 0 : -1}" aria-label="${["First", "Second", "Third"][b]} base${r ? ": " + esc(nameOf(game, r.team, r.slot)) : ", empty"}">
-      <circle class="hit" cx="${x}" cy="${y}" r="30" />
-      <rect x="${x - 13}" y="${y - 13}" width="26" height="26" transform="rotate(45 ${x} ${y})" rx="2" /></g>`;
-    if (r) {
-      const [lx, ly, an] = labelPos[b];
-      const nm = nameOf(game, r.team, r.slot).split(" ")[0];
-      h += `<text class="rname" x="${lx}" y="${ly}" text-anchor="${an}">${esc(nm)}</text>`;
-    }
+    h += `<g class="base ${r ? "on" : ""}" data-act="base" data-b="${b}" role="button" tabindex="${r ? 0 : -1}" aria-label="${["First", "Second", "Third"][b]} base${r ? ": " + esc(nameAt(S, r.team, r.slot)) : ", empty"}">
+      <circle class="hit" cx="${x}" cy="${y}" r="30" /><rect x="${x - 13}" y="${y - 13}" width="26" height="26" transform="rotate(45 ${x} ${y})" rx="2" /></g>`;
+    if (r) h += `<text class="rname" x="${labelPos[b][0]}" y="${labelPos[b][1]}" text-anchor="middle">${esc(nameAt(S, r.team, r.slot).split(" ")[0])}</text>`;
   });
   $("diamond").innerHTML = h;
 }
@@ -540,32 +795,34 @@ function renderCount() {
     <div class="row o"><span class="lbl">OUTS</span><div class="dots">${dots(2, S.outs)}</div></div>`;
 }
 
-function line(t, slot) {
-  const st = S.stats[t][slot];
+function todayLine(t, slot) {
+  const st = S.stats[t][keyOf(occ(S, t, slot), t, slot)];
   if (!st || !st.PA) return "First trip to the plate today";
   const bits = [`${st.H}-for-${st.AB}`];
   if (st.HR) bits.push(st.HR + " HR"); if (st.RBI) bits.push(st.RBI + " RBI"); if (st.BB) bits.push(st.BB + " BB"); if (st.K) bits.push(st.K + " K");
   return "Today: " + bits.join(", ");
 }
 function renderAtBat() {
-  if (S.final) { $("atbat").innerHTML = `<div class="now">Game over</div><div class="meta">Undo the last play to keep scoring, or open Setup to start a new game.</div>`; return; }
-  const t = S.half, slot = curSlot(S, game), next = (slot + 1) % lineLen(game, t);
-  $("atbat").innerHTML = `<div class="meta">${esc(game.teams[t].name)} batting · ${S.balls}–${S.strikes} count</div>
-    <div class="now"><small>#${slot + 1}</small>${esc(nameOf(game, t, slot))}</div>
-    <div class="meta">${line(t, slot)} · On deck: ${esc(nameOf(game, t, next))}</div>`;
+  if (ui.peekId) { $("atbat").innerHTML = `<div class="now">Finished game</div><div class="meta">This game is saved to the season. Reopen it to fix a play.</div>`; return; }
+  if (S.final) { $("atbat").innerHTML = `<div class="now">Game over</div><div class="meta">Tap “Save to season” above, or Undo to fix the last play.</div>`; return; }
+  const t = S.half, slot = curSlot(S), next = (slot + 1) % lineLen(S, t), who = occ(S, t, slot);
+  $("atbat").innerHTML = `<div class="meta">${esc(teamNames(G)[t])} batting · ${S.balls}–${S.strikes} count${who.pos ? " · plays " + esc(who.pos) : ""}</div>
+    <div class="now"><small>#${slot + 1}</small>${esc(entryName(who))}</div>
+    <div class="meta">${todayLine(t, slot)} · On deck: ${esc(nameAt(S, t, next))}</div>`;
 }
 
 function key(act, val, big, small, cls) {
-  return `<button class="key ${cls || ""}" data-act="${act}" data-v="${val}" ${S.final ? "disabled" : ""}><b>${big}</b><span>${small}</span></button>`;
+  return `<button class="key ${cls || ""}" data-act="${act}" data-v="${val}" ${S.final || ui.peekId ? "disabled" : ""}><b>${big}</b><span>${small}</span></button>`;
 }
 function renderPad() {
-  const strikeLabel = S.strikes >= 2 ? (game.settings.foulOut ? "Strikeout" : "Count stays") : "Strike";
+  if (ui.peekId) { $("pad").innerHTML = ""; return; }
+  const foulLabel = S.strikes >= 2 ? (G.settings.foulOut ? "Strikeout" : "Count stays") : "Strike";
   $("pad").innerHTML = `
     <div class="group"><div class="gl">Count (optional)</div><div class="keys">
       ${key("pitch", "B", "Ball", S.balls >= 3 ? "Walk" : "Ball " + (S.balls + 1), "pitch")}
       ${key("pitch", "CS", "Look", S.strikes >= 2 ? "Strikeout" : "Called strike", "pitch")}
       ${key("pitch", "SS", "Swing", S.strikes >= 2 ? "Strikeout" : "Swing & miss", "pitch")}
-      ${key("pitch", "F", "Foul", strikeLabel, "pitch")}
+      ${key("pitch", "F", "Foul", foulLabel, "pitch")}
     </div></div>
     <div class="group"><div class="gl">Batter reaches</div><div class="keys">
       ${key("pa", "1B", "1B", "Single", "on")}${key("pa", "2B", "2B", "Double", "on")}${key("pa", "3B", "3B", "Triple", "on")}${key("pa", "HR", "HR", "Home run", "on")}
@@ -578,10 +835,8 @@ function renderPad() {
 }
 
 function mini(c) {
-  // home (26,48) 1st (48,26) 2nd (26,4) 3rd (4,26)
   const pts = [[26, 48], [48, 26], [26, 4], [4, 26], [26, 48]];
-  let ran = "";
-  if (c.base > 0) ran = `<polyline class="ran" points="${pts.slice(0, c.base + 1).map(p => p.join(",")).join(" ")}" />`;
+  const ran = c.base > 0 ? `<polyline class="ran" points="${pts.slice(0, c.base + 1).map(p => p.join(",")).join(" ")}" />` : "";
   const code = c.looking ? `<text class="code" x="26" y="31" text-anchor="middle" transform="translate(52 0) scale(-1 1)">K</text>` : `<text class="code" x="26" y="31" text-anchor="middle">${esc(c.code)}</text>`;
   const out = c.out ? `<circle class="outc" cx="44" cy="44" r="7" /><text class="outn" x="44" y="48" text-anchor="middle">${c.out}</text>` : "";
   const notes = c.notes.length ? `<text class="note" x="2" y="9">${esc(c.notes.join(" "))}</text>` : "";
@@ -589,21 +844,18 @@ function mini(c) {
     <path class="path" d="M26 48 L48 26 L26 4 L4 26 Z" />${c.scored ? '<path class="scored" d="M26 48 L48 26 L26 4 L4 26 Z" />' : ""}${ran}${code}${out}${notes}</svg>`;
 }
 function renderBook() {
-  const t = ui.bookTeam === null ? S.half : ui.bookTeam;
-  $("tabs").innerHTML = [0, 1].map(i => `<button role="tab" aria-selected="${i === t}" data-act="tab" data-v="${i}">${esc(game.teams[i].name)}</button>`).join("");
-  const cols = Math.max(game.settings.innings, S.inning);
-  const L = lineLen(game, t), up = !S.final && S.half === t ? curSlot(S, game) : -1;
+  const names = teamNames(G), t = ui.bookTeam === null ? (ui.peekId ? G.ourSide : S.half) : ui.bookTeam;
+  $("tabs").innerHTML = [0, 1].map(i => `<button role="tab" aria-selected="${i === t}" data-act="tab" data-v="${i}">${esc(names[i])}</button>`).join("");
+  const cols = Math.max(G.settings.innings, S.inning), L = lineLen(S, t), up = !S.final && !ui.peekId && S.half === t ? curSlot(S) : -1;
   let h = '<thead><tr><th>#</th><th style="text-align:left;padding-left:8px">Batter</th>';
   for (let i = 1; i <= cols; i++) h += `<th class="inn ${!S.final && S.inning === i && S.half === t ? "now" : ""}">${i}</th>`;
   h += '<th class="stat">AB</th><th>R</th><th>H</th><th>RBI</th><th>BB</th><th>K</th></tr></thead><tbody>';
   const tot = { AB: 0, R: 0, H: 0, RBI: 0, BB: 0, K: 0 };
   for (let slot = 0; slot < L; slot++) {
-    const st = S.stats[t][slot] || {};
-    h += `<tr class="${slot === up ? "up" : ""}"><td class="slot">${slot + 1}</td><td class="name">${esc(nameOf(game, t, slot))}</td>`;
-    for (let i = 1; i <= cols; i++) {
-      const cells = S.book[t].filter(c => c.slot === slot && c.inning === i);
-      h += `<td class="cell"><div class="stack">${cells.map(mini).join("")}</div></td>`;
-    }
+    const who = occ(S, t, slot);
+    const st = S.stats[t][keyOf(who, t, slot)] || {};
+    h += `<tr class="${slot === up ? "up" : ""}"><td class="slot">${slot + 1}</td><td class="name">${esc(entryName(who))}${who.pos ? ` <span style="color:var(--muted);font-weight:500">${esc(who.pos)}</span>` : ""}</td>`;
+    for (let i = 1; i <= cols; i++) h += `<td class="cell"><div class="stack">${S.book[t].filter(c => c.slot === slot && c.inning === i).map(mini).join("")}</div></td>`;
     ["AB", "R", "H", "RBI", "BB", "K"].forEach((k, j) => { const v = st[k] || 0; tot[k] += v; h += `<td class="st ${j === 0 ? "first" : ""}">${st.PA ? v : ""}</td>`; });
     h += "</tr>";
   }
@@ -612,27 +864,152 @@ function renderBook() {
   ["AB", "R", "H", "RBI", "BB", "K"].forEach(k => h += `<td>${tot[k]}</td>`);
   $("book").innerHTML = h + "</tr></tfoot>";
 }
-
 function renderLog() {
   const items = S.log.slice().reverse();
   $("pbp").innerHTML = items.length ? items.map(l => `<li><span class="inn">${l.inn}</span><span>${l.text}</span></li>`).join("")
     : `<li><span class="inn">—</span><span>Plays appear here as you score them.</span></li>`;
 }
 
-/* ---------- Sheets ---------- */
+/* ---------- Season view ---------- */
+function renderStats() {
+  const { list, games, rec } = season();
+  const tdef = TABLES[ui.table];
+  const qualified = list.filter(r => r.PA >= ui.minPA && (ui.table !== "fld" || r.PL + r.E > 0 || r.POS));
+  const sk = ui.sort.k, dir = ui.sort.d;
+  qualified.sort((a, b) => {
+    if (sk === "name") return dir * a.name.localeCompare(b.name);
+    const va = a[sk], vb = b[sk];
+    if (va == null && vb == null) return 0; if (va == null) return 1; if (vb == null) return -1;
+    return typeof va === "string" ? dir * va.localeCompare(vb) : dir * (va - vb);
+  });
+  const best = {};
+  tdef.cols.forEach(([k, f, better]) => {
+    if (!better || qualified.length < 2) return;
+    const vals = qualified.map(r => r[k]).filter(v => v != null);
+    if (vals.length) best[k] = better > 0 ? Math.max(...vals) : Math.min(...vals);
+  });
+  const teamTot = withRates(list.reduce((a, r) => { for (const k in blankStat()) a[k] += r[k]; a.PL += r.PL; a.E += r.E; return a; }, Object.assign({ PL: 0, E: 0, pos: {} }, blankStat())));
+  teamTot.G = games;
+
+  const th = (k, label) => `<th class="${sk === k ? "sorted" : ""}"><button data-act="sort" data-v="${k}">${label}${sk === k ? (dir < 0 ? " ▼" : " ▲") : ""}</button></th>`;
+  let h = `<thead><tr>${th("name", "Player")}${tdef.cols.map(([k, , , label]) => th(k, label || k)).join("")}</tr></thead><tbody>`;
+  h += qualified.map(r => `<tr><td><span style="color:var(--muted);font-family:var(--f-label);font-weight:600;margin-right:6px">${esc(r.num)}</span>${esc(r.name)}</td>` +
+    tdef.cols.map(([k, f]) => `<td class="${best[k] != null && r[k] === best[k] ? "best" : ""}">${fmt[f](r[k])}</td>`).join("") + "</tr>").join("");
+  if (!qualified.length) h += `<tr><td colspan="${tdef.cols.length + 1}" style="text-align:left;color:var(--muted)">No stats yet. Finish a game and choose “Save to season”, and the numbers appear here.</td></tr>`;
+  h += `</tbody><tfoot><tr><td>Team</td>${tdef.cols.map(([k, f]) => `<td>${k === "POS" ? "" : fmt[f](teamTot[k])}</td>`).join("")}</tr></tfoot>`;
+
+  const cur = curGame();
+  const minQual = games * 2;
+  const leaderCats = [["AVG", "avg"], ["OPS", "avg"], ["wOBA", "avg"], ["HR", "int"], ["RBI", "int"], ["SB", "int"]];
+  const leaders = leaderCats.map(([k, f]) => {
+    const pool = list.filter(r => r[k] != null && (f === "int" || r.PA >= minQual)).sort((a, b) => b[k] - a[k]);
+    const top = pool[0];
+    return `<li><span class="res" style="width:auto;min-width:56px;font-size:16px">${k}</span><span class="who">${top && top[k] > 0 ? esc(top.name) : "—"}</span><b>${top && top[k] > 0 ? fmt[f](top[k]) : ""}</b></li>`;
+  }).join("");
+
+  const gameItems = store.games.slice().sort((a, b) => b.date.localeCompare(a.date)).map(g => {
+    const s = derive(g), us = total(s, g.ourSide), them = total(s, 1 - g.ourSide);
+    const live = g.id === store.currentId;
+    const res = live ? "" : us > them ? "W" : us < them ? "L" : "T";
+    const confirmDel = ui.confirm === "del:" + g.id;
+    return `<li><span class="res ${res.toLowerCase()}">${live ? "●" : res}</span>
+      <span class="who">${g.ourSide ? "vs" : "at"} ${esc(g.opponent)} <b>${us}–${them}</b><small>${esc(g.date)}${live ? " · in progress" : ""}</small></span>
+      ${live ? `<button class="tbtn" data-act="resume">Resume</button>` : `<button class="tbtn" data-act="peek" data-v="${g.id}">View</button>`}
+      <button class="tbtn ${confirmDel ? "danger" : ""}" data-act="delgame" data-v="${g.id}">${confirmDel ? "Confirm delete" : "Delete"}</button></li>`;
+  }).join("");
+
+  $("view").innerHTML = `
+    <section class="panel">
+      <div class="sbar">
+        <h2 style="margin:0">${esc(store.team.name)} · ${games} game${games === 1 ? "" : "s"} · ${rec.W}–${rec.L}${rec.T ? "–" + rec.T : ""}</h2>
+        <span class="spacer"></span>
+        <div class="tabs" role="tablist">${Object.entries(TABLES).map(([k, t]) => `<button role="tab" aria-selected="${ui.table === k}" data-act="table" data-v="${k}">${t.label}</button>`).join("")}</div>
+      </div>
+      <div class="sbar">
+        <label for="minPA">Min. plate appearances <select id="minPA" data-ch="minPA">${[0, 5, 10, 20, 40].map(n => `<option ${n === ui.minPA ? "selected" : ""}>${n}</option>`).join("")}</select></label>
+        ${cur ? `<label><input type="checkbox" id="incCur" data-ch="incCur" ${ui.incCur ? "checked" : ""}> Include today's game in progress</label>` : ""}
+        <span class="spacer"></span>
+        <button class="tbtn" data-act="backup">Export &amp; backup</button>
+      </div>
+      <div class="tscroll"><table class="stats">${h}</table></div>
+      <div class="gloss">${GLOSS[ui.table].map(([k, v]) => `<div><b>${k}</b>${v}</div>`).join("")}</div>
+    </section>
+    <div class="lower3">
+      <section class="panel"><h2>Games</h2>${gameItems ? `<ul class="games">${gameItems}</ul>` : `<p style="color:var(--muted);margin:0">No games yet.</p>`}
+        ${cur ? "" : `<div style="margin-top:12px"><button class="tbtn primary" data-act="newgame" ${store.team.players.length ? "" : "disabled"}>Start a game</button></div>`}</section>
+      <section class="panel"><h2>Team leaders</h2><ul class="games">${leaders}</ul>
+        <p style="color:var(--muted);font-size:13px;margin:8px 0 0">Rate stats need ${minQual} plate appearances (2 per team game) to qualify.</p></section>
+    </div>`;
+}
+
+/* ---------- Roster view ---------- */
+function renderRoster() {
+  const ps = store.team.players;
+  $("view").innerHTML = `<section class="panel">
+    <div class="roster-top">
+      <div class="field"><label for="teamName">Your team</label><input id="teamName" data-ch="teamName" value="${esc(store.team.name)}" autocomplete="off"></div>
+      <button class="tbtn primary" data-act="addplayer">Add player</button>
+    </div>
+    <div class="rows">
+      <div class="prow head"><span>#</span><span>Name</span><span>Position</span><span>Bats</span><span></span></div>
+      ${ps.map(p => `<div class="prow">
+        <input aria-label="Number" data-ch="pnum" data-id="${p.id}" value="${esc(p.num)}" inputmode="numeric">
+        <input aria-label="Name" data-ch="pname" data-id="${p.id}" value="${esc(p.name)}" placeholder="Player name" autocomplete="off">
+        <select aria-label="Position" data-ch="ppos" data-id="${p.id}">${LINEUP_POS.map(x => `<option ${x === p.pos ? "selected" : ""}>${x}</option>`).join("")}</select>
+        <select aria-label="Bats" data-ch="pbats" data-id="${p.id}">${[["R", "R"], ["L", "L"], ["S", "S"], ["", "?"]].map(([v, l]) => `<option value="${v}" ${v === (p.bats || "") ? "selected" : ""}>${l}</option>`).join("")}</select>
+        <button class="ibtn ${ui.confirm === "rm:" + p.id ? "danger" : ""}" data-act="rmplayer" data-v="${p.id}" aria-label="Remove ${esc(p.name)}">${ui.confirm === "rm:" + p.id ? "?" : "✕"}</button>
+      </div>`).join("")}
+    </div>
+    ${ps.length ? "" : `<p style="color:var(--muted)">No players yet. Tap “Add player” to build your roster.</p>`}
+    <p style="color:var(--muted);font-size:14px;margin:14px 0 0">Position is the default when you build a lineup; you can change it each game. “Bats” (right, left, switch) is used for pull and opposite-field stats.
+      Removing a player keeps their past games in the season totals.</p>
+  </section>`;
+}
+
+/* =====================================================================
+   Sheets (pop-up panels)
+   ===================================================================== */
+function lineupRows(rows, opts) {
+  const ps = store.team.players;
+  return `<div class="rows">${rows.map((r, i) => `<div class="prow lu">
+      <span class="n">${i + 1}</span>
+      <select aria-label="Batter ${i + 1}" data-row="pid" data-i="${i}"><option value="">Choose player…</option>${ps.map(p => `<option value="${p.id}" ${p.id === r.pid ? "selected" : ""}>${esc(p.num ? "#" + p.num + " " : "")}${esc(p.name)}</option>`).join("")}</select>
+      <select aria-label="Position for batter ${i + 1}" data-row="pos" data-i="${i}">${LINEUP_POS.map(x => `<option ${x === r.pos ? "selected" : ""}>${x}</option>`).join("")}</select>
+      ${opts.reorder ? `<button class="ibtn" data-act="lu-up" data-v="${i}" aria-label="Move up">↑</button><button class="ibtn" data-act="lu-down" data-v="${i}" aria-label="Move down">↓</button><button class="ibtn" data-act="lu-rm" data-v="${i}" aria-label="Remove">✕</button>` : "<span></span><span></span><span></span>"}
+    </div>`).join("")}</div>
+    <div><button class="tbtn" data-act="lu-add">Add batter</button></div>`;
+}
+function readDraftRows() {
+  const d = ui.draft; if (!d) return;
+  document.querySelectorAll("[data-row]").forEach(el => { const r = d.rows[+el.dataset.i]; if (r) r[el.dataset.row] = el.value; });
+  ["opponent", "date", "opp"].forEach(k => { if ($("d-" + k)) d[k] = $("d-" + k).value; });
+  if ($("d-side")) d.ourSide = +$("d-side").value;
+  if ($("d-inn")) d.innings = +$("d-inn").value;
+  ["startCount", "foulOut", "askHits"].forEach(k => { if ($("d-" + k)) d[k] = $("d-" + k).checked; });
+}
+function rulesFields(d) {
+  return `<div class="field" style="max-width:220px"><label for="d-inn">Innings</label><select id="d-inn">${[5, 6, 7, 9].map(n => `<option ${n === d.innings ? "selected" : ""}>${n}</option>`).join("")}</select></div>
+    <label class="check"><input type="checkbox" id="d-askHits" ${d.askHits ? "checked" : ""}><span>Ask where each hit went (for spray and batted-ball stats; you can always skip)</span></label>
+    <label class="check"><input type="checkbox" id="d-startCount" ${d.startCount ? "checked" : ""}><span>Start every at-bat with a 1–1 count</span></label>
+    <label class="check"><input type="checkbox" id="d-foulOut" ${d.foulOut ? "checked" : ""}><span>A foul ball with two strikes is a strikeout</span></label>`;
+}
+
 function renderSheet() {
   const sh = ui.sheet, o = $("overlay");
   if (!sh) { o.innerHTML = ""; return; }
-  let body = "";
+  let body = "", wide = false;
   if (sh.type === "pos") {
-    body = `<h3>${esc({ GO: "Ground out", FO: "Fly out", LO: "Line out", PO: "Pop out", SF: "Sacrifice fly", E: "Error" }[sh.r])}</h3>
-      <p>${NEEDS_POS[sh.r]}</p>
+    body = `<h3>${esc({ GO: "Ground out", FO: "Fly out", LO: "Line out", PO: "Pop out", SF: "Sacrifice fly", E: "Error" }[sh.r])}</h3><p>${NEEDS_POS[sh.r]}</p>
       <div class="posgrid">${POS.slice(1).map((p, i) => `<button class="key" data-act="pos" data-v="${i + 1}"><b>${i + 1}</b><span>${p}</span></button>`).join("")}</div>
       <div class="acts"><button class="tbtn" data-act="close">Cancel</button></div>`;
+  } else if (sh.type === "hit") {
+    body = `<h3>${{ "1B": "Single", "2B": "Double", "3B": "Triple", HR: "Home run" }[sh.r]}</h3>
+      <p>What kind of hit, and where did it go? Tap the fielder nearest the ball.</p>
+      <div class="bbrow">${[["GB", "Grounder"], ["LD", "Line drive"], ["FB", "Fly ball"]].map(([k, l]) => `<button data-act="bbtype" data-v="${k}" aria-pressed="${ui.bb === k}">${l}</button>`).join("")}</div>
+      <div class="posgrid">${POS.slice(1).map((p, i) => `<button class="key" data-act="hitpos" data-v="${i + 1}"><b>${i + 1}</b><span>${p}</span></button>`).join("")}</div>
+      <div class="acts"><button class="tbtn" data-act="close">Cancel</button><button class="tbtn primary" data-act="hitskip">Skip, just record the ${sh.r}</button></div>`;
   } else if (sh.type === "runner") {
-    const r = S.bases[sh.b], who = esc(nameOf(game, r.team, r.slot)), b = sh.b;
-    const nextTaken = b < 2 && S.bases[b + 1];
-    const nextName = ["second", "third", "home"][b];
+    const r = S.bases[sh.b], who = esc(nameAt(S, r.team, r.slot)), b = sh.b, nextTaken = b < 2 && S.bases[b + 1], nextName = ["second", "third", "home"][b];
     body = `<h3>${who}</h3><p>On ${["first", "second", "third"][b]} base. What happened?</p>
       <div class="keys" style="grid-template-columns:repeat(2,minmax(0,1fr))">
         <button class="key on" data-act="run" data-v="adv" ${nextTaken ? "disabled" : ""}><b>Advance</b><span>${b === 2 ? "Scores" : "To " + nextName}${nextTaken ? " (occupied)" : ""}</span></button>
@@ -641,85 +1018,270 @@ function renderSheet() {
         <button class="key out" data-act="run" data-v="out"><b>Out</b><span>Picked off, thrown out</span></button>
       </div>
       <div class="acts"><button class="tbtn" data-act="close">Cancel</button></div>`;
-  } else if (sh.type === "setup") {
-    const g = game;
-    body = `<h3>Game setup</h3>
+  } else if (sh.type === "newgame") {
+    const d = ui.draft; wide = true;
+    body = `<h3>Start a game</h3>
       <div class="two">
-        ${[0, 1].map(t => `<div class="field"><label for="tn${t}">${t ? "Home team" : "Visiting team"}</label><input id="tn${t}" value="${esc(g.teams[t].name)}" autocomplete="off"></div>`).join("")}
-        ${[0, 1].map(t => `<div class="field"><label for="tl${t}">${t ? "Home" : "Visitors"} batting order, one per line</label><textarea id="tl${t}" placeholder="Leadoff hitter&#10;Second hitter&#10;…">${esc(g.teams[t].lineup.join("\n"))}</textarea></div>`).join("")}
+        <div class="field"><label for="d-opponent">Opponent</label><input id="d-opponent" value="${esc(d.opponent)}" placeholder="Team name" autocomplete="off"></div>
+        <div class="field"><label for="d-date">Date</label><input id="d-date" type="date" value="${esc(d.date)}"></div>
+        <div class="field"><label for="d-side">${esc(store.team.name)} are</label><select id="d-side"><option value="0" ${d.ourSide === 0 ? "selected" : ""}>Visitors (bat first)</option><option value="1" ${d.ourSide === 1 ? "selected" : ""}>Home (bat second)</option></select></div>
       </div>
-      <div class="field" style="max-width:220px"><label for="inn">Innings</label>
-        <select id="inn">${[5, 6, 7, 9].map(n => `<option ${n === g.settings.innings ? "selected" : ""}>${n}</option>`).join("")}</select></div>
-      <label class="check"><input type="checkbox" id="sc" ${g.settings.startCount ? "checked" : ""}><span>Start every at-bat with a 1–1 count (common in slowpitch)</span></label>
-      <label class="check"><input type="checkbox" id="fo" ${g.settings.foulOut ? "checked" : ""}><span>A foul ball with two strikes is a strikeout</span></label>
-      <p>Lineup changes apply right away. Players are kept in their batting slot, so a substitute can replace a name mid-game.</p>
-      <div class="acts">
-        <button class="tbtn ${ui.confirmNew ? "danger" : ""}" data-act="newgame">${ui.confirmNew ? "Tap again to erase this game" : "New game"}</button>
-        <span style="flex:1"></span>
-        <button class="tbtn" data-act="close">Cancel</button>
-        <button class="tbtn primary" data-act="savesetup">Save</button>
+      <h2 style="margin:4px 0 0">${esc(store.team.name)} batting order</h2>
+      ${lineupRows(d.rows, { reorder: true })}
+      <div class="field"><label for="d-opp">Opponent batting order (optional, one per line)</label><textarea id="d-opp" style="min-height:120px" placeholder="Leave blank to use Batter 1, Batter 2…">${esc(d.opp)}</textarea></div>
+      ${rulesFields(d)}
+      ${ui.msg ? `<p style="color:var(--stitch)">${esc(ui.msg)}</p>` : ""}
+      <div class="acts"><button class="tbtn" data-act="close">Cancel</button><button class="tbtn primary" data-act="startgame">Play ball</button></div>`;
+  } else if (sh.type === "lineups") {
+    const d = ui.draft; wide = true;
+    const started = G.events.length > 0;
+    body = `<h3>Lineups</h3>
+      <p>${started ? "Changes here are substitutions from this point on. Earlier at-bats stay with the player who batted." : "Set the batting order before the first pitch."}</p>
+      <h2 style="margin:0">${esc(store.team.name)}</h2>
+      ${lineupRows(d.rows, { reorder: !started })}
+      <div class="field"><label for="d-opp">${esc(G.opponent)} batting order (one per line)</label><textarea id="d-opp" style="min-height:120px">${esc(d.opp)}</textarea></div>
+      <div class="acts"><button class="tbtn" data-act="close">Cancel</button><button class="tbtn primary" data-act="savelineups">Save</button></div>`;
+  } else if (sh.type === "gamemenu") {
+    const d = ui.draft;
+    body = `<h3>Game</h3>
+      <div class="field"><label for="d-opponent">Opponent</label><input id="d-opponent" value="${esc(d.opponent)}" autocomplete="off"></div>
+      ${rulesFields(d)}
+      <div class="acts" style="justify-content:space-between">
+        <button class="tbtn ${ui.confirm === "discard" ? "danger" : ""}" data-act="discard">${ui.confirm === "discard" ? "Tap again to delete this game" : "Delete game"}</button>
+        <span style="display:flex;gap:8px;flex-wrap:wrap"><button class="tbtn" data-act="endgame">End game now (time limit)</button><button class="tbtn primary" data-act="savegamemenu">Save</button></span>
       </div>`;
+  } else if (sh.type === "backup") {
+    body = `<h3>Export &amp; backup</h3>
+      <p>Your games live in this browser on this device. Download a backup now and then. If the iPad is lost or Safari's data is cleared, you can restore everything from it.</p>
+      <div class="acts" style="justify-content:flex-start">
+        <button class="tbtn primary" data-act="dl-backup">Download backup</button>
+        <button class="tbtn" data-act="restore">Restore from backup…</button>
+        <button class="tbtn" data-act="dl-csv">Download season stats (CSV)</button>
+        <button class="tbtn" data-act="copy-csv">Copy stats for a spreadsheet</button>
+      </div>
+      ${ui.msg ? `<p style="color:var(--ink)">${esc(ui.msg)}</p>` : ""}
+      <div class="acts"><button class="tbtn" data-act="close">Done</button></div>`;
   }
-  o.innerHTML = `<div class="scrim" data-act="scrim"><div class="sheet" role="dialog" aria-modal="true">${body}</div></div>`;
+  o.innerHTML = `<div class="scrim" data-act="scrim"><div class="sheet ${wide ? "wide" : ""}" role="dialog" aria-modal="true">${body}</div></div>`;
 }
 
-function render() {
-  S = derive(game);
-  renderBoard(); renderDiamond(); renderCount(); renderAtBat(); renderPad(); renderBook(); renderLog(); renderSheet();
-}
-
+/* =====================================================================
+   Actions
+   ===================================================================== */
 function push(e) {
-  if (game.sample) game.sample = false;
-  game.events.push(e);
-  save(); ui.bookTeam = null; ui.sheet = null;
+  const g = curGame(); if (!g) return;
+  g.events.push(e);
+  save(); ui.bookTeam = null; ui.sheet = null; ui.bb = null;
   render(); playFx(S.fx);
 }
+function closeSheet() { ui.sheet = null; ui.draft = null; ui.confirm = null; ui.msg = ""; ui.bb = null; renderSheet(); }
 
-function readSetup() {
-  [0, 1].forEach(t => {
-    game.teams[t].name = $("tn" + t).value.trim() || (t ? "Home" : "Visitors");
-    game.teams[t].lineup = $("tl" + t).value.split("\n").map(x => x.trim()).filter(Boolean);
-  });
-  game.settings.innings = +$("inn").value;
-  game.settings.startCount = $("sc").checked;
-  game.settings.foulOut = $("fo").checked;
+function defaultRows() {
+  const last = store.games.slice().reverse().find(g => g.lineups[g.ourSide].some(x => x.pid));
+  if (last) {
+    const rows = last.lineups[last.ourSide].filter(x => player(x.pid)).map(x => ({ pid: x.pid, pos: x.pos }));
+    if (rows.length) return rows;
+  }
+  return store.team.players.map(p => ({ pid: p.id, pos: p.pos || "Bench" }));
+}
+function openNewGame() {
+  ui.draft = { opponent: "", date: today(), ourSide: 0, innings: 7, startCount: false, foulOut: false, askHits: true, rows: defaultRows(), opp: "" };
+  ui.msg = ""; ui.sheet = { type: "newgame" }; renderSheet();
+}
+function startGame() {
+  readDraftRows();
+  const d = ui.draft;
+  const ours = d.rows.filter(r => player(r.pid)).map(r => ({ pid: r.pid, name: player(r.pid).name, pos: r.pos }));
+  if (!d.opponent.trim()) { ui.msg = "Enter the opponent's name."; renderSheet(); return; }
+  if (!ours.length) { ui.msg = "Pick at least one player for your batting order."; renderSheet(); return; }
+  const theirs = d.opp.split("\n").map(x => x.trim()).filter(Boolean).map(name => ({ pid: null, name, pos: "" }));
+  const lineups = d.ourSide === 0 ? [ours, theirs] : [theirs, ours];
+  const g = { id: uid(), date: d.date || today(), opponent: d.opponent.trim(), ourSide: d.ourSide,
+              settings: { innings: d.innings, startCount: d.startCount, foulOut: d.foulOut, askHits: d.askHits }, lineups, events: [], done: false };
+  store.games.push(g); store.currentId = g.id;
+  save(); ui.sheet = null; ui.draft = null; ui.view = "game"; ui.peekId = null; render();
+}
+function openLineups() {
+  const t = G.ourSide;
+  ui.draft = { rows: S.lu[t].map(x => ({ pid: x.pid, pos: x.pos })), opp: S.lu[1 - t].map(x => x.name).join("\n") };
+  ui.sheet = { type: "lineups" }; renderSheet();
+}
+function saveLineups() {
+  readDraftRows();
+  const g = curGame(), d = ui.draft, t = g.ourSide;
+  const ours = d.rows.filter(r => player(r.pid)).map(r => ({ pid: r.pid, name: player(r.pid).name, pos: r.pos }));
+  const theirs = d.opp.split("\n").map(x => x.trim()).filter(Boolean).map(name => ({ pid: null, name, pos: "" }));
+  if (!g.events.length) {
+    g.lineups[t] = ours; g.lineups[1 - t] = theirs;
+  } else {
+    // Mid-game: record each changed batting slot as a substitution event.
+    ours.forEach((x, i) => { const c = S.lu[t][i]; if (!c || c.pid !== x.pid || c.pos !== x.pos) g.events.push({ t: "sub", team: t, slot: i, pid: x.pid, name: x.name, pos: x.pos }); });
+    theirs.forEach((x, i) => { const c = S.lu[1 - t][i]; if (!c || c.name !== x.name) g.events.push({ t: "sub", team: 1 - t, slot: i, pid: null, name: x.name, pos: "" }); });
+  }
+  save(); closeSheet(); render();
+}
+function openGameMenu() {
+  const s = G.settings;
+  ui.draft = { opponent: G.opponent, innings: s.innings, startCount: s.startCount, foulOut: s.foulOut, askHits: s.askHits !== false };
+  ui.confirm = null; ui.sheet = { type: "gamemenu" }; renderSheet();
+}
+function saveGameMenu() {
+  readDraftRows();
+  const g = curGame(), d = ui.draft;
+  g.opponent = d.opponent.trim() || g.opponent;
+  Object.assign(g.settings, { innings: d.innings, startCount: d.startCount, foulOut: d.foulOut, askHits: d.askHits });
+  save(); closeSheet(); render();
+}
+function endGame() {
+  const g = curGame(); if (!g) return;
+  g.done = true; store.currentId = null;
+  save(); ui.sheet = null; ui.draft = null; ui.view = "stats"; render();
 }
 
-/* ---------- Input ---------- */
+function download(name, text, type) {
+  try {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([text], { type }));
+    a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+    return true;
+  } catch (e) { return false; }
+}
+function seasonCSV() {
+  const { list } = season();
+  const cols = [["Player", r => r.name], ["Num", r => r.num]];
+  const seen = new Set();
+  Object.values(TABLES).forEach(t => t.cols.forEach(([k, f, , label]) => { if (!seen.has(k)) { seen.add(k); cols.push([label || k, r => f === "txt" ? (r[k] || "") : fmt[f](r[k]).replace("—", "")]); } }));
+  const q = v => /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v);
+  return [cols.map(c => q(c[0])).join(",")].concat(list.map(r => cols.map(c => q(c[1](r))).join(","))).join("\n");
+}
+
 document.addEventListener("click", ev => {
   keepAwake();
   const el = ev.target.closest("[data-act]"); if (!el) return;
   const act = el.dataset.act, v = el.dataset.v;
-  if (act === "scrim") { if (ev.target === el) { ui.sheet = null; ui.confirmNew = false; renderSheet(); } return; }
+  if (act === "scrim") { if (ev.target === el) closeSheet(); return; }
+  if (!["clearsample", "delgame", "rmplayer", "discard"].includes(act) && ui.confirm && !ui.sheet) { ui.confirm = null; }
   switch (act) {
+    case "view": ui.view = v; ui.peekId = null; ui.confirm = null; render(); break;
     case "pitch": push({ t: "pitch", k: v }); break;
     case "pa":
       if (NEEDS_POS[v]) { ui.sheet = { type: "pos", r: v }; renderSheet(); }
+      else if (HIT_CODES.includes(v) && G.settings.askHits !== false) { ui.bb = v === "HR" ? "FB" : null; ui.sheet = { type: "hit", r: v }; renderSheet(); }
       else push({ t: "pa", r: v });
       break;
     case "pos": push({ t: "pa", r: ui.sheet.r, p: +v }); break;
-    case "base": { const b = +el.dataset.b; if (S.bases[b] && !S.final) { ui.sheet = { type: "runner", b }; renderSheet(); } break; }
+    case "bbtype": ui.bb = ui.bb === v ? null : v; renderSheet(); break;
+    case "hitpos": { const e = { t: "pa", r: ui.sheet.r, p: +v }; if (ui.bb) e.bb = ui.bb; push(e); break; }
+    case "hitskip": { const e = { t: "pa", r: ui.sheet.r }; if (ui.bb) e.bb = ui.bb; push(e); break; }
+    case "base": { const b = +el.dataset.b; if (!ui.peekId && S.bases[b] && !S.final) { ui.sheet = { type: "runner", b }; renderSheet(); } break; }
     case "run": push({ t: "run", b: ui.sheet.b, a: v }); break;
-    case "undo": if (game.events.length) { game.events.pop(); save(); render(); } break;
+    case "undo": { const g = curGame(); if (g && g.events.length) { g.events.pop(); save(); render(); } break; }
     case "tab": ui.bookTeam = +v; renderBook(); break;
     case "sound":
       ui.sound = !ui.sound; el.setAttribute("aria-pressed", ui.sound); el.textContent = ui.sound ? "Sound on" : "Sound off";
       if (ui.sound) { audio(); SFX.hit(); }
       break;
-    case "setup": ui.sheet = { type: "setup" }; ui.confirmNew = false; renderSheet(); break;
-    case "close": ui.sheet = null; ui.confirmNew = false; renderSheet(); break;
-    case "savesetup": readSetup(); save(); ui.sheet = null; render(); break;
-    case "newgame":
-      if (!ui.confirmNew) { ui.confirmNew = true; renderSheet(); break; }
-      readSetup(); game = blankGame(game); ui.confirmNew = false; ui.sheet = { type: "setup" }; save(); render();
+    case "close": closeSheet(); break;
+    case "newgame": openNewGame(); break;
+    case "startgame": startGame(); break;
+    case "lineups": openLineups(); break;
+    case "savelineups": saveLineups(); break;
+    case "lu-add": readDraftRows(); ui.draft.rows.push({ pid: "", pos: "Bench" }); renderSheet(); break;
+    case "lu-rm": readDraftRows(); ui.draft.rows.splice(+v, 1); renderSheet(); break;
+    case "lu-up": case "lu-down": {
+      readDraftRows(); const i = +v, j = act === "lu-up" ? i - 1 : i + 1, rows = ui.draft.rows;
+      if (j >= 0 && j < rows.length) [rows[i], rows[j]] = [rows[j], rows[i]];
+      renderSheet(); break;
+    }
+    case "gamemenu": openGameMenu(); break;
+    case "savegamemenu": saveGameMenu(); break;
+    case "endgame": endGame(); break;
+    case "discard":
+      if (ui.confirm !== "discard") { readDraftRows(); ui.confirm = "discard"; renderSheet(); break; }
+      store.games = store.games.filter(g => g.id !== store.currentId); store.currentId = null;
+      save(); closeSheet(); render(); break;
+    case "resume": ui.view = "game"; ui.peekId = null; render(); break;
+    case "peek": ui.peekId = v; ui.bookTeam = null; ui.view = "game"; render(); break;
+    case "unpeek": ui.peekId = null; ui.view = "stats"; render(); break;
+    case "reopen": {
+      const g = store.games.find(x => x.id === ui.peekId);
+      if (g && !store.currentId) { g.done = false; store.currentId = g.id; ui.peekId = null; save(); render(); }
       break;
+    }
+    case "delgame":
+      if (ui.confirm !== "del:" + v) { ui.confirm = "del:" + v; render(); break; }
+      store.games = store.games.filter(g => g.id !== v); if (store.currentId === v) store.currentId = null;
+      ui.confirm = null; save(); render(); break;
+    case "sort": ui.sort = ui.sort.k === v ? { k: v, d: -ui.sort.d } : { k: v, d: v === "name" ? 1 : -1 }; render(); break;
+    case "table": ui.table = v; render(); break;
+    case "addplayer": {
+      store.team.players.push({ id: uid(), name: "", num: "", pos: "Bench", bats: "" });
+      save(); render();
+      const inputs = document.querySelectorAll('[data-ch="pname"]'); if (inputs.length) inputs[inputs.length - 1].focus();
+      break;
+    }
+    case "rmplayer":
+      if (ui.confirm !== "rm:" + v) { ui.confirm = "rm:" + v; render(); break; }
+      store.team.players = store.team.players.filter(p => p.id !== v); ui.confirm = null; save(); render(); break;
+    case "clearsample":
+      if (ui.confirm !== "clear") { ui.confirm = "clear"; render(); break; }
+      store = blankStore(); ui.confirm = null; ui.view = "roster"; ui.peekId = null; save(); render(); break;
+    case "backup": ui.msg = ""; ui.sheet = { type: "backup" }; renderSheet(); break;
+    case "dl-backup":
+      ui.msg = download(`scorebook-backup-${today()}.json`, JSON.stringify(store), "application/json") ? "Backup downloaded. On iPad, look in the Files app under Downloads." : "This browser blocked the download.";
+      renderSheet(); break;
+    case "dl-csv":
+      ui.msg = download(`${store.team.name.replace(/[^\w]+/g, "-")}-stats-${today()}.csv`, seasonCSV(), "text/csv") ? "Stats downloaded. They open in Numbers, Excel or Google Sheets." : "This browser blocked the download.";
+      renderSheet(); break;
+    case "copy-csv": {
+      const text = seasonCSV();
+      const done = ok => { ui.msg = ok ? "Copied. Paste into a spreadsheet." : "Copy was blocked. Use the download button instead."; renderSheet(); };
+      try { navigator.clipboard.writeText(text).then(() => done(true), () => done(false)); } catch (e) { done(false); }
+      break;
+    }
+    case "restore": $("restoreFile").click(); break;
   }
 });
+
+document.addEventListener("change", ev => {
+  const el = ev.target, ch = el.dataset && el.dataset.ch; if (!ch) return;
+  const p = el.dataset.id ? player(el.dataset.id) : null;
+  if (ch === "minPA") { ui.minPA = +el.value; render(); }
+  else if (ch === "incCur") { ui.incCur = el.checked; render(); }
+  else if (ch === "teamName") { store.team.name = el.value.trim() || "My Team"; save(); }
+  else if (p) {
+    if (ch === "pname") p.name = el.value.trim();
+    if (ch === "pnum") p.num = el.value.trim();
+    if (ch === "ppos") p.pos = el.value;
+    if (ch === "pbats") p.bats = el.value;
+    save();
+  }
+});
+
+$("restoreFile").addEventListener("change", ev => {
+  const f = ev.target.files && ev.target.files[0]; if (!f) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const d = JSON.parse(reader.result);
+      if (!d || !d.team || !Array.isArray(d.games)) throw new Error("bad");
+      store = d; save(); ui.peekId = null;
+      ui.msg = `Restored ${d.games.length} game${d.games.length === 1 ? "" : "s"} and ${d.team.players.length} players.`;
+      render();
+    } catch (e) { ui.msg = "That file isn't a Dugout Scorebook backup."; renderSheet(); }
+    ev.target.value = "";
+  };
+  reader.readAsText(f);
+});
+
 document.addEventListener("keydown", ev => {
-  if (ev.key === "Escape" && ui.sheet) { ui.sheet = null; ui.confirmNew = false; renderSheet(); }
+  if (ev.key === "Escape" && ui.sheet) closeSheet();
   if ((ev.key === "Enter" || ev.key === " ") && ev.target.matches && ev.target.matches(".base")) { ev.preventDefault(); ev.target.dispatchEvent(new MouseEvent("click", { bubbles: true })); }
 });
 
+store = load() || sampleStore();
+if (store.currentId) ui.view = "game";
 render();
 })();
 </script>

@@ -8,9 +8,20 @@ A softball scorebook for an iPad or Raspberry Pi sitting in the dugout. Tap what
 
 1. Turn on your phone's hotspot and connect the iPad.
 2. Open the link above in Safari. Tap **Share → Add to Home Screen** so it opens like an app.
-3. Open **Setup** to enter team names and batting orders.
+3. On the **Roster** tab, add your players with their number, usual position and which side they bat from.
+4. On game day, tap **Start a game**, then set the batting order and positions.
+5. When the game ends, tap **Save to season**. The **Season** tab adds it to everyone's stats.
 
-The game is saved on the iPad as you go, so closing Safari or losing signal mid-inning doesn't lose anything. If you tap the wrong thing, use **Undo**.
+Games are saved on the iPad as you go, so closing Safari or losing signal mid-inning doesn't lose anything. If you tap the wrong thing, use **Undo**. Every so often, use **Season → Export & backup → Download backup** so a lost iPad doesn't mean a lost season.
+
+## Stats it tracks
+
+- **Standard:** G, PA, AB, R, H, 2B, 3B, HR, RBI, BB, K, SB, AVG, OBP, SLG, OPS
+- **Advanced:** wOBA, ISO, BABIP, K%, BB%, BB/K, AVG with runners in scoring position, runs created, reached on error
+- **Batted ball:** grounder / line drive / fly ball / pop-up rates, and pull / center / opposite-field rates
+- **Fielding:** positions played, plays made, errors, fielding %
+
+Stats are recalculated from the play-by-play every time, so new stats added later apply to every game already scored.
 
 ## What's in this repository
 
