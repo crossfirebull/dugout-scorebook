@@ -9,7 +9,9 @@ A softball scorebook for an iPad or Raspberry Pi sitting in the dugout. Tap what
 1. Turn on your phone's hotspot and connect the iPad.
 2. Open the link above in Safari. Tap **Share → Add to Home Screen** so it opens like an app.
 3. On the **Roster** tab, add your players with their number, usual position and which side they bat from.
-4. On game day, tap **Start a game**, then set the batting order and positions.
+4. On game day, tap **Start a game**, then set the batting order and positions. Pick a mode:
+   - **Dugout mode** scores your batters one at a time. The other team's half-inning gets quick **+1 Run** and **+1 Out** buttons, so you can coach and score at the same time.
+   - **Scorekeeper mode** scores every batter on both teams.
 5. When the game ends, tap **Save to season**. The **Season** tab adds it to everyone's stats.
 
 Games are saved on the iPad as you go, so closing Safari or losing signal mid-inning doesn't lose anything. If you tap the wrong thing, use **Undo**. Every so often, use **Season → Export & backup → Download backup** so a lost iPad doesn't mean a lost season.
