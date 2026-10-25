@@ -249,6 +249,17 @@ table.stats tfoot td:first-child { background: var(--paper); }
 .bbrow { display: flex; gap: 6px; flex-wrap: wrap; }
 .bbrow button { min-height: 44px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--rule); background: var(--surface); font-weight: 600; }
 .bbrow button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.srow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--rule-soft); }
+.srow .sl { min-width: 0; }
+.srow .sl small { display: block; color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.srow .sb { display: flex; gap: 6px; align-items: center; }
+.srow .ibtn { min-width: 44px; min-height: 44px; border-radius: 8px; border: 1px solid var(--rule); background: var(--surface); }
+.srow .ibtn:disabled { opacity: .35; }
+.srow .sx { grid-column: 1 / -1; display: flex; gap: 8px 16px; flex-wrap: wrap; align-items: center; font-size: 14px; color: var(--muted); }
+.srow .sx label { display: inline-flex; gap: 6px; align-items: center; }
+.srow .sx input[type=number] { width: 72px; font: inherit; padding: 6px; border-radius: 6px; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); }
+.sheet h4 { margin: 6px 0 0; font-family: var(--f-label); font-weight: 700; font-size: 14px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.walkup { margin-top: 6px; justify-self: start; }
 .copyout { width: 100%; min-height: 120px; font-family: ui-monospace, Menlo, monospace; font-size: 12px; padding: 8px; border-radius: 6px; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); }
 </style>
 
@@ -258,6 +269,7 @@ table.stats tfoot td:first-child { background: var(--paper); }
     <nav class="nav" id="nav" role="tablist" aria-label="Sections"></nav>
     <span class="spacer"></span>
     <button class="tbtn" id="soundBtn" data-act="sound" aria-pressed="false">Sound off</button>
+    <button class="tbtn" data-act="sounds">Sounds</button>
   </header>
   <div id="sampleBox"></div>
   <main id="view" class="view"></main>
@@ -265,6 +277,7 @@ table.stats tfoot td:first-child { background: var(--paper); }
 
 <div id="overlay"></div>
 <input type="file" id="restoreFile" accept="application/json,.json" hidden>
+<input type="file" id="audioFile" accept="audio/*,.mp3,.m4a,.wav,.aac" hidden>
 
 <script>
 (function () {
@@ -434,7 +447,7 @@ function plateAppearance(s, g, r, p, bb, foulK) {
     case "2B": advAll(2); put(2); break;
     case "3B": advAll(3); put(3); break;
     case "HR": advAll(3); sc(me); s.fx.hr = true; break;
-    case "BB": case "HBP": forceAll(); put(1); st[r]++; break;
+    case "BB": case "HBP": forceAll(); put(1); st[r]++; s.fx.walk = true; break;
     case "K": case "KC": outRunner(s, me); st.K++; s.fx.k = true; break;
     case "GO": case "FO": case "LO": case "PO": outRunner(s, me); break;
     case "SF": outRunner(s, me); st.SF++; if (s.outs < 3 && s.bases[2]) { const x = s.bases[2]; s.bases[2] = null; sc(x); } break;
@@ -659,8 +672,80 @@ const SFX = {
   k() { tone(520, 0, .45, "sawtooth", .05, 180); },
   side() { tone(392, 0, .16, "triangle", .12); tone(330, .18, .16, "triangle", .12); tone(262, .36, .3, "triangle", .12); }
 };
+/* ---------- Your own sound clips ----------
+   Audio files picked on this device are kept in the browser's IndexedDB
+   (never uploaded). Slots: "fx:<event>" for game sounds, "walkup:<playerId>" for walk-up songs.
+   Each clip = { name, data (ArrayBuffer), start, dur, vol }. dur 0 = play to the end. */
+const FX_EVENTS = [["hr", "Home run", "charge"], ["run", "Run scores", "run"], ["hit", "Base hit", "hit"], ["walk", "Walk or hit by pitch", null],
+                   ["k", "Strikeout", "k"], ["out", "Other outs", null], ["side", "Side retired", "side"]];
+const clips = {};
+let idb = null, nowPlaying = null;
+function idbOpen() {
+  return new Promise(res => {
+    try { const r = indexedDB.open("dugout-sounds", 1); r.onupgradeneeded = () => r.result.createObjectStore("clips"); r.onsuccess = () => res(r.result); r.onerror = () => res(null); }
+    catch (e) { res(null); }
+  });
+}
+async function loadClips() {
+  idb = await idbOpen(); if (!idb) return;
+  try {
+    const req = idb.transaction("clips").objectStore("clips").openCursor();
+    req.onsuccess = () => { const c = req.result; if (c) { clips[c.key] = c.value; c.continue(); } else render(); };
+  } catch (e) {}
+}
+function saveClip(slot) {
+  const c = clips[slot]; if (!idb) return;
+  try {
+    const os = idb.transaction("clips", "readwrite").objectStore("clips");
+    if (c) os.put({ name: c.name, data: c.data, start: c.start, dur: c.dur, vol: c.vol }, slot); else os.delete(slot);
+  } catch (e) {}
+}
+// Decode the file once and keep only the snippet that plays, so long songs don't eat memory.
+async function snippet(c) {
+  const a = audio(), k = (c.start || 0) + ":" + (c.dur || 0);
+  if (c.buf && c.bufKey === k) return c.buf;
+  const full = await new Promise((res, rej) => a.decodeAudioData(c.data.slice(0), res, rej));
+  const s0 = Math.min(Math.floor((c.start || 0) * full.sampleRate), full.length - 1);
+  const len = c.dur > 0 ? Math.min(Math.floor(c.dur * full.sampleRate), full.length - s0) : full.length - s0;
+  const out = a.createBuffer(full.numberOfChannels, len, full.sampleRate);
+  for (let ch = 0; ch < full.numberOfChannels; ch++) out.copyToChannel(full.getChannelData(ch).subarray(s0, s0 + len), ch);
+  c.buf = out; c.bufKey = k;
+  return out;
+}
+async function playClip(slot) {
+  const c = clips[slot], a = audio(); if (!c || !a) return false;
+  stopClip(false);
+  let buf;
+  try { buf = await snippet(c); } catch (e) { return false; }
+  const src = a.createBufferSource(), gn = a.createGain(), vol = c.vol == null ? 1 : c.vol, t0 = a.currentTime;
+  src.buffer = buf;
+  gn.gain.setValueAtTime(0.0001, t0); gn.gain.linearRampToValueAtTime(vol, t0 + 0.04);
+  if (buf.duration > 1.5) { gn.gain.setValueAtTime(vol, t0 + buf.duration - 0.8); gn.gain.linearRampToValueAtTime(0.0001, t0 + buf.duration); }
+  src.connect(gn).connect(a.destination);
+  src.start();
+  nowPlaying = { slot, src, gn };
+  src.onended = () => { if (nowPlaying && nowPlaying.src === src) { nowPlaying = null; refreshPlaying(); } };
+  refreshPlaying();
+  return true;
+}
+function stopClip(fade) {
+  if (!nowPlaying) return;
+  const { src, gn } = nowPlaying, a = audio();
+  nowPlaying = null;
+  try {
+    if (fade && a) { gn.gain.cancelScheduledValues(a.currentTime); gn.gain.setValueAtTime(gn.gain.value, a.currentTime); gn.gain.linearRampToValueAtTime(0.0001, a.currentTime + 0.6); src.stop(a.currentTime + 0.65); }
+    else src.stop();
+  } catch (e) {}
+  refreshPlaying();
+}
+function refreshPlaying() { if (ui.view === "game" && G && $("atbat")) renderAtBat(); if (ui.sheet && ui.sheet.type === "sounds") renderSheet(); }
+function walkupSlot(who) { return who && who.pid && clips["walkup:" + who.pid] ? "walkup:" + who.pid : null; }
+
 function playFx(fx) {
   if (!ui.sound || !fx) return;
+  // Your own clip for the biggest thing that happened wins; otherwise the built-in tones.
+  const custom = ["hr", "run", "hit", "walk", "k", "side", "out"].find(e => fx[e === "run" ? "runs" : e] && clips["fx:" + e]);
+  if (custom) { playClip("fx:" + custom); return true; }
   if (fx.hr) return SFX.charge();
   if (fx.hit) SFX.hit();
   if (fx.k) SFX.k();
@@ -808,7 +893,8 @@ function renderAtBat() {
   const t = S.half, slot = curSlot(S), next = (slot + 1) % lineLen(S, t), who = occ(S, t, slot);
   $("atbat").innerHTML = `<div class="meta">${esc(teamNames(G)[t])} batting · ${S.balls}–${S.strikes} count${who.pos ? " · plays " + esc(who.pos) : ""}</div>
     <div class="now"><small>#${slot + 1}</small>${esc(entryName(who))}</div>
-    <div class="meta">${todayLine(t, slot)} · On deck: ${esc(nameAt(S, t, next))}</div>`;
+    <div class="meta">${todayLine(t, slot)} · On deck: ${esc(nameAt(S, t, next))}</div>
+    ${walkupSlot(who) ? `<button class="tbtn walkup" data-act="walkup" data-v="${walkupSlot(who)}">${nowPlaying && nowPlaying.slot === walkupSlot(who) ? "■ Stop walk-up" : "♪ Play walk-up song"}</button>` : ""}`;
 }
 
 function key(act, val, big, small, cls) {
@@ -1050,6 +1136,35 @@ function renderSheet() {
         <button class="tbtn ${ui.confirm === "discard" ? "danger" : ""}" data-act="discard">${ui.confirm === "discard" ? "Tap again to delete this game" : "Delete game"}</button>
         <span style="display:flex;gap:8px;flex-wrap:wrap"><button class="tbtn" data-act="endgame">End game now (time limit)</button><button class="tbtn primary" data-act="savegamemenu">Save</button></span>
       </div>`;
+  } else if (sh.type === "sounds") {
+    wide = true;
+    const row = (slot, label, builtIn) => {
+      const c = clips[slot], playing = nowPlaying && nowPlaying.slot === slot;
+      return `<div class="srow">
+        <div class="sl"><b>${esc(label)}</b><small>${c ? "♪ " + esc(c.name) : builtIn ? "Built-in tone" : "No sound"}</small></div>
+        <div class="sb">
+          <button class="ibtn" data-act="clip-play" data-v="${slot}" aria-label="${playing ? "Stop" : "Play"} ${esc(label)}" ${c || builtIn ? "" : "disabled"}>${playing ? "■" : "▶"}</button>
+          <button class="tbtn" data-act="clip-choose" data-v="${slot}">${c ? "Change" : "Choose file"}</button>
+          ${c ? `<button class="ibtn" data-act="clip-rm" data-v="${slot}" aria-label="Remove ${esc(label)} sound">✕</button>` : ""}
+        </div>
+        ${c ? `<div class="sx">
+          <label>Start at <input type="number" min="0" step="0.5" inputmode="decimal" data-ch="clip-start" data-slot="${slot}" value="${c.start || 0}"> sec</label>
+          <label>Play for <input type="number" min="0" step="0.5" inputmode="decimal" data-ch="clip-dur" data-slot="${slot}" value="${c.dur || 0}"> sec</label>
+          <label>Volume <input type="range" min="0" max="1.5" step="0.05" data-ch="clip-vol" data-slot="${slot}" value="${c.vol == null ? 1 : c.vol}"></label>
+        </div>` : ""}
+      </div>`;
+    };
+    const ps = store.team.players;
+    body = `<h3>Sounds</h3>
+      <p>Choose audio files saved on this iPad, such as MP3 or M4A files in the Files app. They stay on this device. Nothing is uploaded, and they aren't in the backup file. “Play for 0” plays the whole clip.</p>
+      ${ui.msg ? `<p style="color:var(--stitch)">${esc(ui.msg)}</p>` : ""}
+      ${ui.sound ? "" : `<p style="color:var(--ink)"><b>Sound is off.</b> Turn it on with the button at the top to hear these during the game.</p>`}
+      <h4>Game sounds</h4>
+      <div>${FX_EVENTS.map(([k, label, b]) => row("fx:" + k, label, b)).join("")}</div>
+      <h4>Walk-up songs</h4>
+      <label class="check"><input type="checkbox" data-ch="autoWalkup" ${store.audio && store.audio.autoWalkup ? "checked" : ""}><span>Play a batter's walk-up song automatically when they come up. Otherwise there's a button under the batter's name. The song fades out when you score the first pitch.</span></label>
+      <div>${ps.length ? ps.map(p => row("walkup:" + p.id, (p.num ? "#" + p.num + " " : "") + (p.name || "Unnamed player"), null)).join("") : `<p>Add players on the Roster tab to give them walk-up songs.</p>`}</div>
+      <div class="acts"><button class="tbtn primary" data-act="close">Done</button></div>`;
   } else if (sh.type === "backup") {
     body = `<h3>Export &amp; backup</h3>
       <p>Your games live in this browser on this device. Download a backup now and then. If the iPad is lost or Safari's data is cleared, you can restore everything from it.</p>
@@ -1068,11 +1183,19 @@ function renderSheet() {
 /* =====================================================================
    Actions
    ===================================================================== */
+function batterNow() { return S && !S.final ? occ(S, S.half, curSlot(S)) : null; }
 function push(e) {
   const g = curGame(); if (!g) return;
+  const before = batterNow();
+  if (nowPlaying && nowPlaying.slot.startsWith("walkup:")) stopClip(true);   // music fades when play starts
   g.events.push(e);
   save(); ui.bookTeam = null; ui.sheet = null; ui.bb = null;
-  render(); playFx(S.fx);
+  render();
+  const fxClip = playFx(S.fx) === true;
+  const after = batterNow(), slot = walkupSlot(after);
+  if (ui.sound && store.audio && store.audio.autoWalkup && slot && after !== before && (!before || after.pid !== before.pid)) {
+    setTimeout(() => { if (walkupSlot(batterNow()) === slot) playClip(slot); }, fxClip ? 2500 : 1200);
+  }
 }
 function closeSheet() { ui.sheet = null; ui.draft = null; ui.confirm = null; ui.msg = ""; ui.bb = null; renderSheet(); }
 
@@ -1182,7 +1305,18 @@ document.addEventListener("click", ev => {
       ui.sound = !ui.sound; el.setAttribute("aria-pressed", ui.sound); el.textContent = ui.sound ? "Sound on" : "Sound off";
       if (ui.sound) { audio(); SFX.hit(); }
       break;
-    case "close": closeSheet(); break;
+    case "sounds": ui.msg = ""; ui.sheet = { type: "sounds" }; renderSheet(); break;
+    case "clip-play": {
+      audio();
+      if (nowPlaying && nowPlaying.slot === v) { stopClip(false); break; }
+      if (clips[v]) playClip(v).then(ok => { if (!ok) { ui.msg = "That file couldn't be played. MP3, M4A and WAV files work best."; renderSheet(); } });
+      else { const b = (FX_EVENTS.find(x => "fx:" + x[0] === v) || [])[2]; if (b) SFX[b](); }
+      break;
+    }
+    case "clip-choose": ui.audioSlot = v; audio(); $("audioFile").click(); break;
+    case "clip-rm": if (nowPlaying && nowPlaying.slot === v) stopClip(false); delete clips[v]; saveClip(v); renderSheet(); break;
+    case "walkup": audio(); if (nowPlaying && nowPlaying.slot === v) stopClip(true); else playClip(v); break;
+    case "close": if (ui.sheet && ui.sheet.type === "sounds") stopClip(true); closeSheet(); break;
     case "newgame": openNewGame(); break;
     case "startgame": startGame(); break;
     case "lineups": openLineups(); break;
@@ -1249,6 +1383,13 @@ document.addEventListener("change", ev => {
   const p = el.dataset.id ? player(el.dataset.id) : null;
   if (ch === "minPA") { ui.minPA = +el.value; render(); }
   else if (ch === "incCur") { ui.incCur = el.checked; render(); }
+  else if (ch === "autoWalkup") { store.audio = Object.assign({}, store.audio, { autoWalkup: el.checked }); save(); }
+  else if (ch === "clip-start" || ch === "clip-dur" || ch === "clip-vol") {
+    const c = clips[el.dataset.slot]; if (!c) return;
+    const n = Math.max(0, parseFloat(el.value) || 0);
+    if (ch === "clip-start") c.start = n; else if (ch === "clip-dur") c.dur = n; else c.vol = Math.min(1.5, n);
+    saveClip(el.dataset.slot);
+  }
   else if (ch === "teamName") { store.team.name = el.value.trim() || "My Team"; save(); }
   else if (p) {
     if (ch === "pname") p.name = el.value.trim();
@@ -1257,6 +1398,22 @@ document.addEventListener("change", ev => {
     if (ch === "pbats") p.bats = el.value;
     save();
   }
+});
+
+$("audioFile").addEventListener("change", ev => {
+  const f = ev.target.files && ev.target.files[0], slot = ui.audioSlot; ev.target.value = "";
+  if (!f || !slot) return;
+  if (f.size > 25 * 1024 * 1024) { ui.msg = "That file is over 25 MB. Trim it or pick a smaller file."; renderSheet(); return; }
+  const reader = new FileReader();
+  reader.onload = async () => {
+    const isWalkup = slot.startsWith("walkup:");
+    const c = { name: f.name, data: reader.result, start: 0, dur: isWalkup ? 15 : 0, vol: 1 };
+    try { await snippet(c); } catch (e) { ui.msg = "That file couldn't be played. MP3, M4A and WAV files work best."; renderSheet(); return; }
+    if (!isWalkup && c.buf.duration > 12) { c.dur = 8; c.buf = null; }   // long file for a game sound: start with an 8-second snippet
+    clips[slot] = c; saveClip(slot); ui.msg = "";
+    renderSheet(); playClip(slot);
+  };
+  reader.readAsArrayBuffer(f);
 });
 
 $("restoreFile").addEventListener("change", ev => {
@@ -1281,6 +1438,7 @@ document.addEventListener("keydown", ev => {
 });
 
 store = load() || sampleStore();
+loadClips();
 if (store.currentId) ui.view = "game";
 render();
 })();

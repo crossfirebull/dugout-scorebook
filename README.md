@@ -14,6 +14,12 @@ A softball scorebook for an iPad or Raspberry Pi sitting in the dugout. Tap what
 
 Games are saved on the iPad as you go, so closing Safari or losing signal mid-inning doesn't lose anything. If you tap the wrong thing, use **Undo**. Every so often, use **Season → Export & backup → Download backup** so a lost iPad doesn't mean a lost season.
 
+## Sounds and walk-up songs
+
+Tap **Sounds** at the top to pick your own audio files from the iPad (MP3, M4A or WAV; the Files app is the easiest place to keep them). You can set a sound for home runs, runs scoring, hits, walks, strikeouts, other outs and the end of an inning, plus a walk-up song for each player. Each clip has its own start time, length and volume, so one full song can supply a 15-second snippet.
+
+The files stay on the iPad. They aren't uploaded to GitHub and aren't in the backup file, so you never need to commit anything to change a sound.
+
 ## Stats it tracks
 
 - **Standard:** G, PA, AB, R, H, 2B, 3B, HR, RBI, BB, K, SB, AVG, OBP, SLG, OPS
