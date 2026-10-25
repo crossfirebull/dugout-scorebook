@@ -71,18 +71,20 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .tbtn[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 
 /* Scoreboard */
-.board { background: var(--board); color: var(--board-ink); border-radius: 10px; padding: 10px 12px 12px; overflow-x: auto; }
-.board table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
-.board th { font-family: var(--f-label); font-weight: 600; font-size: 13px; letter-spacing: .1em; color: var(--board-dim); text-transform: uppercase; padding: 2px 4px 6px; text-align: center; }
+.board { background: var(--board); color: var(--board-ink); border-radius: 10px; padding: 6px 10px 8px; overflow: hidden; }
+.board table { border-collapse: collapse; width: 100%; table-layout: fixed; font-variant-numeric: tabular-nums; }
+.board th { font-family: var(--f-label); font-weight: 600; font-size: 11px; letter-spacing: .08em; color: var(--board-dim); text-transform: uppercase; padding: 2px 2px 3px; text-align: center; }
+.board th.team { width: 32%; }
+@media (min-width: 700px) { .board th.team { width: 24%; } }
 .board th.team, .board td.team { text-align: left; }
-.board td { font-family: var(--f-display); font-weight: 700; font-size: 30px; line-height: 1.1; text-align: center; padding: 2px 4px; min-width: 34px; }
-.board td.team { font-family: var(--f-display); font-size: 22px; letter-spacing: .03em; text-transform: uppercase; white-space: nowrap; padding-right: 14px; max-width: 14ch; overflow: hidden; text-overflow: ellipsis; }
-.board td.team .bat { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--lamp); margin-right: 8px; vertical-align: middle; visibility: hidden; }
+.board td { font-family: var(--f-display); font-weight: 700; font-size: clamp(15px, 2.4vw, 22px); line-height: 1.15; text-align: center; padding: 1px 2px; }
+.board td.team { font-family: var(--f-display); font-size: clamp(13px, 1.9vw, 17px); letter-spacing: .03em; text-transform: uppercase; white-space: nowrap; padding-right: 8px; overflow: hidden; text-overflow: ellipsis; }
+.board td.team .bat { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--lamp); margin-right: 6px; vertical-align: middle; visibility: hidden; }
 .board tr.batting td.team .bat { visibility: visible; }
 .board td.now { color: var(--lamp); }
 .board td.tot { color: var(--lamp); border-left: 2px solid rgba(255,255,255,.12); }
 .board th.tot { border-left: 2px solid rgba(255,255,255,.12); }
-.board td.empty { color: var(--board-dim); opacity: .35; }
+.board td.blank { color: var(--board-dim); opacity: .35; }
 
 /* Main columns */
 .main { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); }
@@ -186,8 +188,20 @@ table.book tfoot td { font-family: var(--f-label); font-weight: 700; font-size: 
 .field textarea { min-height: 200px; resize: vertical; line-height: 1.5; }
 .two { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 520px) { .two { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
-.check { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; }
-.check input { width: 22px; height: 22px; margin: 0; flex: none; }
+.check { display: flex; flex-direction: row-reverse; justify-content: space-between; gap: 16px; align-items: center; font-size: 15px; }
+:root { --switch-on: #34c759; --switch-off: #d5dce3; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --switch-on: #30d158; --switch-off: #3a4651; } }
+:root[data-theme="dark"] { --switch-on: #30d158; --switch-off: #3a4651; }
+input.switch, .check input[type=checkbox] { -webkit-appearance: none; appearance: none; width: 51px; height: 31px; border-radius: 31px; background: var(--switch-off); position: relative; flex: none; margin: 0; cursor: pointer; transition: background .2s; }
+input.switch::after, .check input[type=checkbox]::after { content: ""; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%; background: #fff; box-shadow: 0 2px 4px rgba(0, 0, 0, .25); transition: transform .2s; }
+input.switch:checked, .check input[type=checkbox]:checked { background: var(--switch-on); }
+input.switch:checked::after, .check input[type=checkbox]:checked::after { transform: translateX(20px); }
+.setlist { border: 1px solid var(--rule); border-radius: 12px; background: var(--paper); overflow: hidden; }
+.setrow { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 14px; border-top: 1px solid var(--rule-soft); cursor: pointer; }
+.setrow:first-child { border-top: 0; }
+.setrow b { display: block; font-weight: 600; }
+.setrow small { display: block; color: var(--muted); font-size: 13px; line-height: 1.35; margin-top: 2px; }
+.setrow select { font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); }
 .danger { background: var(--stitch); color: #fff; border-color: var(--stitch); }
 .primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 
@@ -900,16 +914,14 @@ function renderGameView() {
 function renderGamebar() {
   const names = teamNames(G), peek = !!ui.peekId;
   const status = peek ? "Final" : S.final ? "Final" : (S.half ? "Bottom " : "Top ") + ordinal(S.inning);
-  $("gamebar").innerHTML = `<span class="chip ${peek || S.final ? "" : "live"}">${status}</span>
+  $("gamebar").innerHTML = `<span class="chip ${peek || S.final ? "" : "live"}">${status}</span>${peek ? "" : `<span class="chip">${modeOf(G) === "dugout" ? "Dugout mode" : "Scorekeeper"}</span>`}
     <span>${esc(names[0])} at ${esc(names[1])} · ${esc(G.date)}</span><span class="spacer"></span>
     ${peek ? `<button class="tbtn" data-act="unpeek">Back to season</button>
               <button class="tbtn" data-act="reopen" ${store.currentId ? "disabled title=\"Finish the game in progress first\"" : ""}>Reopen to edit</button>`
            : `<button class="tbtn" data-act="undo" ${G.events.length ? "" : "disabled"}>↶ Undo</button>
               <button class="tbtn" data-act="lineups">Lineups</button>
-              <button class="tbtn" data-act="togglemode" title="Dugout: score your team batter by batter, their half with quick buttons. Scorekeeper: every batter on both teams.">Mode: ${modeOf(G) === "dugout" ? "Dugout" : "Scorekeeper"}</button>
-              <button class="tbtn" data-act="toggleloc" aria-pressed="${G.settings.askHits !== false}" title="Ask which fielder or where the ball went">Ball location: ${G.settings.askHits !== false ? "on" : "off"}</button>
               ${inningSongs().length ? `<button class="tbtn" data-act="music">${nowPlaying && nowPlaying.slot.startsWith("inning:") ? "■ Stop music" : "♪ Music"}</button>` : ""}
-              <button class="tbtn" data-act="gamemenu">Game</button>`}`;
+              <button class="tbtn" data-act="gamemenu">Game Settings</button>`}`;
 }
 
 function renderBoard() {
@@ -923,7 +935,7 @@ function renderBoard() {
       const v = S.runs[t][i], now = live && S.half === t && S.inning === i + 1;
       let txt = v === undefined ? "" : v;
       if (S.final && t === 1 && v === undefined && S.runs[0][i] !== undefined) txt = "X";
-      h += `<td class="${now ? "now" : ""} ${txt === "" ? "empty" : ""}">${txt === "" ? "·" : txt}</td>`;
+      h += `<td class="${now ? "now" : ""} ${txt === "" ? "blank" : ""}">${txt === "" ? "·" : txt}</td>`;
     }
     h += `<td class="tot">${total(S, t)}</td><td class="tot" style="border:0">${S.hits[t]}</td><td class="tot" style="border:0">${S.errors[t]}</td></tr>`;
   });
@@ -1113,7 +1125,7 @@ function renderStats() {
       </div>
       <div class="sbar">
         <label for="minPA">Min. plate appearances <select id="minPA" data-ch="minPA">${[0, 5, 10, 20, 40].map(n => `<option ${n === ui.minPA ? "selected" : ""}>${n}</option>`).join("")}</select></label>
-        ${cur ? `<label><input type="checkbox" id="incCur" data-ch="incCur" ${ui.incCur ? "checked" : ""}> Include today's game in progress</label>` : ""}
+        ${cur ? `<label><input type="checkbox" class="switch" id="incCur" data-ch="incCur" ${ui.incCur ? "checked" : ""}> Include today's game in progress</label>` : ""}
         <span class="spacer"></span>
         <button class="tbtn" data-act="backup">Export &amp; backup</button>
       </div>
@@ -1171,20 +1183,22 @@ function readDraftRows() {
   ["opponent", "date", "opp"].forEach(k => { if ($("d-" + k)) d[k] = $("d-" + k).value; });
   if ($("d-side")) d.ourSide = +$("d-side").value;
   if ($("d-inn")) d.innings = +$("d-inn").value;
-  if ($("d-mode")) d.mode = $("d-mode").value;
+  if ($("d-dugout")) d.mode = $("d-dugout").checked ? "dugout" : "scorekeeper";
   ["startCount", "foulOut", "askHits", "trackCount"].forEach(k => { if ($("d-" + k)) d[k] = $("d-" + k).checked; });
 }
-function rulesFields(d) {
-  return `<div class="field"><label for="d-mode">What are you scoring?</label>
-      <select id="d-mode" data-ch="draftMode">
-        <option value="dugout" ${d.mode === "dugout" ? "selected" : ""}>Dugout mode: our batters in full, their half-innings with quick run/out buttons</option>
-        <option value="scorekeeper" ${d.mode !== "dugout" ? "selected" : ""}>Scorekeeper mode: every batter on both teams</option>
-      </select></div>
-    <label class="check"><input type="checkbox" id="d-trackCount" ${d.trackCount ? "checked" : ""}><span>Track balls and strikes. Turn off to tap only the result of each at-bat</span></label>
-    <div class="field" style="max-width:220px"><label for="d-inn">Innings</label><select id="d-inn">${[5, 6, 7, 9].map(n => `<option ${n === d.innings ? "selected" : ""}>${n}</option>`).join("")}</select></div>
-    <label class="check"><input type="checkbox" id="d-askHits" ${d.askHits ? "checked" : ""}><span>Ask where the ball went: the fielder on outs and errors, the location on hits. Turn off for faster scoring; fielding and spray stats need it on</span></label>
-    <label class="check"><input type="checkbox" id="d-startCount" ${d.startCount ? "checked" : ""}><span>Start every at-bat with a 1–1 count</span></label>
-    <label class="check"><input type="checkbox" id="d-foulOut" ${d.foulOut ? "checked" : ""}><span>A foul ball with two strikes is a strikeout</span></label>`;
+function rulesFields(d, live) {
+  const ch = live ? ' data-ch="setting"' : "";
+  const sw = (id, title, desc, on, extra) =>
+    `<label class="setrow" for="d-${id}"><span><b>${title}</b><small>${desc}</small></span><input type="checkbox" class="switch" id="d-${id}"${extra || ch} ${on ? "checked" : ""}></label>`;
+  return `<div class="setlist">
+    ${sw("dugout", "Dugout mode", d.mode === "dugout" ? "Your batters one at a time; their half-innings with quick run and out buttons." : "Off: scorekeeper mode, every batter on both teams.", d.mode === "dugout", ' data-ch="draftMode"')}
+    ${sw("askHits", "Hit location", "Ask which fielder made the play and where hits went. Needed for fielding and spray stats.", d.askHits)}
+    ${sw("trackCount", "Track balls and strikes", "Off: tap only the result of each at-bat.", d.trackCount)}
+    ${sw("startCount", "Start at a 1–1 count", "Common slowpitch rule.", d.startCount)}
+    ${sw("foulOut", "Two-strike foul is an out", "A foul ball with two strikes counts as a strikeout.", d.foulOut)}
+    <label class="setrow" for="d-inn"><span><b>Innings</b><small>Extra innings are added automatically after a tie.</small></span>
+      <select id="d-inn"${ch}>${[5, 6, 7, 9].map(n => `<option ${n === d.innings ? "selected" : ""}>${n}</option>`).join("")}</select></label>
+  </div>`;
 }
 
 function renderSheet() {
@@ -1222,7 +1236,8 @@ function renderSheet() {
       <h2 style="margin:4px 0 0">${esc(store.team.name)} batting order</h2>
       ${lineupRows(d.rows, { reorder: true })}
       ${d.mode === "dugout" ? "" : `<div class="field"><label for="d-opp">Opponent batting order (optional, one per line)</label><textarea id="d-opp" style="min-height:120px" placeholder="Leave blank to use Batter 1, Batter 2…">${esc(d.opp)}</textarea></div>`}
-      ${rulesFields(d)}
+      <h4>Game settings</h4>
+      ${rulesFields(d, false)}
       ${ui.msg ? `<p style="color:var(--stitch)">${esc(ui.msg)}</p>` : ""}
       <div class="acts"><button class="tbtn" data-act="close">Cancel</button><button class="tbtn primary" data-act="startgame">Play ball</button></div>`;
   } else if (sh.type === "lineups") {
@@ -1236,12 +1251,13 @@ function renderSheet() {
       <div class="acts"><button class="tbtn" data-act="close">Cancel</button><button class="tbtn primary" data-act="savelineups">Save</button></div>`;
   } else if (sh.type === "gamemenu") {
     const d = ui.draft;
-    body = `<h3>Game</h3>
-      <div class="field"><label for="d-opponent">Opponent</label><input id="d-opponent" value="${esc(d.opponent)}" autocomplete="off"></div>
-      ${rulesFields(d)}
+    body = `<h3>Game Settings</h3>
+      <div class="field"><label for="d-opponent">Opponent</label><input id="d-opponent" data-ch="setting" value="${esc(d.opponent)}" autocomplete="off"></div>
+      ${rulesFields(d, true)}
+      <p style="font-size:13px">Changes apply right away.</p>
       <div class="acts" style="justify-content:space-between">
         <button class="tbtn ${ui.confirm === "discard" ? "danger" : ""}" data-act="discard">${ui.confirm === "discard" ? "Tap again to delete this game" : "Delete game"}</button>
-        <span style="display:flex;gap:8px;flex-wrap:wrap"><button class="tbtn" data-act="endgame">End game now (time limit)</button><button class="tbtn primary" data-act="savegamemenu">Save</button></span>
+        <span style="display:flex;gap:8px;flex-wrap:wrap"><button class="tbtn" data-act="endgame">End game now (time limit)</button><button class="tbtn primary" data-act="close">Done</button></span>
       </div>`;
   } else if (sh.type === "sounds") {
     wide = true;
@@ -1364,13 +1380,14 @@ function openGameMenu() {
   ui.draft = { opponent: G.opponent, innings: s.innings, startCount: s.startCount, foulOut: s.foulOut, askHits: s.askHits !== false, mode: modeOf(G), trackCount: countOn(G) };
   ui.confirm = null; ui.sheet = { type: "gamemenu" }; renderSheet();
 }
-function saveGameMenu() {
+function saveGameMenu() { applyGameMenu(); closeSheet(); }
+function applyGameMenu() {
   readDraftRows();
-  const g = curGame(), d = ui.draft;
+  const g = curGame(), d = ui.draft; if (!g || !d) return;
   g.opponent = d.opponent.trim() || g.opponent;
   Object.assign(g.settings, { innings: d.innings, startCount: d.startCount, foulOut: d.foulOut, askHits: d.askHits, mode: d.mode, trackCount: d.trackCount });
   store.prefs = Object.assign({}, store.prefs, { askHits: d.askHits, mode: d.mode, trackCount: d.trackCount });
-  save(); closeSheet(); render();
+  ui.bookTeam = null; save(); render();
 }
 function endGame() {
   const g = curGame(); if (!g) return;
@@ -1518,7 +1535,8 @@ document.addEventListener("change", ev => {
   const p = el.dataset.id ? player(el.dataset.id) : null;
   if (ch === "minPA") { ui.minPA = +el.value; render(); }
   else if (ch === "incCur") { ui.incCur = el.checked; render(); }
-  else if (ch === "draftMode") { readDraftRows(); renderSheet(); }
+  else if (ch === "draftMode") { if (ui.sheet && ui.sheet.type === "gamemenu") applyGameMenu(); else { readDraftRows(); renderSheet(); } }
+  else if (ch === "setting") applyGameMenu();
   else if (ch === "autoWalkup" || ch === "bothTeams" || ch === "situational") { store.audio = Object.assign({}, store.audio, { [ch]: el.checked }); save(); }
   else if (ch === "clip-start" || ch === "clip-dur" || ch === "clip-vol") {
     const c = clips[el.dataset.slot]; if (!c) return;
