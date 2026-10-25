@@ -18,6 +18,8 @@ Games are saved on the iPad as you go, so closing Safari or losing signal mid-in
 
 Tap **Sounds** at the top to pick your own audio files from the iPad (MP3, M4A or WAV; the Files app is the easiest place to keep them). You can set a sound for home runs, runs scoring, hits, walks, strikeouts, other outs and the end of an inning, plus a walk-up song for each player. Each clip has its own start time, length and volume, so one full song can supply a 15-second snippet.
 
+Sounds play in order, so the next batter's walk-up starts when the previous play's sound ends. The app knows which team is yours and what the score is. Hits and runs play when you bat, strikeouts and outs when you're in the field. Situation sounds cover taking the lead, tying it, a rally when you're tied or behind with a runner in scoring position, a big defensive out, and the win. Add a few **between-innings** songs and one plays after every third out.
+
 The files stay on the iPad. They aren't uploaded to GitHub and aren't in the backup file, so you never need to commit anything to change a sound.
 
 ## Stats it tracks

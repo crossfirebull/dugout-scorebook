@@ -382,7 +382,10 @@ function endHalf(s, g) {
   }
 }
 
+const NO_POS_CODE = { GO: "GO", FO: "F", LO: "L", PO: "P", SF: "SF", E: "E" };
+const NO_POS_VERB = { GO: "grounds out", FO: "flies out", LO: "lines out", PO: "pops out", SF: "hits a sacrifice fly", E: "reaches on an error" };
 function codeFor(r, p) {
+  if (!p && NO_POS_CODE[r]) return NO_POS_CODE[r];
   switch (r) {
     case "GO": return p === 3 ? "3U" : p + "-3";
     case "FO": return "F" + p;
@@ -401,6 +404,7 @@ const VERB = {
 function verbFor(r, p) {
   const where = p ? POS_NAME[p].toLowerCase() : "";
   if (VERB[r]) return VERB[r] + (p && HIT_CODES.includes(r) ? " to " + where : "");
+  if (!p && NO_POS_VERB[r]) return NO_POS_VERB[r];
   return { GO: "grounds out to " + where, FO: "flies out to " + where, LO: "lines out to " + where, PO: "pops out to " + where,
            SF: "hits a sacrifice fly to " + where, E: "reaches on an error by the " + where }[r] || r;
 }
@@ -506,7 +510,7 @@ function derive(g) {
   for (const e of g.events) {
     if (e.t === "sub") { substitute(s, e); continue; }
     if (s.final) break;
-    s.fx = {};
+    s.fx = { bat: s.half };
     if (e.t === "pitch") pitch(s, g, e.k);
     else if (e.t === "pa") plateAppearance(s, g, e.r, e.p, e.bb);
     else if (e.t === "run") runnerMove(s, g, e.b, e.a);
@@ -670,12 +674,17 @@ const SFX = {
   hit() { tone(660, 0, .08, "triangle", .14); tone(990, .08, .14, "triangle", .14); },
   run() { tone(1046, 0, .5, "sine", .12); tone(1318, .12, .6, "sine", .1); },
   k() { tone(520, 0, .45, "sawtooth", .05, 180); },
-  side() { tone(392, 0, .16, "triangle", .12); tone(330, .18, .16, "triangle", .12); tone(262, .36, .3, "triangle", .12); }
+  side() { tone(392, 0, .16, "triangle", .12); tone(330, .18, .16, "triangle", .12); tone(262, .36, .3, "triangle", .12); },
+  rally() { [[523, 0, .12], [523, .2, .12], [659, .4, .12], [784, .6, .12], [659, .8, .12], [784, 1, .45]].forEach(([f, t, d]) => tone(f, t, d, "square", .07)); },
+  win() { [[523, 0, .15], [659, .15, .15], [784, .3, .15], [1046, .45, .55], [784, 1.05, .15], [1046, 1.25, .9]].forEach(([f, t, d]) => tone(f, t, d, "square", .07)); }
 };
 /* ---------- Your own sound clips ----------
    Audio files picked on this device are kept in the browser's IndexedDB
    (never uploaded). Slots: "fx:<event>" for game sounds, "walkup:<playerId>" for walk-up songs.
    Each clip = { name, data (ArrayBuffer), start, dur, vol }. dur 0 = play to the end. */
+const SFX_LEN = { charge: 1.75, hit: .3, run: .75, k: .5, side: .7, rally: 1.5, win: 2.2 };   // seconds, for queueing
+const SIT_EVENTS = [["lead", "We take the lead", null], ["tie", "We tie it up", null], ["rally", "Rally: runner in scoring position, we're tied or behind", "rally"],
+                    ["bigout", "Big out: on defense with runners in scoring position", null], ["win", "We win", "win"]];
 const FX_EVENTS = [["hr", "Home run", "charge"], ["run", "Run scores", "run"], ["hit", "Base hit", "hit"], ["walk", "Walk or hit by pitch", null],
                    ["k", "Strikeout", "k"], ["out", "Other outs", null], ["side", "Side retired", "side"]];
 const clips = {};
@@ -712,7 +721,7 @@ async function snippet(c) {
   c.buf = out; c.bufKey = k;
   return out;
 }
-async function playClip(slot) {
+async function playClip(slot, onEnd) {
   const c = clips[slot], a = audio(); if (!c || !a) return false;
   stopClip(false);
   let buf;
@@ -724,7 +733,7 @@ async function playClip(slot) {
   src.connect(gn).connect(a.destination);
   src.start();
   nowPlaying = { slot, src, gn };
-  src.onended = () => { if (nowPlaying && nowPlaying.src === src) { nowPlaying = null; refreshPlaying(); } };
+  src.onended = () => { if (nowPlaying && nowPlaying.src === src) { nowPlaying = null; refreshPlaying(); if (onEnd) onEnd(); } };
   refreshPlaying();
   return true;
 }
@@ -738,20 +747,68 @@ function stopClip(fade) {
   } catch (e) {}
   refreshPlaying();
 }
-function refreshPlaying() { if (ui.view === "game" && G && $("atbat")) renderAtBat(); if (ui.sheet && ui.sheet.type === "sounds") renderSheet(); }
+function refreshPlaying() { if (ui.view === "game" && G && $("atbat")) { renderAtBat(); renderGamebar(); } if (ui.sheet && ui.sheet.type === "sounds") renderSheet(); }
 function walkupSlot(who) { return who && who.pid && clips["walkup:" + who.pid] ? "walkup:" + who.pid : null; }
 
-function playFx(fx) {
-  if (!ui.sound || !fx) return;
-  // Your own clip for the biggest thing that happened wins; otherwise the built-in tones.
-  const custom = ["hr", "run", "hit", "walk", "k", "side", "out"].find(e => fx[e === "run" ? "runs" : e] && clips["fx:" + e]);
-  if (custom) { playClip("fx:" + custom); return true; }
-  if (fx.hr) return SFX.charge();
-  if (fx.hit) SFX.hit();
-  if (fx.k) SFX.k();
-  if (fx.runs) setTimeout(SFX.run, fx.hit ? 200 : 0);
-  if (fx.side) setTimeout(SFX.side, fx.k || fx.hit ? 500 : 0);
+/* ---------- Sound director ----------
+   After each play, build a list of sounds and play them one after another:
+   the play's sound, then (if the side changed) between-innings music, or else
+   the next batter's walk-up, then a rally sound if the situation calls for it. */
+const BUILT_IN = {};
+FX_EVENTS.forEach(([k, , b]) => { if (b) BUILT_IN["fx:" + k] = b; });
+SIT_EVENTS.forEach(([k, , b]) => { if (b) BUILT_IN["sit:" + k] = b; });
+const snd = slot => clips[slot] ? { slot } : BUILT_IN[slot] ? { sfx: BUILT_IN[slot] } : null;
+const audioPrefs = () => Object.assign({ autoWalkup: false, bothTeams: false, situational: true }, store.audio);
+const inningSongs = () => Object.keys(clips).filter(k => k.startsWith("inning:")).sort();
+function nextInningSong() {
+  const songs = inningSongs(); if (!songs.length) return null;
+  const i = (store.audio && store.audio.inningIdx || 0) % songs.length;
+  store.audio = Object.assign({}, store.audio, { inningIdx: i + 1 }); save();
+  return { slot: songs[i] };
 }
+const risp = s => !!(s.bases[1] || s.bases[2]);
+
+let queue = [], queueGen = 0, queueTimer = null;
+function runQueue(items) {
+  const gen = ++queueGen;
+  queue = items.filter(Boolean); clearTimeout(queueTimer);
+  const step = async () => {
+    if (gen !== queueGen) return;
+    const it = queue.shift(); if (!it) return;
+    if (it.slot) { const ok = await playClip(it.slot, () => { if (gen === queueGen) queueTimer = setTimeout(step, 250); }); if (!ok) step(); }
+    else { SFX[it.sfx](); queueTimer = setTimeout(step, SFX_LEN[it.sfx] * 1000 + 250); }
+  };
+  step();
+}
+function cancelQueue() { queueGen++; queue = []; clearTimeout(queueTimer); }
+
+function soundPlan(prev, cur, g) {
+  const fx = cur.fx, our = g.ourSide, A = audioPrefs();
+  const weBat = fx.bat === our, sit = k => A.situational ? snd("sit:" + k) : null;
+  const usB = total(prev, our), themB = total(prev, 1 - our), usA = total(cur, our), themA = total(cur, 1 - our);
+  const items = [];
+  let main = null;
+  // Offense: hits, walks and runs play when your team bats.
+  if (weBat || A.bothTeams) {
+    if (weBat && usA > themA && usB <= themB) main = sit("lead");
+    else if (weBat && usA === themA && usB < themB) main = sit("tie");
+    if (!main) main = fx.hr ? snd("fx:hr") : fx.runs ? snd("fx:run") : fx.hit ? snd("fx:hit") : fx.walk ? snd("fx:walk") : null;
+  }
+  // Defense: strikeouts and outs play when your team is in the field.
+  if (!main && (!weBat || A.bothTeams)) {
+    if (!weBat && fx.out && risp(prev)) main = sit("bigout");
+    if (!main) main = fx.k ? snd("fx:k") : fx.out ? snd("fx:out") : null;
+  }
+  items.push(main);
+  if (cur.final) { if (!prev.final && usA > themA) items.push(sit("win")); return items; }
+  if (fx.side) { items.push(snd("fx:side"), nextInningSong()); return items; }
+  const before = batterNow(prev), after = batterNow(cur);
+  const wslot = cur.half === our ? walkupSlot(after) : null;
+  if (A.autoWalkup && wslot && (!before || before.pid !== after.pid)) items.push({ slot: wslot });
+  if (cur.half === our && weBat && usA <= themA && risp(cur) && (!risp(prev) || fx.hit || fx.walk)) items.push(sit("rally"));
+  return items;
+}
+
 let wakeLock = null;
 async function keepAwake() {
   try { if ("wakeLock" in navigator && !wakeLock) { wakeLock = await navigator.wakeLock.request("screen"); wakeLock.addEventListener("release", () => { wakeLock = null; }); } } catch (e) {}
@@ -830,6 +887,8 @@ function renderGamebar() {
               <button class="tbtn" data-act="reopen" ${store.currentId ? "disabled title=\"Finish the game in progress first\"" : ""}>Reopen to edit</button>`
            : `<button class="tbtn" data-act="undo" ${G.events.length ? "" : "disabled"}>↶ Undo</button>
               <button class="tbtn" data-act="lineups">Lineups</button>
+              <button class="tbtn" data-act="toggleloc" aria-pressed="${G.settings.askHits !== false}" title="Ask which fielder or where the ball went">Ball location: ${G.settings.askHits !== false ? "on" : "off"}</button>
+              ${inningSongs().length ? `<button class="tbtn" data-act="music">${nowPlaying && nowPlaying.slot.startsWith("inning:") ? "■ Stop music" : "♪ Music"}</button>` : ""}
               <button class="tbtn" data-act="gamemenu">Game</button>`}`;
 }
 
@@ -1075,7 +1134,7 @@ function readDraftRows() {
 }
 function rulesFields(d) {
   return `<div class="field" style="max-width:220px"><label for="d-inn">Innings</label><select id="d-inn">${[5, 6, 7, 9].map(n => `<option ${n === d.innings ? "selected" : ""}>${n}</option>`).join("")}</select></div>
-    <label class="check"><input type="checkbox" id="d-askHits" ${d.askHits ? "checked" : ""}><span>Ask where each hit went (for spray and batted-ball stats; you can always skip)</span></label>
+    <label class="check"><input type="checkbox" id="d-askHits" ${d.askHits ? "checked" : ""}><span>Ask where the ball went: the fielder on outs and errors, the location on hits. Turn off for faster scoring; fielding and spray stats need it on</span></label>
     <label class="check"><input type="checkbox" id="d-startCount" ${d.startCount ? "checked" : ""}><span>Start every at-bat with a 1–1 count</span></label>
     <label class="check"><input type="checkbox" id="d-foulOut" ${d.foulOut ? "checked" : ""}><span>A foul ball with two strikes is a strikeout</span></label>`;
 }
@@ -1160,9 +1219,19 @@ function renderSheet() {
       ${ui.msg ? `<p style="color:var(--stitch)">${esc(ui.msg)}</p>` : ""}
       ${ui.sound ? "" : `<p style="color:var(--ink)"><b>Sound is off.</b> Turn it on with the button at the top to hear these during the game.</p>`}
       <h4>Game sounds</h4>
+      <p>Hits, walks and runs play when ${esc(store.team.name)} bat. Strikeouts and outs play when you're in the field.</p>
+      <label class="check"><input type="checkbox" data-ch="bothTeams" ${audioPrefs().bothTeams ? "checked" : ""}><span>Play them for both teams</span></label>
       <div>${FX_EVENTS.map(([k, label, b]) => row("fx:" + k, label, b)).join("")}</div>
+      <h4>Situation sounds</h4>
+      <p>These play instead of the normal sound when the score makes the moment bigger. The rally sound plays after the next batter's walk-up.</p>
+      <label class="check"><input type="checkbox" data-ch="situational" ${audioPrefs().situational ? "checked" : ""}><span>Use situation sounds</span></label>
+      <div>${SIT_EVENTS.map(([k, label, b]) => row("sit:" + k, label, b)).join("")}</div>
+      <h4>Between innings</h4>
+      <p>After the third out, one of these plays, taking turns through the list. It fades out when you score the next play. The ♪ Music button on the game screen plays one any time.</p>
+      <div>${inningSongs().map((k, i) => row(k, "Song " + (i + 1), null)).join("")}</div>
+      <div><button class="tbtn" data-act="inning-add">Add a song</button></div>
       <h4>Walk-up songs</h4>
-      <label class="check"><input type="checkbox" data-ch="autoWalkup" ${store.audio && store.audio.autoWalkup ? "checked" : ""}><span>Play a batter's walk-up song automatically when they come up. Otherwise there's a button under the batter's name. The song fades out when you score the first pitch.</span></label>
+      <label class="check"><input type="checkbox" data-ch="autoWalkup" ${audioPrefs().autoWalkup ? "checked" : ""}><span>Play a batter's walk-up song automatically, right after the previous play's sound finishes. Otherwise there's a button under the batter's name. The song fades out when you score the first pitch.</span></label>
       <div>${ps.length ? ps.map(p => row("walkup:" + p.id, (p.num ? "#" + p.num + " " : "") + (p.name || "Unnamed player"), null)).join("") : `<p>Add players on the Roster tab to give them walk-up songs.</p>`}</div>
       <div class="acts"><button class="tbtn primary" data-act="close">Done</button></div>`;
   } else if (sh.type === "backup") {
@@ -1183,19 +1252,16 @@ function renderSheet() {
 /* =====================================================================
    Actions
    ===================================================================== */
-function batterNow() { return S && !S.final ? occ(S, S.half, curSlot(S)) : null; }
+function batterNow(s) { s = s || S; return s && !s.final ? occ(s, s.half, curSlot(s)) : null; }
 function push(e) {
   const g = curGame(); if (!g) return;
-  const before = batterNow();
-  if (nowPlaying && nowPlaying.slot.startsWith("walkup:")) stopClip(true);   // music fades when play starts
+  const prev = S;
+  cancelQueue();
+  if (nowPlaying && /^(walkup|inning):/.test(nowPlaying.slot)) stopClip(true);   // music fades when the next play is scored
   g.events.push(e);
   save(); ui.bookTeam = null; ui.sheet = null; ui.bb = null;
   render();
-  const fxClip = playFx(S.fx) === true;
-  const after = batterNow(), slot = walkupSlot(after);
-  if (ui.sound && store.audio && store.audio.autoWalkup && slot && after !== before && (!before || after.pid !== before.pid)) {
-    setTimeout(() => { if (walkupSlot(batterNow()) === slot) playClip(slot); }, fxClip ? 2500 : 1200);
-  }
+  if (ui.sound && prev) runQueue(soundPlan(prev, S, g));
 }
 function closeSheet() { ui.sheet = null; ui.draft = null; ui.confirm = null; ui.msg = ""; ui.bb = null; renderSheet(); }
 
@@ -1208,7 +1274,7 @@ function defaultRows() {
   return store.team.players.map(p => ({ pid: p.id, pos: p.pos || "Bench" }));
 }
 function openNewGame() {
-  ui.draft = { opponent: "", date: today(), ourSide: 0, innings: 7, startCount: false, foulOut: false, askHits: true, rows: defaultRows(), opp: "" };
+  ui.draft = { opponent: "", date: today(), ourSide: 0, innings: 7, startCount: false, foulOut: false, askHits: !(store.prefs && store.prefs.askHits === false), rows: defaultRows(), opp: "" };
   ui.msg = ""; ui.sheet = { type: "newgame" }; renderSheet();
 }
 function startGame() {
@@ -1289,7 +1355,7 @@ document.addEventListener("click", ev => {
     case "view": ui.view = v; ui.peekId = null; ui.confirm = null; render(); break;
     case "pitch": push({ t: "pitch", k: v }); break;
     case "pa":
-      if (NEEDS_POS[v]) { ui.sheet = { type: "pos", r: v }; renderSheet(); }
+      if (NEEDS_POS[v] && G.settings.askHits !== false) { ui.sheet = { type: "pos", r: v }; renderSheet(); }
       else if (HIT_CODES.includes(v) && G.settings.askHits !== false) { ui.bb = v === "HR" ? "FB" : null; ui.sheet = { type: "hit", r: v }; renderSheet(); }
       else push({ t: "pa", r: v });
       break;
@@ -1310,12 +1376,23 @@ document.addEventListener("click", ev => {
       audio();
       if (nowPlaying && nowPlaying.slot === v) { stopClip(false); break; }
       if (clips[v]) playClip(v).then(ok => { if (!ok) { ui.msg = "That file couldn't be played. MP3, M4A and WAV files work best."; renderSheet(); } });
-      else { const b = (FX_EVENTS.find(x => "fx:" + x[0] === v) || [])[2]; if (b) SFX[b](); }
+      else if (BUILT_IN[v]) SFX[BUILT_IN[v]]();
       break;
     }
     case "clip-choose": ui.audioSlot = v; audio(); $("audioFile").click(); break;
     case "clip-rm": if (nowPlaying && nowPlaying.slot === v) stopClip(false); delete clips[v]; saveClip(v); renderSheet(); break;
-    case "walkup": audio(); if (nowPlaying && nowPlaying.slot === v) stopClip(true); else playClip(v); break;
+    case "walkup": audio(); cancelQueue(); if (nowPlaying && nowPlaying.slot === v) stopClip(true); else { stopClip(true); playClip(v); } break;
+    case "music":
+      audio(); cancelQueue();
+      if (nowPlaying && nowPlaying.slot.startsWith("inning:")) stopClip(true); else { stopClip(true); runQueue([nextInningSong()]); }
+      break;
+    case "toggleloc": {
+      const g = curGame(); if (!g) break;
+      g.settings.askHits = g.settings.askHits === false;
+      store.prefs = Object.assign({}, store.prefs, { askHits: g.settings.askHits });
+      save(); renderGamebar(); break;
+    }
+    case "inning-add": ui.audioSlot = "inning:" + Date.now().toString(36); audio(); $("audioFile").click(); break;
     case "close": if (ui.sheet && ui.sheet.type === "sounds") stopClip(true); closeSheet(); break;
     case "newgame": openNewGame(); break;
     case "startgame": startGame(); break;
@@ -1383,7 +1460,7 @@ document.addEventListener("change", ev => {
   const p = el.dataset.id ? player(el.dataset.id) : null;
   if (ch === "minPA") { ui.minPA = +el.value; render(); }
   else if (ch === "incCur") { ui.incCur = el.checked; render(); }
-  else if (ch === "autoWalkup") { store.audio = Object.assign({}, store.audio, { autoWalkup: el.checked }); save(); }
+  else if (ch === "autoWalkup" || ch === "bothTeams" || ch === "situational") { store.audio = Object.assign({}, store.audio, { [ch]: el.checked }); save(); }
   else if (ch === "clip-start" || ch === "clip-dur" || ch === "clip-vol") {
     const c = clips[el.dataset.slot]; if (!c) return;
     const n = Math.max(0, parseFloat(el.value) || 0);
@@ -1406,10 +1483,10 @@ $("audioFile").addEventListener("change", ev => {
   if (f.size > 25 * 1024 * 1024) { ui.msg = "That file is over 25 MB. Trim it or pick a smaller file."; renderSheet(); return; }
   const reader = new FileReader();
   reader.onload = async () => {
-    const isWalkup = slot.startsWith("walkup:");
-    const c = { name: f.name, data: reader.result, start: 0, dur: isWalkup ? 15 : 0, vol: 1 };
+    const isWalkup = slot.startsWith("walkup:"), isSong = slot.startsWith("inning:");
+    const c = { name: f.name, data: reader.result, start: 0, dur: isWalkup ? 15 : isSong ? 60 : 0, vol: 1 };
     try { await snippet(c); } catch (e) { ui.msg = "That file couldn't be played. MP3, M4A and WAV files work best."; renderSheet(); return; }
-    if (!isWalkup && c.buf.duration > 12) { c.dur = 8; c.buf = null; }   // long file for a game sound: start with an 8-second snippet
+    if (!isWalkup && !isSong && c.buf.duration > 12) { c.dur = 8; c.buf = null; }   // long file for a game sound: start with an 8-second snippet
     clips[slot] = c; saveClip(slot); ui.msg = "";
     renderSheet(); playClip(slot);
   };
