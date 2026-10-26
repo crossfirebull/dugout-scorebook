@@ -191,9 +191,9 @@ table.book tfoot td { font-family: var(--f-label); font-weight: 700; font-size: 
 .two { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 520px) { .two { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
 .check { display: flex; flex-direction: row-reverse; justify-content: space-between; gap: 16px; align-items: center; font-size: 15px; }
-:root { --switch-on: #34c759; --switch-off: #d5dce3; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --switch-on: #30d158; --switch-off: #3a4651; } }
-:root[data-theme="dark"] { --switch-on: #30d158; --switch-off: #3a4651; }
+:root { --switch-on: #34c759; --switch-off: #d5dce3; --hit3: #7a4cc9; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --switch-on: #30d158; --switch-off: #3a4651; --hit3: #b58cff; } }
+:root[data-theme="dark"] { --switch-on: #30d158; --switch-off: #3a4651; --hit3: #b58cff; }
 input.switch, .check input[type=checkbox] { -webkit-appearance: none; appearance: none; width: 51px; height: 31px; border-radius: 31px; background: var(--switch-off); position: relative; flex: none; margin: 0; cursor: pointer; transition: background .2s; }
 input.switch::after, .check input[type=checkbox]::after { content: ""; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%; background: #fff; box-shadow: 0 2px 4px rgba(0, 0, 0, .25); transition: transform .2s; }
 input.switch:checked, .check input[type=checkbox]:checked { background: var(--switch-on); }
@@ -289,6 +289,22 @@ table.stats.lu td:first-child, table.stats.lu th:first-child { text-align: left;
 .ck .ckacts { display: flex; gap: 6px; flex-wrap: wrap; }
 .ck .tbtn { min-height: 34px; font-size: 14px; }
 .seasonsel { font: inherit; font-weight: 600; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); }
+.spraygrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+.spraycard { border: 1px solid var(--rule); border-radius: 10px; padding: 10px; background: var(--paper); min-width: 0; }
+.spraycard h3 { margin: 0; font-size: 16px; font-weight: 700; }
+.spraycard h3 span { color: var(--muted); font-family: var(--f-label); margin-right: 6px; }
+.spraycard p { margin: 2px 0 6px; font-size: 13px; color: var(--muted); }
+.spray { display: block; width: 100%; height: auto; }
+.spray .grass { fill: var(--grass); }
+.spray .dirt { fill: var(--infield); }
+.spray .line { stroke: var(--surface); stroke-width: 1.5; fill: none; }
+.spray .bag { fill: var(--surface); }
+.spray .h1 { fill: var(--safe); } .spray .h2 { fill: var(--ink-blue); } .spray .h3 { fill: var(--hit3); }
+.spray .hr { fill: var(--lamp); stroke: var(--ink); stroke-width: 1; }
+.spray .o { fill: var(--surface); stroke: var(--muted); stroke-width: 1.5; }
+.spray .e { stroke: var(--stitch); stroke-width: 2; stroke-linecap: round; }
+.spraykey { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--muted); margin-bottom: 10px; align-items: center; }
+.spraykey svg { display: inline-block; width: 12px; height: 12px; vertical-align: -1px; margin-right: 4px; }
 .prow.head { font-family: var(--f-label); font-weight: 700; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .roster-top { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; margin-bottom: 12px; }
 .roster-top .field { flex: 1; min-width: 200px; }
@@ -356,16 +372,26 @@ const $ = id => document.getElementById(id);
    game  = { id, date, opponent, ourSide (0 visitors / 1 home), settings, lineups:[[{pid,name,pos}],[...]], events:[], done }
    ===================================================================== */
 function blankStore() { return ensureSeasons({ v: 2, sample: false, team: { name: "My Team", players: [] }, games: [], currentId: null }); }
-const suggestSeasonName = () => { const d = new Date(); return (d.getMonth() < 6 ? "Spring " : "Fall ") + d.getFullYear(); };
+const SEASON_TYPES = ["Spring", "Summer", "Fall"];
+const seasonOf = d => { const m = +d.slice(5, 7); return (m <= 5 ? "Spring" : m <= 8 ? "Summer" : "Fall") + " " + d.slice(0, 4); };   // Jan–May, Jun–Aug, Sep–Dec
+// Suggest the season after the current one (Spring → Summer → Fall → next Spring), or go by today's date.
+function suggestSeasonName() {
+  const cur = store && store.seasons && store.seasons.find(x => x.id === store.currentSeasonId);
+  const m = cur && /^(Spring|Summer|Fall) (\d{4})$/.exec(cur.name);
+  if (m) { const i = SEASON_TYPES.indexOf(m[1]); return i < 2 ? SEASON_TYPES[i + 1] + " " + m[2] : "Spring " + (+m[2] + 1); }
+  return seasonOf(today());
+}
 // Every game belongs to a season. Older saves get one season holding all their games.
 function ensureSeasons(st) {
   if (!Array.isArray(st.seasons) || !st.seasons.length) {
     const first = st.games.map(g => g.date).sort()[0] || today();
-    st.seasons = [{ id: "s" + uid(), name: first.slice(0, 4) + " Season", start: first }];
+    st.seasons = [{ id: "s" + uid(), name: seasonOf(first), start: first }];
     st.currentSeasonId = st.seasons[0].id;
   }
   if (!st.seasons.some(x => x.id === st.currentSeasonId)) st.currentSeasonId = st.seasons[st.seasons.length - 1].id;
   st.games.forEach(g => { if (!g.seasonId) g.seasonId = st.currentSeasonId; });
+  // Seasons from the first version were named "2026 Season"; rename them by when their games were played.
+  st.seasons.forEach(x => { if (/^\d{4} Season$/.test(x.name)) { const d = st.games.filter(g => g.seasonId === x.id).map(g => g.date).sort()[0] || x.start; x.name = seasonOf(d); } });
   return st;
 }
 const viewSeason = () => ui.seasonView || store.currentSeasonId;
@@ -404,7 +430,7 @@ function fresh(g) {
   const s = {
     inning: 1, half: 0, outs: 0, balls: 0, strikes: 0, bases: [null, null, null],
     order: [0, 0], runs: [[0], []], hits: [0, 0], errors: [0, 0],
-    book: [[], []], stats: [{}, {}], field: [{}, {}],
+    book: [[], []], stats: [{}, {}], field: [{}, {}], bip: [],
     lu: g.lineups.map(l => l.map(x => Object.assign({}, x))),
     final: false, log: [], fx: {}
   };
@@ -501,6 +527,7 @@ function plateAppearance(s, g, r, p, bb, foulK) {
   const type = hit ? bb : BB_OF[r];
   if (type) st[type]++;
   if (p && (hit || NEEDS_POS[r])) {
+    s.bip.push({ team: bt, key, r, p, bb: type });            // for spray charts
     const bats = who.pid && player(who.pid) ? player(who.pid).bats : "";
     if (bats === "R" || bats === "L") {
       const side = LEFT_SIDE.has(p) ? "L" : RIGHT_SIDE.has(p) ? "R" : "C";
@@ -1173,7 +1200,7 @@ function renderStats() {
           <span>${games} game${games === 1 ? "" : "s"} · ${rec.T ? `${rec.W}–${rec.L}–${rec.T} (W–L–T)` : `${rec.W}–${rec.L}`}</span></h2>
         <button class="tbtn" data-act="newseason">New Season</button>
         <span class="spacer"></span>
-        <div class="tabs" role="tablist">${Object.entries(TABLES).map(([k, t]) => `<button role="tab" aria-selected="${ui.table === k}" data-act="table" data-v="${k}">${t.label}</button>`).join("")}<button role="tab" aria-selected="${ui.table === "lu"}" data-act="table" data-v="lu">Lineups</button></div>
+        <div class="tabs" role="tablist">${Object.entries(TABLES).map(([k, t]) => `<button role="tab" aria-selected="${ui.table === k}" data-act="table" data-v="${k}">${t.label}</button>`).join("")}<button role="tab" aria-selected="${ui.table === "lu"}" data-act="table" data-v="lu">Lineups</button><button role="tab" aria-selected="${ui.table === "spray"}" data-act="table" data-v="spray">Spray charts</button></div>
       </div>
       <div class="sbar">
         <label for="minPA">Min. plate appearances <select id="minPA" data-ch="minPA">${[0, 5, 10, 20, 40].map(n => `<option ${n === ui.minPA ? "selected" : ""}>${n}</option>`).join("")}</select></label>
@@ -1181,7 +1208,7 @@ function renderStats() {
         <span class="spacer"></span>
         <button class="tbtn" data-act="backup">Export &amp; backup</button>
       </div>
-      ${ui.table === "lu" ? lineupHistory() : `<div class="tscroll"><table class="stats">${h}</table></div>
+      ${ui.table === "lu" ? lineupHistory() : ui.table === "spray" ? sprayCharts() : `<div class="tscroll"><table class="stats">${h}</table></div>
       <div class="gloss">${GLOSS[ui.table].map(([k, v]) => `<div><b>${k}</b>${v}</div>`).join("")}</div>`}
     </section>
     <div class="lower3">
@@ -1190,6 +1217,65 @@ function renderStats() {
       <section class="panel"><h2>Team leaders</h2><ul class="games">${leaders}</ul>
         <p style="color:var(--muted);font-size:13px;margin:8px 0 0">Rate stats need ${minQual} plate appearances (2 per team game) to qualify.</p></section>
     </div>`;
+}
+
+/* ---------- Spray charts: where each player's balls in play went ---------- */
+// Each ball is drawn near the fielder you tapped, fanned out so dots don't stack. Home runs go past the fence.
+const ZONE = { 1: [100, 128], 2: [100, 152], 3: [133, 116], 4: [118, 98], 5: [67, 116], 6: [82, 98], 7: [48, 76], 8: [100, 60], 9: [152, 76], 10: [73, 64], 11: [127, 64], 12: [100, 84] };
+const HOME = [100, 162];
+function sprayField(balls) {
+  const n = {};
+  const marks = balls.map(b => {
+    const k = b.p + (b.r === "HR" ? "hr" : ""), i = n[k] = (n[k] || 0) + 1;
+    let [x, y] = ZONE[b.p] || ZONE[8];
+    if (b.r === "HR") { const dx = x - HOME[0], dy = y - HOME[1], len = Math.hypot(dx, dy); x = HOME[0] + dx / len * 148; y = HOME[1] + dy / len * 148; }
+    if (i > 1) { const a = i * 2.4, rad = 2.5 + 3 * Math.sqrt(i); x += Math.cos(a) * rad; y += Math.sin(a) * rad; }
+    const tip = `<title>${b.r === "E" ? "Error" : b.r} to ${POS[b.p]} · ${esc(b.date)} vs ${esc(b.opp)}</title>`;
+    x = x.toFixed(1); y = y.toFixed(1);
+    if (b.r === "E") return `<g class="e">${tip}<path d="M${x - 3} ${y - 3} l6 6 M${x - 3} ${+y + 3} l6 -6" /></g>`;
+    const cls = { "1B": "h1", "2B": "h2", "3B": "h3", HR: "hr" }[b.r] || "o";
+    return `<circle class="${cls}" cx="${x}" cy="${y}" r="${cls === "o" ? 3.2 : 4.2}">${tip}</circle>`;
+  }).join("");
+  return `<svg class="spray" viewBox="0 0 200 172" role="img" aria-label="Spray chart, ${balls.length} balls in play">
+    <path class="grass" d="M100 166 L11 77 A126 126 0 0 1 189 77 Z" />
+    <path class="dirt" d="M100 168 L146 122 Q100 66 54 122 Z" />
+    <path class="line" d="M100 162 L11 73 M100 162 L189 73" />
+    <path class="line" d="M100 162 L134 128 L100 94 L66 128 Z" />
+    ${[[134, 128], [100, 94], [66, 128]].map(([x, y]) => `<rect class="bag" x="${x - 3}" y="${y - 3}" width="6" height="6" transform="rotate(45 ${x} ${y})" />`).join("")}
+    ${marks}</svg>`;
+}
+function sprayData() {
+  const by = {};
+  store.games.forEach(g => {
+    const live = g.id === store.currentId;
+    if (!inSeason(g) || (!g.done && !(live && ui.incCur))) return;
+    derive(g).bip.forEach(b => {
+      if (b.team !== g.ourSide || !b.key.startsWith("p:")) return;
+      const pid = b.key.slice(2);
+      (by[pid] = by[pid] || []).push(Object.assign({ date: g.date, opp: g.opponent }, b));
+    });
+  });
+  return by;
+}
+function sprayCharts() {
+  const by = sprayData();
+  const order = store.team.players.map(x => x.id).concat(Object.keys(by).filter(id => !player(id)));
+  const cards = order.filter(id => by[id]).map(id => {
+    const pl = player(id), balls = by[id], hits = balls.filter(b => HIT_CODES.includes(b.r)).length;
+    let dir = "";
+    if (pl && (pl.bats === "R" || pl.bats === "L")) {
+      const c = { pull: 0, cent: 0, oppo: 0 };
+      balls.forEach(b => { const side = LEFT_SIDE.has(b.p) ? "L" : RIGHT_SIDE.has(b.p) ? "R" : "C"; c[side === "C" ? "cent" : side === (pl.bats === "R" ? "L" : "R") ? "pull" : "oppo"]++; });
+      const pc = v => Math.round(v / balls.length * 100) + "%";
+      dir = ` · Pull ${pc(c.pull)} · Cent ${pc(c.cent)} · Oppo ${pc(c.oppo)}`;
+    }
+    return `<div class="spraycard"><h3><span>${esc(pl ? pl.num : "")}</span>${esc(pl ? pl.name : "Former player")}</h3>
+      <p>${balls.length} ball${balls.length === 1 ? "" : "s"} in play · ${hits} hit${hits === 1 ? "" : "s"}${pl && pl.bats ? " · bats " + esc(pl.bats) : ""}${dir}</p>${sprayField(balls)}</div>`;
+  }).join("");
+  const dot = (cls, r) => `<svg class="spray" viewBox="0 0 12 12"><circle class="${cls}" cx="6" cy="6" r="${r}" /></svg>`;
+  return `<div class="spraykey"><span>${dot("h1", 4.5)}Single</span><span>${dot("h2", 4.5)}Double</span><span>${dot("h3", 4.5)}Triple</span><span>${dot("hr", 4.5)}Home run (past the fence)</span><span>${dot("o", 3.5)}Out</span><span><svg class="spray" viewBox="0 0 12 12"><path class="e" d="M3 3 l6 6 M3 9 l6 -6" /></svg>Error</span></div>
+    ${cards ? `<div class="spraygrid spray-wrap">${cards}</div>` : `<p style="color:var(--muted)">No hit locations yet. Turn on Hit location in Game Settings, and each ball in play will show up here.</p>`}
+    <p class="gloss" style="display:block">Only plays where you picked the fielder or location are drawn. Each dot sits near that fielder's spot; tap or hover a dot for the play and game.</p>`;
 }
 
 /* ---------- Lineup history: who batted where and played what, game by game ---------- */
@@ -1458,7 +1544,9 @@ function renderSheet() {
     const cur = store.seasons.find(x => x.id === store.currentSeasonId);
     body = `<h3>New Season</h3>
       <p>${esc(cur ? cur.name : "This season")} and its games stay saved. Pick any season from the menu on the Season tab to look back at it, or “All seasons” for career totals.</p>
-      <div class="field"><label for="ns-name">Season name</label><input id="ns-name" value="${esc(suggestSeasonName())}" autocomplete="off"></div>
+      ${(() => { const [t, y] = suggestSeasonName().split(" "); return `<div class="two">
+        <div class="field"><label for="ns-type">Season</label><select id="ns-type">${SEASON_TYPES.map(x => `<option ${x === t ? "selected" : ""}>${x}</option>`).join("")}</select></div>
+        <div class="field"><label for="ns-year">Year</label><input id="ns-year" type="number" inputmode="numeric" value="${y}"></div></div>`; })()}
       <p>Your roster carries over. Next you'll review it: add new players, update positions, and remove anyone who left. Their past stats stay in the old season.</p>
       ${ui.msg ? `<p style="color:var(--stitch)">${esc(ui.msg)}</p>` : ""}
       <div class="acts"><button class="tbtn" data-act="close">Cancel</button><button class="tbtn primary" data-act="startseason">Start the season</button></div>`;
@@ -1620,7 +1708,8 @@ document.addEventListener("click", ev => {
     case "newseason": ui.msg = ""; ui.sheet = { type: "newseason" }; renderSheet(); break;
     case "startseason": {
       if (store.currentId) { ui.msg = "Finish or save the game in progress first."; renderSheet(); break; }
-      const name = ($("ns-name").value || "").trim() || suggestSeasonName();
+      const name = $("ns-type").value + " " + (parseInt($("ns-year").value, 10) || new Date().getFullYear());
+      if (store.seasons.some(x => x.name === name)) { ui.msg = `${name} already exists. Pick it from the season menu on the Season tab.`; renderSheet(); break; }
       const ns = { id: "s" + uid(), name, start: today() };
       store.seasons.push(ns); store.currentSeasonId = ns.id; ui.seasonView = null;
       save(); ui.sheet = null; ui.view = "roster";
