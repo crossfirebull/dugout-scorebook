@@ -329,7 +329,7 @@ const posList = pl => pl ? [pl.pos, ...(pl.alt || [])].filter((x, i, a) => x && 
 const NEEDS_POS = { GO: "Who fielded the grounder?", FO: "Who caught the fly ball?", LO: "Who caught the liner?", PO: "Who caught the pop-up?", SF: "Who caught the sacrifice fly?", E: "Who made the error?" };
 const HIT_CODES = ["1B", "2B", "3B", "HR"];
 const BASES_FOR = { "1B": 1, "2B": 2, "3B": 3, HR: 4 };
-const BB_OF = { GO: "GB", FO: "FB", LO: "LD", PO: "PU", SF: "FB", DP: "GB", FC: "GB" };   // batted-ball type implied by an out
+const BB_OF = { GO: "GB", FO: "FB", LO: "LD", PO: "PU", SF: "FB", DP: "GB", FC: "GB", HRO: "FB" };   // batted-ball type implied by an out
 const LEFT_SIDE = new Set([5, 6, 7, 10]), RIGHT_SIDE = new Set([3, 4, 9, 11]);                    // for pull / opposite field
 
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -371,7 +371,7 @@ const viewGame = () => ui.peekId ? store.games.find(g => g.id === ui.peekId) : c
    to every game ever scored.
    ===================================================================== */
 function blankStat() {
-  return { PA: 0, AB: 0, H: 0, "1B": 0, "2B": 0, "3B": 0, HR: 0, TB: 0, R: 0, RBI: 0, BB: 0, HBP: 0, K: 0, SF: 0, SB: 0, ROE: 0,
+  return { PA: 0, AB: 0, H: 0, "1B": 0, "2B": 0, "3B": 0, HR: 0, HRO: 0, TB: 0, R: 0, RBI: 0, BB: 0, HBP: 0, K: 0, SF: 0, SB: 0, ROE: 0,
            RAB: 0, RH: 0, GB: 0, LD: 0, FB: 0, PU: 0, PULL: 0, CENT: 0, OPPO: 0 };
 }
 function fresh(g) {
@@ -415,7 +415,7 @@ function endHalf(s, g) {
     if (s.inning >= N && h > a) { s.final = true; return; }
     s.half = 1; s.runs[1][s.inning - 1] = 0;
   } else {
-    if (s.inning >= N && a !== h) { s.final = true; return; }
+    if (s.inning >= N && (a !== h || g.settings.ties)) { s.final = true; return; }   // league rule: ties can stand
     s.half = 0; s.inning++; s.runs[0][s.inning - 1] = 0;
   }
 }
@@ -437,7 +437,8 @@ function codeFor(r, p) {
 }
 const VERB = {
   "1B": "singles", "2B": "doubles", "3B": "triples", HR: "homers", BB: "walks", HBP: "is hit by a pitch",
-  K: "strikes out swinging", KC: "strikes out looking", FC: "reaches on a fielder's choice", DP: "grounds into a double play"
+  K: "strikes out swinging", KC: "strikes out looking", FC: "reaches on a fielder's choice", DP: "grounds into a double play",
+  HRO: "hits a home run that's ruled an out (over the HR limit)", OUT: "is called out"
 };
 function verbFor(r, p) {
   const where = p ? POS_NAME[p].toLowerCase() : "";
@@ -491,7 +492,8 @@ function plateAppearance(s, g, r, p, bb, foulK) {
     case "HR": advAll(3); sc(me); s.fx.hr = true; break;
     case "BB": case "HBP": forceAll(); put(1); st[r]++; s.fx.walk = true; break;
     case "K": case "KC": outRunner(s, me); st.K++; s.fx.k = true; break;
-    case "GO": case "FO": case "LO": case "PO": outRunner(s, me); break;
+    case "GO": case "FO": case "LO": case "PO": case "OUT": outRunner(s, me); break;
+    case "HRO": outRunner(s, me); st.HRO++; break;   // league HR limit: over the fence, but the batter is out
     case "SF": outRunner(s, me); st.SF++; if (s.outs < 3 && s.bases[2]) { const x = s.bases[2]; s.bases[2] = null; sc(x); } break;
     case "E": forceAll(); put(1); s.errors[ft]++; break;
     case "FC": {
@@ -614,7 +616,7 @@ function withRates(t) {
   t.SLG = d(t.TB, t.AB);
   t.OPS = t.OBP != null && t.SLG != null ? t.OBP + t.SLG : null;
   t.ISO = t.SLG != null ? t.SLG - t.AVG : null;
-  t.BABIP = d(t.H - t.HR, t.AB - t.K - t.HR + t.SF);
+  t.BABIP = d(t.H - t.HR, t.AB - t.K - t.HR - t.HRO + t.SF);
   // wOBA with MLB-style linear weights. Softball has no published weights, so read it as a relative ranking.
   t.wOBA = d(.69 * t.BB + .72 * t.HBP + .88 * t["1B"] + 1.25 * t["2B"] + 1.59 * t["3B"] + 2.05 * t.HR, t.AB + t.BB + t.SF + t.HBP);
   t.Kp = d(t.K, t.PA); t.BBp = d(t.BB, t.PA); t.BBK = d(t.BB, t.K);
@@ -639,13 +641,13 @@ const fmt = {
 // better: 1 = higher is better, -1 = lower is better, 0 = no leader highlight
 const TABLES = {
   std: { label: "Standard", cols: [["G", "int"], ["PA", "int"], ["AB", "int"], ["R", "int", 1], ["H", "int", 1], ["2B", "int", 1], ["3B", "int", 1], ["HR", "int", 1], ["RBI", "int", 1], ["BB", "int", 1], ["K", "int"], ["SB", "int", 1], ["AVG", "avg", 1], ["OBP", "avg", 1], ["SLG", "avg", 1], ["OPS", "avg", 1]] },
-  adv: { label: "Advanced", cols: [["PA", "int"], ["OPS", "avg", 1], ["wOBA", "avg", 1], ["ISO", "avg", 1], ["BABIP", "avg", 0], ["Kp", "pct", -1, "K%"], ["BBp", "pct", 1, "BB%"], ["BBK", "dec2", 1, "BB/K"], ["RISP", "avg", 1, "RISP AVG"], ["RC", "dec", 1], ["ROE", "int", 0]] },
+  adv: { label: "Advanced", cols: [["PA", "int"], ["OPS", "avg", 1], ["wOBA", "avg", 1], ["ISO", "avg", 1], ["BABIP", "avg", 0], ["Kp", "pct", -1, "K%"], ["BBp", "pct", 1, "BB%"], ["BBK", "dec2", 1, "BB/K"], ["RISP", "avg", 1, "RISP AVG"], ["RC", "dec", 1], ["ROE", "int", 0], ["HRO", "int", 0, "HR out"]] },
   bb: { label: "Batted ball", cols: [["BIP", "int"], ["GBp", "pct", 0, "GB%"], ["LDp", "pct", 1, "LD%"], ["FBp", "pct", 0, "FB%"], ["PUp", "pct", -1, "IFFB%"], ["PULLp", "pct", 0, "Pull%"], ["CENTp", "pct", 0, "Cent%"], ["OPPOp", "pct", 0, "Oppo%"]] },
   fld: { label: "Fielding", cols: [["POS", "txt", 0, "Positions"], ["PL", "int", 1, "Plays"], ["E", "int", -1], ["FLD", "pct", 1, "Fld%"]] }
 };
 const GLOSS = {
   std: [["AVG", "Hits per at-bat."], ["OBP", "How often a batter reaches base on a hit, walk or HBP."], ["SLG", "Total bases per at-bat. A double counts 2, a homer 4."], ["OPS", "OBP + SLG. The quickest single number for a hitter."]],
-  adv: [["wOBA", "Weights each way of reaching base by how many runs it's worth. Scaled like OBP. Uses MLB weights, so compare players with each other, not with MLB."], ["ISO", "Raw power: SLG minus AVG."], ["BABIP", "Average on balls in play. Very high or low values are often luck and drift back."], ["K% / BB%", "Strikeouts and walks per plate appearance."], ["RISP AVG", "Average with runners on 2nd or 3rd."], ["RC", "Runs created, Bill James' basic formula."], ["ROE", "Times reached on an error. Not counted as a hit."]],
+  adv: [["wOBA", "Weights each way of reaching base by how many runs it's worth. Scaled like OBP. Uses MLB weights, so compare players with each other, not with MLB."], ["ISO", "Raw power: SLG minus AVG."], ["BABIP", "Average on balls in play. Very high or low values are often luck and drift back."], ["K% / BB%", "Strikeouts and walks per plate appearance."], ["RISP AVG", "Average with runners on 2nd or 3rd."], ["RC", "Runs created, Bill James' basic formula."], ["ROE", "Times reached on an error. Not counted as a hit."], ["HR out", "Home runs ruled an out under a league HR limit. They count as an at-bat and an out, not a hit."]],
   bb: [["GB / LD / FB / IFFB", "Share of balls in play that were grounders, line drives, fly balls or infield pop-ups. Line drives turn into hits most often."], ["Pull / Cent / Oppo", "Where balls in play went, relative to which side the batter hits from. Set bats R/L on the Roster tab."], ["BIP", "Balls put in play."]],
   fld: [["Plays", "Outs made where this player fielded the ball (credited by the position number you tap)."], ["E", "Errors charged."], ["Fld%", "Plays ÷ (plays + errors). A simplified fielding percentage."], ["Positions", "Positions played, with game counts."]]
 };
@@ -924,7 +926,7 @@ function renderGameView() {
                 <div><b>1B</b>Single</div><div><b>2B</b>Double</div><div><b>3B</b>Triple</div><div><b>HR</b>Home run</div>
                 <div><b>BB</b>Walk</div><div><b>HBP</b>Hit by pitch</div><div><b>K</b>Strikeout swinging</div><div><b><span class="kc">K</span></b>Strikeout looking</div>
                 <div><b>6-3</b>Grounder, SS to 1B</div><div><b>F8</b>Fly out to CF</div><div><b>L5</b>Line out to 3B</div><div><b>P4</b>Pop out to 2B</div>
-                <div><b>SF7</b>Sacrifice fly</div><div><b>E6</b>Error on SS</div><div><b>FC</b>Fielder's choice</div><div><b>DP</b>Double play</div>
+                <div><b>SF7</b>Sacrifice fly</div><div><b>E6</b>Error on SS</div><div><b>FC</b>Fielder's choice</div><div><b>DP</b>Double play</div><div><b>HRO</b>Home run ruled an out</div><div><b>OUT</b>Other out</div>
               </div></div>
           </div>
         </section>
@@ -968,7 +970,7 @@ function renderBoard() {
   const ended = S.final && !ui.peekId;
   if (ended) {
     const a = total(S, 0), hm = total(S, 1), w = a > hm ? 0 : 1;
-    $("finalBox").innerHTML = `<div class="final"><b>Final</b><span>${esc(names[w])} win ${Math.max(a, hm)}–${Math.min(a, hm)}.</span><span style="flex:1"></span>
+    $("finalBox").innerHTML = `<div class="final"><b>Final</b><span>${a === hm ? `Tie game, ${a}–${hm}.` : `${esc(names[w])} win ${Math.max(a, hm)}–${Math.min(a, hm)}.`}</span><span style="flex:1"></span>
       <button class="tbtn" data-act="addinning">Play another inning</button><button class="tbtn" data-act="endgame">Save to season</button></div>`;
   } else $("finalBox").innerHTML = "";
 }
@@ -1050,9 +1052,10 @@ function renderPad() {
       ${key("pa", "1B", "1B", "Single", "on")}${key("pa", "2B", "2B", "Double", "on")}${key("pa", "3B", "3B", "Triple", "on")}${key("pa", "HR", "HR", "Home run", "on")}
       ${key("pa", "BB", "BB", "Walk", "on")}${key("pa", "HBP", "HBP", "Hit by pitch", "on")}${key("pa", "E", "E", "Error", "on")}${key("pa", "FC", "FC", "Fielder's choice", "on")}
     </div></div>
-    <div class="group"><div class="gl">Batter out</div><div class="keys">
+    <div class="group"><div class="gl">Batter out</div><div class="keys" style="grid-template-columns:repeat(5,minmax(0,1fr))">
       ${key("pa", "K", "K", "Swinging", "out")}${key("pa", "KC", '<span class="kc">K</span>', "Looking", "out")}${key("pa", "GO", "GO", "Ground out", "out")}${key("pa", "FO", "F", "Fly out", "out")}
       ${key("pa", "LO", "L", "Line out", "out")}${key("pa", "PO", "P", "Pop out", "out")}${key("pa", "SF", "SF", "Sac fly", "out")}${key("pa", "DP", "DP", "Double play", "out")}
+      ${key("pa", "HRO", "HR out", "Over HR limit", "out")}${key("pa", "OUT", "Out", "Other", "out")}
     </div></div>`;
 }
 
@@ -1144,7 +1147,7 @@ function renderStats() {
   $("view").innerHTML = `
     <section class="panel">
       <div class="sbar">
-        <h2 style="margin:0">${esc(store.team.name)} · ${games} game${games === 1 ? "" : "s"} · ${rec.W}–${rec.L}${rec.T ? "–" + rec.T : ""}</h2>
+        <h2 style="margin:0">${esc(store.team.name)} · ${games} game${games === 1 ? "" : "s"} · ${rec.T ? `${rec.W}–${rec.L}–${rec.T} (W–L–T)` : `${rec.W}–${rec.L}`}</h2>
         <span class="spacer"></span>
         <div class="tabs" role="tablist">${Object.entries(TABLES).map(([k, t]) => `<button role="tab" aria-selected="${ui.table === k}" data-act="table" data-v="${k}">${t.label}</button>`).join("")}<button role="tab" aria-selected="${ui.table === "lu"}" data-act="table" data-v="lu">Lineups</button></div>
       </div>
@@ -1273,7 +1276,7 @@ function readDraftRows() {
   if ($("d-side")) d.ourSide = +$("d-side").value;
   if ($("d-inn")) d.innings = +$("d-inn").value;
   if ($("d-dugout")) d.mode = $("d-dugout").checked ? "dugout" : "scorekeeper";
-  ["startCount", "foulOut", "askHits", "trackCount"].forEach(k => { if ($("d-" + k)) d[k] = $("d-" + k).checked; });
+  ["startCount", "foulOut", "askHits", "trackCount", "ties"].forEach(k => { if ($("d-" + k)) d[k] = $("d-" + k).checked; });
 }
 function rulesFields(d, live) {
   const ch = live ? ' data-ch="setting"' : "";
@@ -1285,6 +1288,7 @@ function rulesFields(d, live) {
     ${sw("trackCount", "Track balls and strikes", "Off: tap only the result of each at-bat.", d.trackCount)}
     ${sw("startCount", "Start at a 1–1 count", "Common slowpitch rule.", d.startCount)}
     ${sw("foulOut", "Two-strike foul is an out", "A foul ball with two strikes counts as a strikeout.", d.foulOut)}
+    ${sw("ties", "Games can end in a tie", "A tie after the last inning stands, with no extra innings. Tap + on the scoreboard to play on anyway.", d.ties)}
     <div class="setrow"><span><b>Innings</b><small>Ties go to extra innings automatically. Tap + to play an extra inning anyway.</small></span>
       <span class="stepper"><button data-act="inn" data-v="-1" aria-label="One fewer inning">−</button><b>${d.innings}</b><button data-act="inn" data-v="1" aria-label="One more inning">+</button></span></div>
   </div>`;
@@ -1444,7 +1448,7 @@ function defaultRows() {
 }
 function openNewGame() {
   ui.draft = { opponent: "", date: today(), ourSide: 0, innings: 7, startCount: false, foulOut: false, askHits: !(store.prefs && store.prefs.askHits === false),
-    mode: (store.prefs && store.prefs.mode) || "dugout", trackCount: !(store.prefs && store.prefs.trackCount === false), rows: defaultRows(), opp: "" };
+    mode: (store.prefs && store.prefs.mode) || "dugout", trackCount: !(store.prefs && store.prefs.trackCount === false), ties: !!(store.prefs && store.prefs.ties), rows: defaultRows(), opp: "" };
   ui.msg = ""; ui.sheet = { type: "newgame" }; renderSheet();
 }
 function startGame() {
@@ -1457,8 +1461,8 @@ function startGame() {
   const theirs = d.opp.split("\n").map(x => x.trim()).filter(Boolean).map(name => ({ pid: null, name, pos: "" }));
   const lineups = d.ourSide === 0 ? [ours, theirs] : [theirs, ours];
   const g = { id: uid(), date: d.date || today(), opponent: d.opponent.trim(), ourSide: d.ourSide,
-              settings: { innings: d.innings, startCount: d.startCount, foulOut: d.foulOut, askHits: d.askHits, mode: d.mode, trackCount: d.trackCount }, lineups, events: [], done: false };
-  store.prefs = Object.assign({}, store.prefs, { askHits: d.askHits, mode: d.mode, trackCount: d.trackCount });
+              settings: { innings: d.innings, startCount: d.startCount, foulOut: d.foulOut, askHits: d.askHits, mode: d.mode, trackCount: d.trackCount, ties: d.ties }, lineups, events: [], done: false };
+  store.prefs = Object.assign({}, store.prefs, { askHits: d.askHits, mode: d.mode, trackCount: d.trackCount, ties: d.ties });
   store.games.push(g); store.currentId = g.id;
   save(); ui.sheet = null; ui.draft = null; ui.view = "game"; ui.peekId = null; render();
 }
@@ -1484,7 +1488,7 @@ function saveLineups() {
 }
 function openGameMenu() {
   const s = G.settings;
-  ui.draft = { opponent: G.opponent, innings: s.innings, startCount: s.startCount, foulOut: s.foulOut, askHits: s.askHits !== false, mode: modeOf(G), trackCount: countOn(G) };
+  ui.draft = { opponent: G.opponent, innings: s.innings, startCount: s.startCount, foulOut: s.foulOut, askHits: s.askHits !== false, mode: modeOf(G), trackCount: countOn(G), ties: !!s.ties };
   ui.confirm = null; ui.sheet = { type: "gamemenu" }; renderSheet();
 }
 function saveGameMenu() { applyGameMenu(); closeSheet(); }
@@ -1492,8 +1496,8 @@ function applyGameMenu() {
   readDraftRows();
   const g = curGame(), d = ui.draft; if (!g || !d) return;
   g.opponent = d.opponent.trim() || g.opponent;
-  Object.assign(g.settings, { innings: d.innings, startCount: d.startCount, foulOut: d.foulOut, askHits: d.askHits, mode: d.mode, trackCount: d.trackCount });
-  store.prefs = Object.assign({}, store.prefs, { askHits: d.askHits, mode: d.mode, trackCount: d.trackCount });
+  Object.assign(g.settings, { innings: d.innings, startCount: d.startCount, foulOut: d.foulOut, askHits: d.askHits, mode: d.mode, trackCount: d.trackCount, ties: d.ties });
+  store.prefs = Object.assign({}, store.prefs, { askHits: d.askHits, mode: d.mode, trackCount: d.trackCount, ties: d.ties });
   ui.bookTeam = null; save(); render();
 }
 function endGame() {
