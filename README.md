@@ -4,6 +4,18 @@ A softball scorebook for an iPad or Raspberry Pi sitting in the dugout. Tap what
 
 **Open the app:** `https://<your-github-username>.github.io/dugout-scorebook/`
 
+## Getting around
+
+A tab bar along the bottom has five pages, so there's little scrolling:
+
+- **Game**: the scoreboard, bases, count, batter and scoring buttons. Fits one screen on a phone.
+- **Book**: the scorebook grid and play-by-play.
+- **Stats**: Overview (games and leaders), Batting tables, Spray charts and Lineups, for any season.
+- **Scout**: every team you've played, with a spray chart for the team and each of its hitters, and where to shade your defense.
+- **Team**: your roster, positions and walk-up songs.
+
+The speaker button at the top mutes and unmutes. The gear opens Game Settings during a game, or Sounds otherwise.
+
 ## Using it at the field
 
 1. Turn on your phone's hotspot and connect the iPad.

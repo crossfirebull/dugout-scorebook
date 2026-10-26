@@ -53,7 +53,7 @@ body {
   color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.4;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 12px 32px;
+  padding-block: 12px calc(104px + env(safe-area-inset-bottom, 0px));
   -webkit-tap-highlight-color: transparent;
 }
 button { font: inherit; color: inherit; cursor: pointer; touch-action: manipulation; }
@@ -62,7 +62,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 
 /* Top bar */
 .topbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.brand { font-family: var(--f-display); font-weight: 800; font-size: 26px; letter-spacing: .02em; text-transform: uppercase; margin: 0; line-height: 1; }
+.brand { font-family: var(--f-display); font-weight: 800; font-size: 22px; letter-spacing: .02em; text-transform: uppercase; margin: 0; line-height: 1; }
 .chip { font-family: var(--f-label); font-weight: 600; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; background: var(--rule-soft); color: var(--muted); }
 .chip.live { background: var(--stitch); color: #fff; }
 .topbar .spacer { flex: 1; }
@@ -96,7 +96,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 
 /* Situation */
 .situ { display: grid; grid-template-columns: 1fr 120px; gap: 10px; align-items: center; }
-.diamond { width: 100%; max-width: 170px; aspect-ratio: 1; justify-self: center; }
+.diamond { width: 100%; max-width: 140px; aspect-ratio: 1; justify-self: center; }
 .diamond .base { cursor: pointer; }
 .diamond .base rect { fill: var(--surface); stroke: var(--muted); stroke-width: 2.5; }
 .diamond .base.on rect { fill: var(--lamp); stroke: var(--ink); }
@@ -164,7 +164,7 @@ table.book tfoot td { font-family: var(--f-label); font-weight: 700; font-size: 
 .mini .note { font-family: var(--f-label); font-weight: 700; font-size: 9px; fill: var(--muted); }
 
 .lower { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); margin-top: 14px; }
-.pbp { list-style: none; margin: 0; padding: 0; max-height: 260px; overflow-y: auto; display: grid; gap: 0; }
+.pbp { list-style: none; margin: 0; padding: 0; max-height: 480px; overflow-y: auto; display: grid; gap: 0; }
 .pbp li { padding: 6px 0; border-bottom: 1px solid var(--rule-soft); font-size: 15px; display: grid; grid-template-columns: 48px 1fr; gap: 8px; }
 .pbp li .inn { font-family: var(--f-label); font-weight: 700; color: var(--muted); font-size: 13px; padding-top: 2px; }
 .pbp li .run { color: var(--safe); font-weight: 700; }
@@ -305,6 +305,40 @@ table.stats.lu td:first-child, table.stats.lu th:first-child { text-align: left;
 .spray .e { stroke: var(--stitch); stroke-width: 2; stroke-linecap: round; }
 .spraykey { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--muted); margin-bottom: 10px; align-items: center; }
 .spraykey svg { display: inline-block; width: 12px; height: 12px; vertical-align: -1px; margin-right: 4px; }
+/* Bottom tab bar, floating like a phone app's */
+.tabbar { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(10px + env(safe-area-inset-bottom, 0px)); z-index: 40;
+  display: flex; gap: 2px; padding: 5px; width: min(560px, calc(100% - 24px)); border-radius: 30px; border: 1px solid var(--rule);
+  background: color-mix(in srgb, var(--surface) 88%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: 0 6px 24px rgba(0, 0, 0, .18); }
+.tabbar button { flex: 1; min-width: 0; display: grid; justify-items: center; gap: 2px; padding: 7px 2px 6px; border: 0; border-radius: 24px; background: transparent; color: var(--muted); font-size: 12px; font-weight: 600; }
+.tabbar svg, .iconbtn svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.tabbar button[aria-selected="true"] { background: var(--ink); color: var(--paper); }
+.iconbtn { width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--rule); background: var(--surface); display: grid; place-items: center; padding: 0; color: var(--ink); }
+.iconbtn[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.play { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 820px) { .play { grid-template-columns: minmax(280px, 360px) minmax(0, 1fr); align-items: start; } }
+.play .pad { margin-top: 0; }
+/* Phones: diamond beside the batter and count so the buttons fit on one screen */
+@media (max-width: 819px) {
+  .gamebar .matchup { display: none; }
+  .sitpanel { display: grid; grid-template-columns: 112px minmax(0, 1fr); grid-template-areas: "dia at" "dia cnt"; column-gap: 12px; row-gap: 8px; align-items: start; padding: 10px; }
+  .sitpanel .situ { display: contents; }
+  .sitpanel .diamond { grid-area: dia; max-width: 112px; }
+  .sitpanel .count { grid-area: cnt; display: flex; gap: 14px; flex-wrap: wrap; }
+  .sitpanel .count .dot { width: 14px; height: 14px; }
+  .sitpanel .atbat { grid-area: at; border-top: 0; margin-top: 0; padding: 0; }
+  .sitpanel .atbat .now { font-size: 21px; }
+  .play .panel { padding: 10px; }
+  .play { gap: 8px; }
+  .key { min-height: 44px; }
+}
+.situ { grid-template-columns: minmax(0, 1fr) 110px; }
+.seg { margin-top: 10px; display: flex; overflow-x: auto; }
+.seg button { flex: 1; white-space: nowrap; }
+.chipbtn.on { background: var(--ink); color: var(--paper); border-style: solid; border-color: var(--ink); }
+.scoutbar { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 2px; }
+.scoutteam { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 760px) { .scoutteam { grid-template-columns: minmax(260px, 360px) minmax(0, 1fr); align-items: start; } }
+.scouttip { font-size: 14px; margin: 6px 0 0; }
 .prow.head { font-family: var(--f-label); font-weight: 700; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .roster-top { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; margin-bottom: 12px; }
 .roster-top .field { flex: 1; min-width: 200px; }
@@ -329,14 +363,15 @@ table.stats.lu td:first-child, table.stats.lu th:first-child { text-align: left;
 <div class="wrap">
   <header class="topbar">
     <h1 class="brand">Dugout Scorebook</h1>
-    <nav class="nav" id="nav" role="tablist" aria-label="Sections"></nav>
     <span class="spacer"></span>
-    <button class="tbtn" id="soundBtn" data-act="sound" aria-pressed="false">Sound off</button>
+    <button class="iconbtn" id="soundBtn" data-act="sound" aria-pressed="false" aria-label="Sound is off. Tap to turn on."></button>
+    <button class="iconbtn" data-act="settings" aria-label="Settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
   </header>
   <div id="sampleBox"></div>
   <main id="view" class="view"></main>
 </div>
 
+<nav class="tabbar" id="tabbar" role="tablist" aria-label="Sections"></nav>
 <div id="overlay"></div>
 <input type="file" id="restoreFile" accept="application/json,.json" hidden>
 <input type="file" id="audioFile" accept="audio/*,.mp3,.m4a,.wav,.aac" hidden>
@@ -527,7 +562,7 @@ function plateAppearance(s, g, r, p, bb, foulK) {
   const type = hit ? bb : BB_OF[r];
   if (type) st[type]++;
   if (p && (hit || NEEDS_POS[r])) {
-    s.bip.push({ team: bt, key, r, p, bb: type });            // for spray charts
+    s.bip.push({ team: bt, key, name: entryName(who), r, p, bb: type });   // for spray charts and scouting
     const bats = who.pid && player(who.pid) ? player(who.pid).bats : "";
     if (bats === "R" || bats === "L") {
       const side = LEFT_SIDE.has(p) ? "L" : RIGHT_SIDE.has(p) ? "R" : "C";
@@ -859,7 +894,7 @@ function stopClip(fade) {
   } catch (e) {}
   refreshPlaying();
 }
-function refreshPlaying() { if (ui.view === "game" && G && $("atbat")) { renderAtBat(); renderGamebar(); } if (ui.sheet && ui.sheet.type === "sounds") renderSheet(); }
+function refreshPlaying() { if ((ui.view === "game" || ui.view === "book") && G && $("gamebar")) { renderGamebar(); if ($("atbat")) renderAtBat(); } if (ui.sheet && ui.sheet.type === "sounds") renderSheet(); }
 function walkupSlot(who) { return who && who.pid && clips["walkup:" + who.pid] ? "walkup:" + who.pid : null; }
 
 /* ---------- Sound director ----------
@@ -933,67 +968,76 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
 let G = null, S = null, shellKey = "";
 
 function render() {
-  $("nav").innerHTML = [["game", "Game"], ["stats", "Season"], ["roster", "Roster"]]
-    .map(([v, l]) => `<button role="tab" aria-selected="${ui.view === v}" data-act="view" data-v="${v}">${l}</button>`).join("");
+  $("tabbar").innerHTML = TABS.map(([v, l, icon]) => `<button role="tab" aria-selected="${ui.view === v}" data-act="view" data-v="${v}"><svg viewBox="0 0 24 24">${icon}</svg>${l}</button>`).join("");
+  syncSoundBtn();
   $("sampleBox").innerHTML = store.sample ? `<div class="banner"><span>This is a <b>made-up sample season</b> so you can see how the stats work.</span><span class="spacer"></span>
     <button class="tbtn ${ui.confirm === "clear" ? "danger" : ""}" data-act="clearsample">${ui.confirm === "clear" ? "Tap again to erase sample data" : "Clear sample data"}</button></div>` : "";
-  if (ui.view === "game") renderGameView();
+  if (ui.view === "game" || ui.view === "book") renderGameView();
   else if (ui.view === "stats") { shellKey = ""; renderStats(); }
+  else if (ui.view === "scout") { shellKey = ""; renderScout(); }
   else { shellKey = ""; renderRoster(); }
   renderSheet();
 }
 
-/* ---------- Game view ---------- */
+const TABS = [
+  ["game", "Game", '<path d="M12 3l9 9-9 9-9-9z"/><circle cx="12" cy="12" r="2.2"/>'],
+  ["book", "Book", '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 4v16M15 4v16"/>'],
+  ["stats", "Stats", '<path d="M3 20h18M6 20v-8M11 20V5M16 20v-11M21 20v-5"/>'],
+  ["scout", "Scout", '<circle cx="7" cy="15" r="3.5"/><circle cx="17" cy="15" r="3.5"/><path d="M10.5 15h3M4.5 12.5L7 5h3l.8 6.5M19.5 12.5L17 5h-3l-.8 6.5"/>'],
+  ["roster", "Team", '<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.4"/><path d="M15.6 14.2c3 .3 5.4 2.7 5.4 5.8"/>']
+];
+
+/* ---------- Game view (Game tab) and scorebook (Book tab) ---------- */
 function renderGameView() {
   G = viewGame();
   if (!G) {
     shellKey = "";
     const noRoster = !store.team.players.length;
-    $("view").innerHTML = `<section class="panel empty"><h2>No game in progress</h2>
-      <p>${noRoster ? "Add your players on the Roster tab first. Then start a game and pick the batting order." : "New Game walks you through a pregame checklist: opponent, lineup, settings and sound."}</p>
-      ${noRoster ? `<button class="tbtn primary" data-act="view" data-v="roster">Go to roster</button>` : `<button class="tbtn primary" data-act="newgame">New Game</button>`}</section>`;
+    $("view").innerHTML = `<section class="panel empty"><h2>No game in progress</h2>${ui.view === "book" ? `<p>The scorebook for the game you're scoring shows up here. Past games are under Stats → Overview.</p>` : ""}
+      <p>${noRoster ? "Add your players on the Team tab first. Then start a game and pick the batting order." : "New Game walks you through a pregame checklist: opponent, lineup, settings and sound."}</p>
+      ${noRoster ? `<button class="tbtn primary" data-act="view" data-v="roster">Go to Team</button>` : `<button class="tbtn primary" data-act="newgame">New Game</button>`}</section>`;
     return;
   }
   S = derive(G);
-  const key = "game:" + G.id;
+  const book = ui.view === "book", key = ui.view + ":" + G.id;
   if (shellKey !== key) {
     shellKey = key;
     $("view").innerHTML = `
       <div class="gamebar" id="gamebar"></div>
       <section class="board" id="board" aria-label="Line score"></section>
       <div id="finalBox"></div>
-      <div class="main">
-        <section class="panel" aria-label="Current at-bat">
+      ${book ? `
+      <section class="panel" aria-label="Scorebook">
+        <div class="bookhead"><h2 style="margin:0">Scorebook</h2><span style="flex:1"></span><div class="tabs" role="tablist" id="tabs"></div></div>
+        <div class="bookscroll"><table class="book" id="book"></table></div>
+      </section>
+      <section class="panel"><h2>Play by play</h2><ol class="pbp" id="pbp"></ol></section>` : `
+      <div class="play">
+        <section class="panel sitpanel" aria-label="Current at-bat">
           <div class="situ">
             <svg class="diamond" id="diamond" viewBox="0 0 220 220" role="group" aria-label="Bases. Tap a runner to move them."></svg>
             <div class="count" id="count"></div>
           </div>
           <div class="atbat" id="atbat"></div>
-          <div class="pad" id="pad"></div>
         </section>
-        <section class="panel" aria-label="Scorebook">
-          <div class="bookhead"><h2 style="margin:0">Scorebook</h2><span style="flex:1"></span><div class="tabs" role="tablist" id="tabs"></div></div>
-          <div class="bookscroll"><table class="book" id="book"></table></div>
-          <div class="lower">
-            <div><h2>Play by play</h2><ol class="pbp" id="pbp"></ol></div>
-          </div>
-        </section>
-      </div>`;
+        <section class="panel"><div class="pad" id="pad"></div></section>
+      </div>`}`;
   }
-  renderGamebar(); renderBoard(); renderDiamond(); renderCount(); renderAtBat(); renderPad(); renderBook(); renderLog();
+  renderGamebar(); renderBoard();
+  if (book) { renderBook(); renderLog(); }
+  else { renderDiamond(); renderCount(); renderAtBat(); renderPad(); }
 }
 
 function renderGamebar() {
   const names = teamNames(G), peek = !!ui.peekId;
   const status = peek ? "Final" : S.final ? "Final" : (S.half ? "Bottom " : "Top ") + ordinal(S.inning);
   $("gamebar").innerHTML = `<span class="chip ${peek || S.final ? "" : "live"}">${status}</span>${peek ? "" : `<span class="chip">${modeOf(G) === "dugout" ? "Dugout mode" : "Scorekeeper"}</span>`}
-    <span>${esc(names[0])} at ${esc(names[1])} · ${esc(G.date)}</span><span class="spacer"></span>
-    ${peek ? `<button class="tbtn" data-act="unpeek">Back to season</button>
+    <span class="matchup">${esc(names[0])} at ${esc(names[1])} · ${esc(G.date)}</span><span class="spacer"></span>
+    ${peek ? `<button class="tbtn" data-act="unpeek">Back to stats</button>
               <button class="tbtn" data-act="reopen" ${store.currentId ? "disabled title=\"Finish the game in progress first\"" : ""}>Reopen to edit</button>`
            : `<button class="tbtn" data-act="undo" ${G.events.length ? "" : "disabled"}>↶ Undo</button>
               <button class="tbtn" data-act="lineups">Lineups</button>
-              ${inningSongs().length ? `<button class="tbtn" data-act="music">${nowPlaying && nowPlaying.slot.startsWith("inning:") ? "■ Stop music" : "♪ Music"}</button>` : ""}
-              <button class="tbtn" data-act="gamemenu">Game Settings</button>`}`;
+              ${inningSongs().length ? `<button class="tbtn" data-act="music">${nowPlaying && nowPlaying.slot.startsWith("inning:") ? "■ Stop music" : "♪ Music"}</button>` : ""}`}`;
 }
 
 function renderBoard() {
@@ -1032,7 +1076,7 @@ function renderDiamond() {
   P.forEach(([x, y], b) => {
     const r = S.bases[b];
     h += `<g class="base ${r ? "on" : ""}" data-act="base" data-b="${b}" role="button" tabindex="${r ? 0 : -1}" aria-label="${["First", "Second", "Third"][b]} base${r ? ": " + esc(nameAt(S, r.team, r.slot)) : ", empty"}">
-      <circle class="hit" cx="${x}" cy="${y}" r="30" /><rect x="${x - 13}" y="${y - 13}" width="26" height="26" transform="rotate(45 ${x} ${y})" rx="2" /></g>`;
+      <circle class="hit" cx="${x}" cy="${y}" r="36" /><rect x="${x - 13}" y="${y - 13}" width="26" height="26" transform="rotate(45 ${x} ${y})" rx="2" /></g>`;
     if (r) h += `<text class="rname" x="${labelPos[b][0]}" y="${labelPos[b][1]}" text-anchor="middle">${esc(nameAt(S, r.team, r.slot).split(" ")[0])}</text>`;
   });
   $("diamond").innerHTML = h;
@@ -1117,6 +1161,7 @@ function mini(c) {
     <path class="path" d="M26 48 L48 26 L26 4 L4 26 Z" />${c.scored ? '<path class="scored" d="M26 48 L48 26 L26 4 L4 26 Z" />' : ""}${ran}${code}${out}${notes}</svg>`;
 }
 function renderBook() {
+  if (!$("book")) return;
   const names = teamNames(G), dug = modeOf(G) === "dugout";
   const t = dug ? G.ourSide : ui.bookTeam === null ? (ui.peekId ? G.ourSide : S.half) : ui.bookTeam;
   $("tabs").innerHTML = (dug ? [G.ourSide] : [0, 1]).map(i => `<button role="tab" aria-selected="${i === t}" data-act="tab" data-v="${i}">${esc(names[i])}</button>`).join("");
@@ -1146,6 +1191,7 @@ function renderLog() {
 
 /* ---------- Season view ---------- */
 function renderStats() {
+  if (!TABLES[ui.table]) ui.table = "std";
   const { list, games, rec } = season();
   const tdef = TABLES[ui.table] || TABLES.std;
   const qualified = list.filter(r => r.PA >= ui.minPA && (ui.table !== "fld" || r.PL + r.E > 0 || r.POS));
@@ -1192,31 +1238,41 @@ function renderStats() {
       <button class="tbtn ${confirmDel ? "danger" : ""}" data-act="delgame" data-v="${g.id}">${confirmDel ? "Confirm delete" : "Delete"}</button></li>`;
   }).join("");
 
-  $("view").innerHTML = `
-    <section class="panel">
-      <div class="sbar">
-        <h2 style="margin:0;display:flex;gap:8px;align-items:center;flex-wrap:wrap">${esc(store.team.name)}
-          <select class="seasonsel" id="seasonSel" data-ch="seasonSel" aria-label="Season">${store.seasons.map(x => `<option value="${x.id}" ${x.id === viewSeason() ? "selected" : ""}>${esc(x.name)}${x.id === store.currentSeasonId ? " (current)" : ""}</option>`).join("")}<option value="all" ${viewSeason() === "all" ? "selected" : ""}>All seasons</option></select>
-          <span>${games} game${games === 1 ? "" : "s"} · ${rec.T ? `${rec.W}–${rec.L}–${rec.T} (W–L–T)` : `${rec.W}–${rec.L}`}</span></h2>
-        <button class="tbtn" data-act="newseason">New Season</button>
-        <span class="spacer"></span>
-        <div class="tabs" role="tablist">${Object.entries(TABLES).map(([k, t]) => `<button role="tab" aria-selected="${ui.table === k}" data-act="table" data-v="${k}">${t.label}</button>`).join("")}<button role="tab" aria-selected="${ui.table === "lu"}" data-act="table" data-v="lu">Lineups</button><button role="tab" aria-selected="${ui.table === "spray"}" data-act="table" data-v="spray">Spray charts</button></div>
-      </div>
-      <div class="sbar">
-        <label for="minPA">Min. plate appearances <select id="minPA" data-ch="minPA">${[0, 5, 10, 20, 40].map(n => `<option ${n === ui.minPA ? "selected" : ""}>${n}</option>`).join("")}</select></label>
-        ${cur ? `<label><input type="checkbox" class="switch" id="incCur" data-ch="incCur" ${ui.incCur ? "checked" : ""}> Include today's game in progress</label>` : ""}
-        <span class="spacer"></span>
-        <button class="tbtn" data-act="backup">Export &amp; backup</button>
-      </div>
-      ${ui.table === "lu" ? lineupHistory() : ui.table === "spray" ? sprayCharts() : `<div class="tscroll"><table class="stats">${h}</table></div>
-      <div class="gloss">${GLOSS[ui.table].map(([k, v]) => `<div><b>${k}</b>${v}</div>`).join("")}</div>`}
-    </section>
+  const seg = ui.statsTab || "overview";
+  const incSwitch = cur ? `<label><input type="checkbox" class="switch" id="incCur" data-ch="incCur" ${ui.incCur ? "checked" : ""}> Include today's game in progress</label>` : "";
+  let body;
+  if (seg === "overview") body = `
     <div class="lower3">
       <section class="panel"><h2>Games</h2>${gameItems ? `<ul class="games">${gameItems}</ul>` : `<p style="color:var(--muted);margin:0">No games yet.</p>`}
         ${cur ? "" : `<div style="margin-top:12px"><button class="tbtn primary" data-act="newgame" ${store.team.players.length ? "" : "disabled"}>New Game</button></div>`}</section>
       <section class="panel"><h2>Team leaders</h2><ul class="games">${leaders}</ul>
-        <p style="color:var(--muted);font-size:13px;margin:8px 0 0">Rate stats need ${minQual} plate appearances (2 per team game) to qualify.</p></section>
+        <p style="color:var(--muted);font-size:13px;margin:8px 0 0">Rate stats need ${minQual} plate appearances (2 per team game) to qualify.</p>
+        <div style="margin-top:12px"><button class="tbtn" data-act="backup">Export &amp; backup</button></div></section>
     </div>`;
+  else if (seg === "batting") body = `
+    <section class="panel">
+      <div class="sbar">
+        <div class="tabs" role="tablist">${Object.entries(TABLES).map(([k, t]) => `<button role="tab" aria-selected="${ui.table === k}" data-act="table" data-v="${k}">${t.label}</button>`).join("")}</div>
+        <span class="spacer"></span>
+        <label for="minPA">Min. PA <select id="minPA" data-ch="minPA">${[0, 5, 10, 20, 40].map(n => `<option ${n === ui.minPA ? "selected" : ""}>${n}</option>`).join("")}</select></label>
+        ${incSwitch}
+      </div>
+      <div class="tscroll"><table class="stats">${h}</table></div>
+      <div class="gloss">${GLOSS[ui.table].map(([k, v]) => `<div><b>${k}</b>${v}</div>`).join("")}</div>
+    </section>`;
+  else body = `<section class="panel">${incSwitch ? `<div class="sbar">${incSwitch}</div>` : ""}${seg === "spray" ? sprayCharts() : lineupHistory()}</section>`;
+  $("view").innerHTML = `
+    <section class="panel">
+      <div class="sbar" style="margin:0">
+        <h2 style="margin:0;display:flex;gap:8px;align-items:center;flex-wrap:wrap">${esc(store.team.name)}
+          <select class="seasonsel" id="seasonSel" data-ch="seasonSel" aria-label="Season">${store.seasons.map(x => `<option value="${x.id}" ${x.id === viewSeason() ? "selected" : ""}>${esc(x.name)}${x.id === store.currentSeasonId ? " (current)" : ""}</option>`).join("")}<option value="all" ${viewSeason() === "all" ? "selected" : ""}>All seasons</option></select>
+          <span>${games} game${games === 1 ? "" : "s"} · ${rec.T ? `${rec.W}–${rec.L}–${rec.T} (W–L–T)` : `${rec.W}–${rec.L}`}</span></h2>
+        <span class="spacer"></span>
+        <button class="tbtn" data-act="newseason">New Season</button>
+      </div>
+      <div class="tabs seg" role="tablist">${[["overview", "Overview"], ["batting", "Batting"], ["spray", "Spray charts"], ["lineups", "Lineups"]].map(([k, l]) => `<button role="tab" aria-selected="${seg === k}" data-act="statstab" data-v="${k}">${l}</button>`).join("")}</div>
+    </section>
+    ${body}`;
 }
 
 /* ---------- Spray charts: where each player's balls in play went ---------- */
@@ -1236,7 +1292,7 @@ function sprayField(balls) {
     const cls = { "1B": "h1", "2B": "h2", "3B": "h3", HR: "hr" }[b.r] || "o";
     return `<circle class="${cls}" cx="${x}" cy="${y}" r="${cls === "o" ? 3.2 : 4.2}">${tip}</circle>`;
   }).join("");
-  return `<svg class="spray" viewBox="0 0 200 172" role="img" aria-label="Spray chart, ${balls.length} balls in play">
+  return `<svg class="spray" viewBox="0 8 200 164" role="img" aria-label="Spray chart, ${balls.length} balls in play">
     <path class="grass" d="M100 166 L11 77 A126 126 0 0 1 189 77 Z" />
     <path class="dirt" d="M100 168 L146 122 Q100 66 54 122 Z" />
     <path class="line" d="M100 162 L11 73 M100 162 L189 73" />
@@ -1276,6 +1332,70 @@ function sprayCharts() {
   return `<div class="spraykey"><span>${dot("h1", 4.5)}Single</span><span>${dot("h2", 4.5)}Double</span><span>${dot("h3", 4.5)}Triple</span><span>${dot("hr", 4.5)}Home run (past the fence)</span><span>${dot("o", 3.5)}Out</span><span><svg class="spray" viewBox="0 0 12 12"><path class="e" d="M3 3 l6 6 M3 9 l6 -6" /></svg>Error</span></div>
     ${cards ? `<div class="spraygrid spray-wrap">${cards}</div>` : `<p style="color:var(--muted)">No hit locations yet. Turn on Hit location in Game Settings, and each ball in play will show up here.</p>`}
     <p class="gloss" style="display:block">Only plays where you picked the fielder or location are drawn. Each dot sits near that fielder's spot; tap or hover a dot for the play and game.</p>`;
+}
+
+/* ---------- Scouting: where other teams hit the ball ----------
+   Built from games scored in Scorekeeper mode with Hit location on, grouped by
+   team name across every season, then by batter. */
+function scoutData() {
+  const teams = {};
+  store.games.forEach(g => {
+    if (!g.done && g.id !== store.currentId) return;
+    const name = (g.opponent || "Opponent").trim(), k = name.toLowerCase();
+    const T = teams[k] || (teams[k] = { key: k, name, games: [], balls: [] });
+    const s = derive(g);
+    T.games.push({ g, us: total(s, g.ourSide), them: total(s, 1 - g.ourSide), live: g.id === store.currentId });
+    s.bip.forEach(b => { if (b.team !== g.ourSide) T.balls.push(Object.assign({ date: g.date, opp: name }, b)); });
+  });
+  return Object.values(teams).sort((a, b) => b.balls.length - a.balls.length || a.name.localeCompare(b.name));
+}
+function tendency(balls) {
+  const n = balls.length, c = { L: 0, M: 0, R: 0, OF: 0 };
+  balls.forEach(b => { c[LEFT_SIDE.has(b.p) ? "L" : RIGHT_SIDE.has(b.p) ? "R" : "M"]++; if (b.p >= 7) c.OF++; });
+  const pc = v => Math.round(v / n * 100) + "%";
+  let hint = "";
+  if (n >= 5) {
+    if (c.L / n >= .5) hint = "Hits to the left side. Shade toward third base and left field.";
+    else if (c.R / n >= .5) hint = "Hits to the right side. Shade toward first base and right field.";
+    if (c.OF / n >= .7) hint += (hint ? " " : "") + "Mostly in the air to the outfield: play deep.";
+    else if (c.OF / n <= .35) hint += (hint ? " " : "") + "Mostly on the ground: the infield will be busy.";
+  }
+  return { line: `Left side ${pc(c.L)} · Middle ${pc(c.M)} · Right side ${pc(c.R)} · Outfield ${pc(c.OF)}`, hint };
+}
+function renderScout() {
+  const teams = scoutData();
+  if (!teams.length) {
+    $("view").innerHTML = `<section class="panel empty"><h2>Scouting</h2><p>Teams you've played show up here. Score their batters in Scorekeeper mode with Hit location on, and you'll see where each team and each hitter puts the ball.</p></section>`;
+    return;
+  }
+  const T = teams.find(t => t.key === ui.scoutTeam) || teams[0];
+  const done = T.games.filter(x => !x.live);
+  const rec = { W: 0, L: 0, T: 0 }; done.forEach(x => rec[x.us > x.them ? "W" : x.us < x.them ? "L" : "T"]++);
+  const td = T.balls.length ? tendency(T.balls) : null;
+  const byBatter = {};
+  T.balls.forEach(b => (byBatter[b.name] = byBatter[b.name] || []).push(b));
+  const batters = Object.entries(byBatter).sort((a, b) => b[1].length - a[1].length);
+  $("view").innerHTML = `
+    <section class="panel">
+      <h2 style="margin:0">Scouting</h2>
+      <div class="scoutbar">${teams.map(t => `<button class="chipbtn ${t === T ? "on" : ""}" data-act="scoutteam" data-v="${esc(t.key)}">${esc(t.name)} · ${t.games.length}</button>`).join("")}</div>
+    </section>
+    <div class="scoutteam">
+      <section class="panel">
+        <h2 style="margin:0 0 4px">${esc(T.name)}</h2>
+        <p style="margin:0 0 8px;font-size:14px;color:var(--muted)">${T.games.length} game${T.games.length === 1 ? "" : "s"} against them${done.length ? ` · you're ${rec.W}–${rec.L}${rec.T ? "–" + rec.T : ""}` : ""} · ${T.balls.length} balls in play tracked</p>
+        ${T.balls.length ? `${sprayField(T.balls)}<p class="scouttip" style="color:var(--muted)">${td.line}</p>${td.hint ? `<p class="scouttip"><b>${td.hint}</b></p>` : ""}`
+          : `<p style="color:var(--muted)">No balls in play tracked against ${esc(T.name)} yet. Next time, score their half in Scorekeeper mode with Hit location on, and their spray chart builds here.</p>`}
+        <ul class="games" style="margin-top:8px">${T.games.slice().sort((a, b) => b.g.date.localeCompare(a.g.date)).map(x => `<li><span class="res ${x.live ? "" : x.us > x.them ? "w" : x.us < x.them ? "l" : "t"}">${x.live ? "●" : x.us > x.them ? "W" : x.us < x.them ? "L" : "T"}</span><span class="who">${x.us}–${x.them}<small>${esc(x.g.date)}</small></span></li>`).join("")}</ul>
+      </section>
+      <section class="panel">
+        <h2>Their hitters</h2>
+        ${batters.length ? `<div class="spraygrid">${batters.map(([name, balls]) => { const t = tendency(balls), hits = balls.filter(b => HIT_CODES.includes(b.r)).length;
+          return `<div class="spraycard"><h3>${esc(name)}</h3><p>${balls.length} in play · ${hits} hit${hits === 1 ? "" : "s"}<br>${t.line}</p>${sprayField(balls)}${t.hint ? `<p style="color:var(--ink)">${t.hint}</p>` : ""}</div>`; }).join("")}</div>
+          <p class="gloss" style="display:block">Hitters are grouped by the names in their batting order. Enter their lineup under Lineups during the game to scout by name instead of by spot.</p>`
+          : `<p style="color:var(--muted)">Nothing yet.</p>`}
+      </section>
+    </div>`;
 }
 
 /* ---------- Lineup history: who batted where and played what, game by game ---------- */
@@ -1579,7 +1699,12 @@ function push(e) {
   render();
   if (ui.sound && prev) runQueue(soundPlan(prev, S, g));
 }
-function syncSoundBtn() { const b = $("soundBtn"); b.setAttribute("aria-pressed", ui.sound); b.textContent = ui.sound ? "Sound on" : "Sound off"; }
+function syncSoundBtn() {
+  const b = $("soundBtn");
+  b.setAttribute("aria-pressed", ui.sound);
+  b.setAttribute("aria-label", ui.sound ? "Sound is on. Tap to mute." : "Sound is off. Tap to turn on.");
+  b.innerHTML = `<svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/>${ui.sound ? '<path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/>' : '<path d="M17 9.5l5 5M22 9.5l-5 5"/>'}</svg>`;
+}
 function closeSheet() { ui.sheet = null; ui.draft = null; ui.confirm = null; ui.msg = ""; ui.bb = null; renderSheet(); }
 
 // Start from the last game's lineup; otherwise the roster, giving each player
@@ -1782,7 +1907,7 @@ document.addEventListener("click", ev => {
       store.games = store.games.filter(g => g.id !== store.currentId); store.currentId = null;
       save(); closeSheet(); render(); break;
     case "resume": ui.view = "game"; ui.peekId = null; render(); break;
-    case "peek": ui.peekId = v; ui.bookTeam = null; ui.view = "game"; render(); break;
+    case "peek": ui.peekId = v; ui.bookTeam = null; ui.view = "book"; render(); break;
     case "unpeek": ui.peekId = null; ui.view = "stats"; render(); break;
     case "reopen": {
       const g = store.games.find(x => x.id === ui.peekId);
@@ -1795,6 +1920,12 @@ document.addEventListener("click", ev => {
       ui.confirm = null; save(); render(); break;
     case "sort": ui.sort = ui.sort.k === v ? { k: v, d: -ui.sort.d } : { k: v, d: v === "name" ? 1 : -1 }; render(); break;
     case "table": ui.table = v; render(); break;
+    case "statstab": ui.statsTab = v; render(); break;
+    case "scoutteam": ui.scoutTeam = v; render(); break;
+    case "settings":
+      if (curGame()) { G = curGame(); S = derive(G); openGameMenu(); }
+      else { ui.msg = ""; ui.returnTo = null; ui.sheet = { type: "sounds" }; renderSheet(); }
+      break;
     case "addplayer": {
       store.team.players.push({ id: uid(), name: "", num: "", pos: "Bench", bats: "" });
       save(); render();
