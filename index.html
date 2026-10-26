@@ -30,6 +30,10 @@
   --f-body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-label: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
   --f-varsity: "Graduate", Rockwell, "Roboto Slab", Georgia, serif;   /* collegiate block lettering for the app name */
+  /* Team colors: applyTeamColors() overrides these from the palette picked on the Team tab */
+  --sel-bg: var(--ink); --sel-ink: var(--paper);
+  --team-brand: var(--ink); --team-shadow: var(--stitch); --team-brand-d: var(--ink); --team-shadow-d: var(--stitch);
+  --brand-fill: var(--team-brand); --brand-shadow: var(--team-shadow);
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -63,16 +67,20 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 
 /* Top bar */
 .topbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.brand { font-family: var(--f-varsity); font-weight: 400; font-size: clamp(16px, 4.8vw, 24px); white-space: nowrap; letter-spacing: .04em; text-transform: uppercase; margin: 0; line-height: 1.1; color: var(--ink); text-shadow: 2px 2px 0 var(--stitch); }
+.brand, .teamword { font-family: var(--f-varsity); font-weight: 400; letter-spacing: .04em; text-transform: uppercase; line-height: 1.1; color: var(--brand-fill); text-shadow: 2px 2px 0 var(--brand-shadow); }
+.brand { font-size: clamp(16px, 4.8vw, 24px); white-space: nowrap; margin: 0; }
+.teamword { font-size: 20px; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --brand-fill: var(--team-brand-d); --brand-shadow: var(--team-shadow-d); } }
+:root[data-theme="dark"] { --brand-fill: var(--team-brand-d); --brand-shadow: var(--team-shadow-d); }
 .chip { font-family: var(--f-label); font-weight: 600; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; background: var(--rule-soft); color: var(--muted); }
 .chip.live { background: var(--stitch); color: #fff; }
 .topbar .spacer { flex: 1; }
 .tbtn { min-height: 40px; padding: 0 12px; font-size: 15px; border-radius: 8px; border: 1px solid var(--rule); background: var(--surface); font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
 .tbtn:disabled { opacity: .4; cursor: default; }
-.tbtn[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.tbtn[aria-pressed="true"] { background: var(--sel-bg); color: var(--sel-ink); border-color: var(--sel-bg); }
 
 /* Scoreboard */
-.board { background: var(--board); color: var(--board-ink); border-radius: 10px; padding: 6px 10px 8px; overflow: hidden; }
+.board { background: var(--team-board, var(--board)); color: var(--board-ink); border-radius: 10px; padding: 6px 10px 8px; overflow: hidden; }
 .board table { border-collapse: collapse; width: 100%; table-layout: fixed; font-variant-numeric: tabular-nums; }
 .board th { font-family: var(--f-label); font-weight: 600; font-size: 11px; letter-spacing: .08em; color: var(--board-dim); text-transform: uppercase; padding: 2px 2px 3px; text-align: center; }
 .board th.team { width: 32%; }
@@ -80,10 +88,10 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .board th.team, .board td.team { text-align: left; }
 .board td { font-family: var(--f-display); font-weight: 700; font-size: clamp(15px, 2.4vw, 22px); line-height: 1.15; text-align: center; padding: 1px 2px; }
 .board td.team { font-family: var(--f-display); font-size: clamp(13px, 1.9vw, 17px); letter-spacing: .03em; text-transform: uppercase; white-space: nowrap; padding-right: 8px; overflow: hidden; text-overflow: ellipsis; }
-.board td.team .bat { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--lamp); margin-right: 6px; vertical-align: middle; visibility: hidden; }
+.board td.team .bat { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--team-lamp, var(--lamp)); margin-right: 6px; vertical-align: middle; visibility: hidden; }
 .board tr.batting td.team .bat { visibility: visible; }
-.board td.now { color: var(--lamp); }
-.board td.tot { color: var(--lamp); border-left: 2px solid rgba(255,255,255,.12); }
+.board td.now { color: var(--team-lamp, var(--lamp)); }
+.board td.tot { color: var(--team-lamp, var(--lamp)); border-left: 2px solid rgba(255,255,255,.12); }
 .board th.tot { border-left: 2px solid rgba(255,255,255,.12); }
 .board td.blank { color: var(--board-dim); opacity: .35; }
 .board th.addinn { width: 30px; padding: 0; }
@@ -140,7 +148,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .bookhead { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
 .tabs { display: inline-flex; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
 .tabs button { border: 0; background: transparent; min-height: 36px; font-size: 15px; padding: 0 14px; font-weight: 600; }
-.tabs button[aria-selected="true"] { background: var(--ink); color: var(--paper); }
+.tabs button[aria-selected="true"] { background: var(--sel-bg); color: var(--sel-ink); }
 .bookscroll { overflow-x: auto; border: 1px solid var(--rule); border-radius: 6px; }
 table.book { border-collapse: collapse; font-variant-numeric: tabular-nums; min-width: 100%; }
 table.book th, table.book td { border: 1px solid var(--rule-soft); }
@@ -206,14 +214,14 @@ input.switch:checked::after, .check input[type=checkbox]:checked::after { transf
 .setrow small { display: block; color: var(--muted); font-size: 13px; line-height: 1.35; margin-top: 2px; }
 .setrow select { font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); }
 .danger { background: var(--stitch); color: #fff; border-color: var(--stitch); }
-.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.primary { background: var(--sel-bg); color: var(--sel-ink); border-color: var(--sel-bg); }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 
 /* Views: Game / Season / Roster */
 .nav { display: inline-flex; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; background: var(--surface); }
 .nav button { border: 0; background: transparent; min-height: 40px; padding: 0 14px; font-size: 15px; font-weight: 600; }
-.nav button[aria-selected="true"] { background: var(--ink); color: var(--paper); }
+.nav button[aria-selected="true"] { background: var(--sel-bg); color: var(--sel-ink); }
 .view { display: grid; gap: 14px; }
 .empty { text-align: center; padding: 40px 16px; display: grid; gap: 12px; justify-items: center; }
 .empty h2 { font-family: var(--f-display); font-weight: 800; font-size: 30px; text-transform: uppercase; color: var(--ink); letter-spacing: .02em; margin: 0; }
@@ -312,9 +320,9 @@ table.stats.lu td:first-child, table.stats.lu th:first-child { text-align: left;
   background: color-mix(in srgb, var(--surface) 88%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: 0 6px 24px rgba(0, 0, 0, .18); }
 .tabbar button { flex: 1; min-width: 0; display: grid; justify-items: center; gap: 2px; padding: 7px 2px 6px; border: 0; border-radius: 24px; background: transparent; color: var(--muted); font-size: 12px; font-weight: 600; }
 .tabbar svg, .iconbtn svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.tabbar button[aria-selected="true"] { background: var(--ink); color: var(--paper); }
+.tabbar button[aria-selected="true"] { background: var(--sel-bg); color: var(--sel-ink); }
 .iconbtn { width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--rule); background: var(--surface); display: grid; place-items: center; padding: 0; color: var(--ink); }
-.iconbtn[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.iconbtn[aria-pressed="true"] { background: var(--sel-bg); color: var(--sel-ink); border-color: var(--sel-bg); }
 .play { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 820px) { .play { grid-template-columns: minmax(280px, 360px) minmax(0, 1fr); align-items: start; } }
 .play .pad { margin-top: 0; }
@@ -335,18 +343,28 @@ table.stats.lu td:first-child, table.stats.lu th:first-child { text-align: left;
 .situ { grid-template-columns: minmax(0, 1fr) 110px; }
 .seg { margin-top: 10px; display: flex; overflow-x: auto; }
 .seg button { flex: 1; white-space: nowrap; }
-.chipbtn.on { background: var(--ink); color: var(--paper); border-style: solid; border-color: var(--ink); }
+.chipbtn.on { background: var(--sel-bg); color: var(--sel-ink); border-style: solid; border-color: var(--sel-bg); }
 .scoutbar { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 2px; }
 .scoutteam { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 760px) { .scoutteam { grid-template-columns: minmax(260px, 360px) minmax(0, 1fr); align-items: start; } }
 .scouttip { font-size: 14px; margin: 6px 0 0; }
+.colors { display: grid; gap: 10px; margin: 4px 0 16px; padding: 12px; border: 1px solid var(--rule); border-radius: 12px; background: var(--paper); }
+.colorrow { display: grid; gap: 6px; }
+.colorrow .clabel { font-family: var(--f-label); font-weight: 700; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+.swatch { width: 32px; height: 32px; border-radius: 50%; background: var(--sw); border: 2px solid var(--rule); padding: 0; }
+.swatch[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--paper), 0 0 0 5px var(--ink); }
+.colorpreview { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.colorpreview .miniboard { background: var(--team-board, var(--board)); color: var(--board-ink); border-radius: 8px; padding: 6px 12px; font-family: var(--f-display); font-weight: 700; font-size: 20px; display: inline-flex; gap: 12px; align-items: center; }
+.colorpreview .miniboard b { color: var(--team-lamp, var(--lamp)); font-weight: 700; }
+.colorpreview .tbtn { pointer-events: none; }
 .prow.head { font-family: var(--f-label); font-weight: 700; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .roster-top { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; margin-bottom: 12px; }
 .roster-top .field { flex: 1; min-width: 200px; }
 .sheet.wide { max-width: 720px; }
 .bbrow { display: flex; gap: 6px; flex-wrap: wrap; }
 .bbrow button { min-height: 40px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--rule); background: var(--surface); font-weight: 600; }
-.bbrow button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.bbrow button[aria-pressed="true"] { background: var(--sel-bg); color: var(--sel-ink); border-color: var(--sel-bg); }
 .srow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--rule-soft); }
 .srow .sl { min-width: 0; }
 .srow .sl small { display: block; color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -450,6 +468,34 @@ const entryName = x => (x.pid && player(x.pid) ? player(x.pid).name : x.name) ||
 const teamNames = g => g.ourSide === 0 ? [store.team.name, g.opponent || "Opponent"] : [g.opponent || "Opponent", store.team.name];
 const modeOf = g => g.settings.mode === "dugout" ? "dugout" : "scorekeeper";
 const countOn = g => g.settings.trackCount !== false;
+// Team colors: a basic palette of common uniform colors
+const PALETTE = [
+  ["navy", "Navy", "#14284b"], ["royal", "Royal blue", "#1d4fb8"], ["columbia", "Columbia blue", "#6fa8dc"], ["teal", "Teal", "#00808a"],
+  ["red", "Red", "#c8102e"], ["cardinal", "Cardinal", "#9d2235"], ["maroon", "Maroon", "#6b1f2a"], ["pink", "Pink", "#e0457b"],
+  ["orange", "Orange", "#f26b1d"], ["gold", "Gold", "#c99700"], ["yellow", "Yellow", "#ffcd00"], ["kelly", "Kelly green", "#138a43"],
+  ["forest", "Forest green", "#1f4d2b"], ["purple", "Purple", "#4b2e83"], ["black", "Black", "#111111"], ["silver", "Silver", "#a2aaad"], ["white", "White", "#ffffff"]
+];
+const COLOR = Object.fromEntries(PALETTE.map(([k, , hex]) => [k, hex]));
+const teamColors = () => Object.assign({ primary: "navy", secondary: "red" }, store.team.colors);
+const rgbOf = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255);
+const lum = h => { const [r, g, b] = rgbOf(h).map(c => c <= .03928 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4); return .2126 * r + .7152 * g + .0722 * b; };
+const contrast = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + .05) / (y + .05); };
+const mixHex = (a, b, t) => "#" + rgbOf(a).map((c, i) => Math.round((c * (1 - t) + rgbOf(b)[i] * t) * 255).toString(16).padStart(2, "0")).join("");
+const textOn = h => contrast(h, "#ffffff") >= contrast(h, "#111111") ? "#ffffff" : "#111111";
+// Turn the two picked colors into the app's accent tokens, keeping every pairing readable.
+function applyTeamColors() {
+  const c = teamColors(), P = COLOR[c.primary] || COLOR.navy, Q = COLOR[c.secondary] || COLOR.red;
+  let board = P;                                                    // scoreboard: primary, darkened until white numbers read well
+  for (let t = .15; contrast(board, "#ffffff") < 7 && t < .9; t += .1) board = mixHex(P, "#000000", t);
+  const lamp = [Q, P, "#ffc93c"].find(x => contrast(x, board) >= 3.5) || "#ffc93c";
+  const sel = lum(P) < .6 ? P : lum(Q) < .6 ? Q : "#14212c";      // selected tabs and main buttons
+  const fill = bg => [P, Q].find(x => contrast(x, bg) >= 3) || (lum(bg) > .5 ? "#14212c" : "#eef2f5");
+  const fl = fill("#f4f7f9"), fd = fill("#0e1418");
+  const set = (k, v) => document.documentElement.style.setProperty(k, v);
+  set("--team-board", board); set("--team-lamp", lamp); set("--sel-bg", sel); set("--sel-ink", textOn(sel));
+  set("--team-brand", fl); set("--team-shadow", fl === P ? Q : P);
+  set("--team-brand-d", fd); set("--team-shadow-d", fd === P ? Q : P);
+}
 const curGame = () => store.games.find(g => g.id === store.currentId) || null;
 const viewGame = () => ui.peekId ? store.games.find(g => g.id === ui.peekId) : curGame();
 
@@ -969,6 +1015,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
 let G = null, S = null, shellKey = "";
 
 function render() {
+  applyTeamColors();
   $("tabbar").innerHTML = TABS.map(([v, l, icon]) => `<button role="tab" aria-selected="${ui.view === v}" data-act="view" data-v="${v}"><svg viewBox="0 0 24 24">${icon}</svg>${l}</button>`).join("");
   syncSoundBtn();
   $("sampleBox").innerHTML = store.sample ? `<div class="banner"><span>This is a <b>made-up sample season</b> so you can see how the stats work.</span><span class="spacer"></span>
@@ -1265,7 +1312,7 @@ function renderStats() {
   $("view").innerHTML = `
     <section class="panel">
       <div class="sbar" style="margin:0">
-        <h2 style="margin:0;display:flex;gap:8px;align-items:center;flex-wrap:wrap">${esc(store.team.name)}
+        <h2 style="margin:0;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="teamword">${esc(store.team.name)}</span>
           <select class="seasonsel" id="seasonSel" data-ch="seasonSel" aria-label="Season">${store.seasons.map(x => `<option value="${x.id}" ${x.id === viewSeason() ? "selected" : ""}>${esc(x.name)}${x.id === store.currentSeasonId ? " (current)" : ""}</option>`).join("")}<option value="all" ${viewSeason() === "all" ? "selected" : ""}>All seasons</option></select>
           <span>${games} game${games === 1 ? "" : "s"} · ${rec.T ? `${rec.W}–${rec.L}–${rec.T} (W–L–T)` : `${rec.W}–${rec.L}`}</span></h2>
         <span class="spacer"></span>
@@ -1432,6 +1479,16 @@ function lineupHistory() {
 }
 
 /* ---------- Roster view ---------- */
+function colorPicker() {
+  const c = teamColors();
+  const row = (k, label) => `<div class="colorrow"><span class="clabel">${label}: ${esc((PALETTE.find(x => x[0] === c[k]) || [])[1] || "")}</span>
+    <div class="swatches">${PALETTE.map(([id, name, hex]) => `<button class="swatch" style="--sw:${hex}" data-act="teamcolor" data-k="${k}" data-v="${id}" aria-pressed="${c[k] === id}" aria-label="${label} color: ${name}" title="${name}"></button>`).join("")}</div></div>`;
+  return `<div class="colors">
+    ${row("primary", "Primary color")}
+    ${row("secondary", "Secondary color")}
+    <div class="colorpreview"><span class="teamword">${esc(store.team.name)}</span><span class="miniboard">R <b>6</b> H <b>9</b></span><span class="tbtn primary">New Game</span></div>
+  </div>`;
+}
 function renderRoster() {
   const ps = store.team.players;
   const flash = ui.flash; ui.flash = "";
@@ -1441,6 +1498,7 @@ function renderRoster() {
       <button class="tbtn" data-act="sounds">Walk-up songs &amp; sounds</button>
       <button class="tbtn primary" data-act="addplayer">Add player</button>
     </div>
+    ${colorPicker()}
     <div class="rows">
       <div class="prow ros head"><span>#</span><span>Name</span><span class="posset">Positions: main, 2nd, 3rd</span><span>Bats</span><span></span></div>
       ${ps.map(p => `<div class="prow ros">
@@ -1922,6 +1980,7 @@ document.addEventListener("click", ev => {
     case "sort": ui.sort = ui.sort.k === v ? { k: v, d: -ui.sort.d } : { k: v, d: v === "name" ? 1 : -1 }; render(); break;
     case "table": ui.table = v; render(); break;
     case "statstab": ui.statsTab = v; render(); break;
+    case "teamcolor": store.team.colors = Object.assign(teamColors(), { [el.dataset.k]: v }); save(); render(); break;
     case "scoutteam": ui.scoutTeam = v; render(); break;
     case "settings":
       if (curGame()) { G = curGame(); S = derive(G); openGameMenu(); }
