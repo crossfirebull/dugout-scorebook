@@ -64,7 +64,7 @@ body {
   color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.4;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 12px calc(104px + env(safe-area-inset-bottom, 0px));
+  padding-block: 12px calc(86px + env(safe-area-inset-bottom, 0px));
   -webkit-tap-highlight-color: transparent;
 }
 button { font: inherit; color: inherit; cursor: pointer; touch-action: manipulation; }
@@ -321,10 +321,11 @@ table.stats.lu td:first-child, table.stats.lu th:first-child { text-align: left;
 .spraykey { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--muted); margin-bottom: 10px; align-items: center; }
 .spraykey svg { display: inline-block; width: 12px; height: 12px; vertical-align: -1px; margin-right: 4px; }
 /* Bottom tab bar, floating like a phone app's */
-.tabbar { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(10px + env(safe-area-inset-bottom, 0px)); z-index: 40;
-  display: flex; gap: 2px; padding: 5px; width: min(560px, calc(100% - 24px)); border-radius: 30px; border: 1px solid var(--rule);
-  background: color-mix(in srgb, var(--surface) 88%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: 0 6px 24px rgba(0, 0, 0, .18); }
-.tabbar button { flex: 1; min-width: 0; display: grid; justify-items: center; gap: 2px; padding: 7px 2px 6px; border: 0; border-radius: 24px; background: transparent; color: var(--muted); font-size: 12px; font-weight: 600; }
+/* Solid bar docked to the bottom edge: nothing scrolls visibly behind it */
+.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: flex; justify-content: center; gap: 4px;
+  padding: 6px max(12px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px));
+  background: var(--surface); border-top: 1px solid var(--rule); box-shadow: 0 -4px 16px rgba(0, 0, 0, .1); }
+.tabbar button { flex: 1; max-width: 120px; min-width: 0; display: grid; justify-items: center; gap: 2px; padding: 7px 2px 6px; border: 0; border-radius: 24px; background: transparent; color: var(--muted); font-size: 12px; font-weight: 600; }
 .tabbar svg, .iconbtn svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .tabbar button[aria-selected="true"] { background: var(--sel-bg); color: var(--sel-ink); }
 .iconbtn { width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--rule); background: var(--surface); display: grid; place-items: center; padding: 0; color: var(--ink); }
@@ -390,8 +391,9 @@ html[data-layout="short"] .bug .nm { display: none; }
 /* Side rail instead of the bottom tab bar when the screen is wide or short */
 html[data-layout="wide"] .tabbar, html[data-layout="short"] .tabbar {
   left: calc(10px + env(safe-area-inset-left, 0px)); top: 50%; bottom: auto; transform: translateY(-50%);
-  flex-direction: column; width: 84px; padding: 6px; border-radius: 28px; }
-html[data-layout="wide"] .tabbar button, html[data-layout="short"] .tabbar button { flex: none; padding: 9px 2px 8px; }
+  right: auto; flex-direction: column; justify-content: flex-start; width: 84px; padding: 6px; border-radius: 28px;
+  border: 1px solid var(--rule); box-shadow: 0 6px 24px rgba(0, 0, 0, .18); }
+html[data-layout="wide"] .tabbar button, html[data-layout="short"] .tabbar button { flex: none; max-width: none; padding: 9px 2px 8px; }
 html[data-layout="short"] .tabbar { width: 66px; }
 html[data-layout="short"] .tabbar button { padding: 6px 2px 5px; font-size: 10.5px; }
 html[data-layout="short"] .tabbar svg { width: 21px; height: 21px; }
