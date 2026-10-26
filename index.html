@@ -96,7 +96,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 
 /* Situation */
 .situ { display: grid; grid-template-columns: 1fr 120px; gap: 10px; align-items: center; }
-.diamond { width: 100%; max-width: 200px; aspect-ratio: 1; justify-self: center; }
+.diamond { width: 100%; max-width: 170px; aspect-ratio: 1; justify-self: center; }
 .diamond .base { cursor: pointer; }
 .diamond .base rect { fill: var(--surface); stroke: var(--muted); stroke-width: 2.5; }
 .diamond .base.on rect { fill: var(--lamp); stroke: var(--ink); }
@@ -127,6 +127,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .key:active { transform: translateY(1px); }
 .key:disabled { opacity: .35; cursor: default; }
 .key.pitch { background: var(--rule-soft); }
+.key.wide { grid-column: span 2; }
 .key.on { background: var(--safe-soft); border-color: color-mix(in srgb, var(--safe) 35%, var(--rule)); }
 .key.on b { color: var(--safe); }
 .key.out { background: var(--stitch-soft); border-color: color-mix(in srgb, var(--stitch) 30%, var(--rule)); }
@@ -163,7 +164,6 @@ table.book tfoot td { font-family: var(--f-label); font-weight: 700; font-size: 
 .mini .note { font-family: var(--f-label); font-weight: 700; font-size: 9px; fill: var(--muted); }
 
 .lower { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); margin-top: 14px; }
-@media (min-width: 700px) { .lower { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
 .pbp { list-style: none; margin: 0; padding: 0; max-height: 260px; overflow-y: auto; display: grid; gap: 0; }
 .pbp li { padding: 6px 0; border-bottom: 1px solid var(--rule-soft); font-size: 15px; display: grid; grid-template-columns: 48px 1fr; gap: 8px; }
 .pbp li .inn { font-family: var(--f-label); font-weight: 700; color: var(--muted); font-size: 13px; padding-top: 2px; }
@@ -326,7 +326,7 @@ const POS_NAME = [null, "Pitcher", "Catcher", "First base", "Second base", "Thir
 const FIELD_POS = ["P", "C", "1B", "2B", "3B", "SS", "LF", "LCF", "CF", "RCF", "RF", "SF"];
 const LINEUP_POS = [...FIELD_POS, "EH"];                       // EH = extra hitter: bats, doesn't field
 const posList = pl => pl ? [pl.pos, ...(pl.alt || [])].filter((x, i, a) => x && LINEUP_POS.includes(x) && a.indexOf(x) === i) : [];
-const NEEDS_POS = { GO: "Who fielded the grounder?", FO: "Who caught the fly ball?", LO: "Who caught the liner?", PO: "Who caught the pop-up?", SF: "Who caught the sacrifice fly?", E: "Who made the error?" };
+const NEEDS_POS = { GO: "Who fielded the grounder?", FO: "Who caught the fly ball?", LO: "Who caught the liner?", PO: "Who caught the pop-up?", SF: "Who caught the sacrifice fly?", E: "Who made the error? Optional: skip it if you're not sure." };
 const HIT_CODES = ["1B", "2B", "3B", "HR"];
 const BASES_FOR = { "1B": 1, "2B": 2, "3B": 3, HR: 4 };
 const BB_OF = { GO: "GB", FO: "FB", LO: "LD", PO: "PU", SF: "FB", DP: "GB", FC: "GB", HRO: "FB" };   // batted-ball type implied by an out
@@ -371,7 +371,7 @@ const viewGame = () => ui.peekId ? store.games.find(g => g.id === ui.peekId) : c
    to every game ever scored.
    ===================================================================== */
 function blankStat() {
-  return { PA: 0, AB: 0, H: 0, "1B": 0, "2B": 0, "3B": 0, HR: 0, HRO: 0, TB: 0, R: 0, RBI: 0, BB: 0, HBP: 0, K: 0, SF: 0, SB: 0, ROE: 0,
+  return { PA: 0, AB: 0, H: 0, "1B": 0, "2B": 0, "3B": 0, HR: 0, HRO: 0, FBO: 0, TB: 0, R: 0, RBI: 0, BB: 0, HBP: 0, K: 0, SF: 0, SB: 0, ROE: 0,
            RAB: 0, RH: 0, GB: 0, LD: 0, FB: 0, PU: 0, PULL: 0, CENT: 0, OPPO: 0 };
 }
 function fresh(g) {
@@ -438,7 +438,7 @@ function codeFor(r, p) {
 const VERB = {
   "1B": "singles", "2B": "doubles", "3B": "triples", HR: "homers", BB: "walks", HBP: "is hit by a pitch",
   K: "strikes out swinging", KC: "strikes out looking", FC: "reaches on a fielder's choice", DP: "grounds into a double play",
-  HRO: "hits a home run that's ruled an out (over the HR limit)", OUT: "is called out"
+  HRO: "hits a home run that's ruled an out (over the HR limit)", FBO: "is out on a foul ball", OUT: "is called out"
 };
 function verbFor(r, p) {
   const where = p ? POS_NAME[p].toLowerCase() : "";
@@ -493,7 +493,8 @@ function plateAppearance(s, g, r, p, bb, foulK) {
     case "BB": case "HBP": forceAll(); put(1); st[r]++; s.fx.walk = true; break;
     case "K": case "KC": outRunner(s, me); st.K++; s.fx.k = true; break;
     case "GO": case "FO": case "LO": case "PO": case "OUT": outRunner(s, me); break;
-    case "HRO": outRunner(s, me); st.HRO++; break;   // league HR limit: over the fence, but the batter is out
+    case "HRO": outRunner(s, me); st.HRO++; break;
+    case "FBO": outRunner(s, me); st.FBO++; break;    // foul ball out: an at-bat and an out, not a strikeout   // league HR limit: over the fence, but the batter is out
     case "SF": outRunner(s, me); st.SF++; if (s.outs < 3 && s.bases[2]) { const x = s.bases[2]; s.bases[2] = null; sc(x); } break;
     case "E": forceAll(); put(1); s.errors[ft]++; break;
     case "FC": {
@@ -518,7 +519,7 @@ function plateAppearance(s, g, r, p, bb, foulK) {
 
 function pitch(s, g, k) {
   if (k === "B") { s.balls++; if (s.balls >= 4) plateAppearance(s, g, "BB"); }
-  else if (k === "F") { if (s.strikes < 2) s.strikes++; else if (g.settings.foulOut) plateAppearance(s, g, "K", null, null, true); }
+  else if (k === "F") { if (s.strikes < 2) s.strikes++; else if (g.settings.foulOut) plateAppearance(s, g, "FBO"); }
   else { s.strikes++; if (s.strikes >= 3) plateAppearance(s, g, k === "CS" ? "KC" : "K"); }
 }
 
@@ -616,7 +617,7 @@ function withRates(t) {
   t.SLG = d(t.TB, t.AB);
   t.OPS = t.OBP != null && t.SLG != null ? t.OBP + t.SLG : null;
   t.ISO = t.SLG != null ? t.SLG - t.AVG : null;
-  t.BABIP = d(t.H - t.HR, t.AB - t.K - t.HR - t.HRO + t.SF);
+  t.BABIP = d(t.H - t.HR, t.AB - t.K - t.HR - t.HRO - t.FBO + t.SF);
   // wOBA with MLB-style linear weights. Softball has no published weights, so read it as a relative ranking.
   t.wOBA = d(.69 * t.BB + .72 * t.HBP + .88 * t["1B"] + 1.25 * t["2B"] + 1.59 * t["3B"] + 2.05 * t.HR, t.AB + t.BB + t.SF + t.HBP);
   t.Kp = d(t.K, t.PA); t.BBp = d(t.BB, t.PA); t.BBK = d(t.BB, t.K);
@@ -641,13 +642,13 @@ const fmt = {
 // better: 1 = higher is better, -1 = lower is better, 0 = no leader highlight
 const TABLES = {
   std: { label: "Standard", cols: [["G", "int"], ["PA", "int"], ["AB", "int"], ["R", "int", 1], ["H", "int", 1], ["2B", "int", 1], ["3B", "int", 1], ["HR", "int", 1], ["RBI", "int", 1], ["BB", "int", 1], ["K", "int"], ["SB", "int", 1], ["AVG", "avg", 1], ["OBP", "avg", 1], ["SLG", "avg", 1], ["OPS", "avg", 1]] },
-  adv: { label: "Advanced", cols: [["PA", "int"], ["OPS", "avg", 1], ["wOBA", "avg", 1], ["ISO", "avg", 1], ["BABIP", "avg", 0], ["Kp", "pct", -1, "K%"], ["BBp", "pct", 1, "BB%"], ["BBK", "dec2", 1, "BB/K"], ["RISP", "avg", 1, "RISP AVG"], ["RC", "dec", 1], ["ROE", "int", 0], ["HRO", "int", 0, "HR out"]] },
+  adv: { label: "Advanced", cols: [["PA", "int"], ["OPS", "avg", 1], ["wOBA", "avg", 1], ["ISO", "avg", 1], ["BABIP", "avg", 0], ["Kp", "pct", -1, "K%"], ["BBp", "pct", 1, "BB%"], ["BBK", "dec2", 1, "BB/K"], ["RISP", "avg", 1, "RISP AVG"], ["RC", "dec", 1], ["ROE", "int", 0], ["HRO", "int", 0, "HR out"], ["FBO", "int", 0]] },
   bb: { label: "Batted ball", cols: [["BIP", "int"], ["GBp", "pct", 0, "GB%"], ["LDp", "pct", 1, "LD%"], ["FBp", "pct", 0, "FB%"], ["PUp", "pct", -1, "IFFB%"], ["PULLp", "pct", 0, "Pull%"], ["CENTp", "pct", 0, "Cent%"], ["OPPOp", "pct", 0, "Oppo%"]] },
   fld: { label: "Fielding", cols: [["POS", "txt", 0, "Positions"], ["PL", "int", 1, "Plays"], ["E", "int", -1], ["FLD", "pct", 1, "Fld%"]] }
 };
 const GLOSS = {
-  std: [["AVG", "Hits per at-bat."], ["OBP", "How often a batter reaches base on a hit, walk or HBP."], ["SLG", "Total bases per at-bat. A double counts 2, a homer 4."], ["OPS", "OBP + SLG. The quickest single number for a hitter."]],
-  adv: [["wOBA", "Weights each way of reaching base by how many runs it's worth. Scaled like OBP. Uses MLB weights, so compare players with each other, not with MLB."], ["ISO", "Raw power: SLG minus AVG."], ["BABIP", "Average on balls in play. Very high or low values are often luck and drift back."], ["K% / BB%", "Strikeouts and walks per plate appearance."], ["RISP AVG", "Average with runners on 2nd or 3rd."], ["RC", "Runs created, Bill James' basic formula."], ["ROE", "Times reached on an error. Not counted as a hit."], ["HR out", "Home runs ruled an out under a league HR limit. They count as an at-bat and an out, not a hit."]],
+  std: [["AVG", "Hits per at-bat."], ["OBP", "How often a batter reaches base on a hit or walk."], ["SLG", "Total bases per at-bat. A double counts 2, a homer 4."], ["OPS", "OBP + SLG. The quickest single number for a hitter."]],
+  adv: [["wOBA", "Weights each way of reaching base by how many runs it's worth. Scaled like OBP. Uses MLB weights, so compare players with each other, not with MLB."], ["ISO", "Raw power: SLG minus AVG."], ["BABIP", "Average on balls in play. Very high or low values are often luck and drift back."], ["K% / BB%", "Strikeouts and walks per plate appearance."], ["RISP AVG", "Average with runners on 2nd or 3rd."], ["RC", "Runs created, Bill James' basic formula."], ["ROE", "Times reached on an error. Not counted as a hit."], ["HR out", "Home runs ruled an out under a league HR limit. They count as an at-bat and an out, not a hit."], ["FBO", "Foul ball outs. They count as an at-bat and an out, but not a strikeout."]],
   bb: [["GB / LD / FB / IFFB", "Share of balls in play that were grounders, line drives, fly balls or infield pop-ups. Line drives turn into hits most often."], ["Pull / Cent / Oppo", "Where balls in play went, relative to which side the batter hits from. Set bats R/L on the Roster tab."], ["BIP", "Balls put in play."]],
   fld: [["Plays", "Outs made where this player fielded the ball (credited by the position number you tap)."], ["E", "Errors charged."], ["Fld%", "Plays ÷ (plays + errors). A simplified fielding percentage."], ["Positions", "Positions played, with game counts."]]
 };
@@ -681,7 +682,7 @@ function sampleStore() {
       const t = s.half, who = occ(s, t, curSlot(s));
       const sk = who.pid ? (skill[who.pid] || 1) : 0.95;
       if (s.bases[0] && !s.bases[1] && rng() < .06) { g.events.push({ t: "run", b: 0, a: "sb" }); s = derive(g); continue; }
-      let r = pickW([["1B", .19 * sk], ["2B", .055 * sk], ["3B", .012 * sk], ["HR", .025 * sk * sk], ["BB", .07 * sk], ["HBP", .006], ["E", .04],
+      let r = pickW([["1B", .19 * sk], ["2B", .055 * sk], ["3B", .012 * sk], ["HR", .025 * sk * sk], ["BB", .07 * sk], ["E", .04],
                      ["K", .07 / sk], ["GO", .2], ["FO", .17 / sk], ["LO", .06], ["PO", .05 / sk]]);
       if (r === "FO" && s.bases[2] && s.outs < 2 && rng() < .6) r = "SF";
       else if (r === "GO" && s.bases[0] && s.outs < 2) r = pickW([["GO", .5], ["DP", .3], ["FC", .2]]);
@@ -742,7 +743,7 @@ const SFX = {
 const SFX_LEN = { charge: 1.75, hit: .3, run: .75, k: .5, side: .7, rally: 1.5, win: 2.2 };   // seconds, for queueing
 const SIT_EVENTS = [["lead", "We take the lead", null], ["tie", "We tie it up", null], ["rally", "Rally: runner in scoring position, we're tied or behind", "rally"],
                     ["bigout", "Big out: on defense with runners in scoring position", null], ["win", "We win", "win"]];
-const FX_EVENTS = [["hr", "Home run", "charge"], ["run", "Run scores", "run"], ["hit", "Base hit", "hit"], ["walk", "Walk or hit by pitch", null],
+const FX_EVENTS = [["hr", "Home run", "charge"], ["run", "Run scores", "run"], ["hit", "Base hit", "hit"], ["walk", "Walk", null],
                    ["k", "Strikeout", "k"], ["out", "Other outs", null], ["side", "Side retired", "side"]];
 const clips = {};
 let idb = null, nowPlaying = null;
@@ -921,13 +922,6 @@ function renderGameView() {
           <div class="bookscroll"><table class="book" id="book"></table></div>
           <div class="lower">
             <div><h2>Play by play</h2><ol class="pbp" id="pbp"></ol></div>
-            <div><h2>Scorebook marks</h2>
-              <div class="legend">
-                <div><b>1B</b>Single</div><div><b>2B</b>Double</div><div><b>3B</b>Triple</div><div><b>HR</b>Home run</div>
-                <div><b>BB</b>Walk</div><div><b>HBP</b>Hit by pitch</div><div><b>K</b>Strikeout swinging</div><div><b><span class="kc">K</span></b>Strikeout looking</div>
-                <div><b>6-3</b>Grounder, SS to 1B</div><div><b>F8</b>Fly out to CF</div><div><b>L5</b>Line out to 3B</div><div><b>P4</b>Pop out to 2B</div>
-                <div><b>SF7</b>Sacrifice fly</div><div><b>E6</b>Error on SS</div><div><b>FC</b>Fielder's choice</div><div><b>DP</b>Double play</div><div><b>HRO</b>Home run ruled an out</div><div><b>OUT</b>Other out</div>
-              </div></div>
           </div>
         </section>
       </div>`;
@@ -1050,12 +1044,12 @@ function renderPad() {
     </div></div>` : ""}
     <div class="group"><div class="gl">Batter reaches</div><div class="keys">
       ${key("pa", "1B", "1B", "Single", "on")}${key("pa", "2B", "2B", "Double", "on")}${key("pa", "3B", "3B", "Triple", "on")}${key("pa", "HR", "HR", "Home run", "on")}
-      ${key("pa", "BB", "BB", "Walk", "on")}${key("pa", "HBP", "HBP", "Hit by pitch", "on")}${key("pa", "E", "E", "Error", "on")}${key("pa", "FC", "FC", "Fielder's choice", "on")}
+      ${key("pa", "BB", "BB", "Walk", "on")}${key("pa", "E", "E", "Error", "on")}${key("pa", "FC", "FC", "Fielder's choice", "on wide")}
     </div></div>
     <div class="group"><div class="gl">Batter out</div><div class="keys" style="grid-template-columns:repeat(5,minmax(0,1fr))">
       ${key("pa", "K", "K", "Swinging", "out")}${key("pa", "KC", '<span class="kc">K</span>', "Looking", "out")}${key("pa", "GO", "GO", "Ground out", "out")}${key("pa", "FO", "F", "Fly out", "out")}
       ${key("pa", "LO", "L", "Line out", "out")}${key("pa", "PO", "P", "Pop out", "out")}${key("pa", "SF", "SF", "Sac fly", "out")}${key("pa", "DP", "DP", "Double play", "out")}
-      ${key("pa", "HRO", "HR out", "Over HR limit", "out")}${key("pa", "OUT", "Out", "Other", "out")}
+      ${key("pa", "HRO", "HR out", "Over HR limit", "out")}${key("pa", "FBO", "FBO", "Foul ball out", "out")}
     </div></div>`;
 }
 
@@ -1287,7 +1281,7 @@ function rulesFields(d, live) {
     ${sw("askHits", "Hit location", "Ask which fielder made the play and where hits went. Needed for fielding and spray stats.", d.askHits)}
     ${sw("trackCount", "Track balls and strikes", "Off: tap only the result of each at-bat.", d.trackCount)}
     ${sw("startCount", "Start at a 1–1 count", "Common slowpitch rule.", d.startCount)}
-    ${sw("foulOut", "Two-strike foul is an out", "A foul ball with two strikes counts as a strikeout.", d.foulOut)}
+    ${sw("foulOut", "Two-strike foul is an out", "When tracking the count, a foul with two strikes is recorded as a foul ball out (FBO).", d.foulOut)}
     ${sw("ties", "Games can end in a tie", "A tie after the last inning stands, with no extra innings. Tap + on the scoreboard to play on anyway.", d.ties)}
     <div class="setrow"><span><b>Innings</b><small>Ties go to extra innings automatically. Tap + to play an extra inning anyway.</small></span>
       <span class="stepper"><button data-act="inn" data-v="-1" aria-label="One fewer inning">−</button><b>${d.innings}</b><button data-act="inn" data-v="1" aria-label="One more inning">+</button></span></div>
@@ -1314,7 +1308,7 @@ function renderSheet() {
   if (sh.type === "pos") {
     body = `<h3>${esc({ GO: "Ground out", FO: "Fly out", LO: "Line out", PO: "Pop out", SF: "Sacrifice fly", E: "Error" }[sh.r])}</h3><p>${NEEDS_POS[sh.r]}</p>
       ${posGrid("pos")}
-      <div class="acts"><button class="tbtn" data-act="close">Cancel</button></div>`;
+      <div class="acts"><button class="tbtn" data-act="close">Cancel</button>${sh.r === "E" ? `<button class="tbtn primary" data-act="posskip">Skip, just record the error</button>` : ""}</div>`;
   } else if (sh.type === "hit") {
     body = `<h3>${{ "1B": "Single", "2B": "Double", "3B": "Triple", HR: "Home run" }[sh.r]}</h3>
       <p>What kind of hit, and where did it go? Tap the fielder nearest the ball.</p>
@@ -1539,6 +1533,7 @@ document.addEventListener("click", ev => {
       else push({ t: "pa", r: v });
       break;
     case "pos": push({ t: "pa", r: ui.sheet.r, p: +v }); break;
+    case "posskip": push({ t: "pa", r: ui.sheet.r }); break;
     case "bbtype": ui.bb = ui.bb === v ? null : v; renderSheet(); break;
     case "hitpos": { const e = { t: "pa", r: ui.sheet.r, p: +v }; if (ui.bb) e.bb = ui.bb; push(e); break; }
     case "hitskip": { const e = { t: "pa", r: ui.sheet.r }; if (ui.bb) e.bb = ui.bb; push(e); break; }
