@@ -329,23 +329,74 @@ table.stats.lu td:first-child, table.stats.lu th:first-child { text-align: left;
 .tabbar button[aria-selected="true"] { background: var(--sel-bg); color: var(--sel-ink); }
 .iconbtn { width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--rule); background: var(--surface); display: grid; place-items: center; padding: 0; color: var(--ink); }
 .iconbtn[aria-pressed="true"] { background: var(--sel-bg); color: var(--sel-ink); border-color: var(--sel-bg); }
-.play { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
-@media (min-width: 820px) { .play { grid-template-columns: minmax(280px, 360px) minmax(0, 1fr); align-items: start; } }
+/* ---- Layouts by screen. detectLayout() sets html[data-layout] to one of:
+   phone (upright phone), short (phone on its side, small landscape screens such as a
+   Raspberry Pi touchscreen), tablet (upright tablet), wide (tablet on its side, computer). ---- */
+.play { display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+.play .colL { display: contents; }               /* one column: score bug, batter, buttons, extras */
+.play .bug { order: 0; } .play .atbatp { order: 1; } .play .padp { order: 2; } .play .extra { order: 3; }
 .play .pad { margin-top: 0; }
-/* Phones: diamond beside the batter and count so the buttons fit on one screen */
-@media (max-width: 819px) {
-  .gamebar .matchup { display: none; }
-  .sitpanel { display: grid; grid-template-columns: 112px minmax(0, 1fr); grid-template-areas: "dia at" "dia cnt"; column-gap: 12px; row-gap: 8px; align-items: start; padding: 10px; }
-  .sitpanel .situ { display: contents; }
-  .sitpanel .diamond { grid-area: dia; max-width: 112px; }
-  .sitpanel .count { grid-area: cnt; display: flex; gap: 14px; flex-wrap: wrap; }
-  .sitpanel .count .dot { width: 14px; height: 14px; }
-  .sitpanel .atbat { grid-area: at; border-top: 0; margin-top: 0; padding: 0; }
-  .sitpanel .atbat .now { font-size: 21px; }
-  .play .panel { padding: 10px; }
-  .play { gap: 8px; }
-  .key { min-height: 44px; }
-}
+.extra { display: none; }
+.dueup { list-style: none; margin: 0 0 12px; padding: 0; display: grid; }
+.dueup li { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--rule-soft); font-size: 15px; }
+.dueup .n { font-family: var(--f-display); font-weight: 700; font-size: 18px; color: var(--muted); text-align: center; }
+.dueup .ln { font-family: var(--f-label); font-weight: 600; color: var(--muted); }
+.extra .pbp { max-height: none; }
+html[data-layout] .key b span.kc { font: inherit; color: inherit; letter-spacing: inherit; }   /* the backwards K stays full size */
+
+html[data-layout="phone"] .gamebar .matchup { display: none; }
+html[data-layout="phone"] .play { gap: 8px; }
+html[data-layout="phone"] .play .panel { padding: 10px; }
+html[data-layout="phone"] .key { min-height: 44px; }
+
+/* Tablets and computers: bigger targets and a bigger score bug */
+html[data-layout="tablet"] .extra, html[data-layout="wide"] .extra { display: block; }
+html[data-layout="tablet"] .key, html[data-layout="wide"] .key { min-height: 62px; }
+html[data-layout="tablet"] .key b, html[data-layout="wide"] .key b { font-size: 25px; }
+html[data-layout="tablet"] .key span, html[data-layout="wide"] .key span { font-size: 12.5px; }
+html[data-layout="tablet"] .bug .r, html[data-layout="wide"] .bug .r { font-size: 40px; min-width: 54px; }
+html[data-layout="tablet"] .bug .abbr, html[data-layout="wide"] .bug .abbr { font-size: 21px; min-width: 76px; }
+html[data-layout="tablet"] .bug .bases svg, html[data-layout="wide"] .bug .bases svg { width: 104px; height: 57px; }
+html[data-layout="tablet"] .atbat .now, html[data-layout="wide"] .atbat .now { font-size: 30px; }
+
+/* Wide: two columns, situation on the left and buttons on the right */
+html[data-layout="wide"] .play { grid-template-columns: minmax(340px, 1fr) minmax(0, 1.45fr); gap: 14px; }
+html[data-layout="wide"] .play .colL { display: grid; gap: 12px; }
+
+/* Short: everything on one screen with little height to work with */
+html[data-layout="short"] body { padding-block: 6px 12px; }
+html[data-layout="short"] .wrap { gap: 8px; }
+html[data-layout="short"] .brand { font-size: 17px; }
+html[data-layout="short"] .iconbtn { width: 36px; height: 36px; }
+html[data-layout="short"] .banner { padding: 6px 10px; font-size: 13px; }
+html[data-layout="short"] .banner .tbtn { min-height: 32px; }
+html[data-layout="short"] .gamebar .matchup, html[data-layout="short"] .gamebar .chip { display: none; }
+html[data-layout="short"] .gamebar .tbtn { min-height: 34px; }
+html[data-layout="short"] .play { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 8px; }
+html[data-layout="short"] .play .colL { display: grid; gap: 8px; }
+html[data-layout="short"] .play .panel { padding: 8px 10px; }
+html[data-layout="short"] .pad { gap: 6px; }
+html[data-layout="short"] .group .gl { font-size: 10.5px; }
+html[data-layout="short"] .key { min-height: 38px; padding: 2px; }
+html[data-layout="short"] .key b { font-size: 17px; }
+html[data-layout="short"] .key span { font-size: 10px; }
+html[data-layout="short"] .atbat .now { font-size: 20px; }
+html[data-layout="short"] .atbat .meta { font-size: 13px; }
+html[data-layout="short"] .bug .row { padding: 3px 8px 3px 4px; }
+html[data-layout="short"] .bug .r { font-size: 26px; min-width: 40px; }
+html[data-layout="short"] .bug .abbr { font-size: 15px; min-width: 54px; padding: 3px 5px 2px; }
+html[data-layout="short"] .bug .nm { display: none; }
+
+/* Side rail instead of the bottom tab bar when the screen is wide or short */
+html[data-layout="wide"] .tabbar, html[data-layout="short"] .tabbar {
+  left: calc(10px + env(safe-area-inset-left, 0px)); top: 50%; bottom: auto; transform: translateY(-50%);
+  flex-direction: column; width: 84px; padding: 6px; border-radius: 28px; }
+html[data-layout="wide"] .tabbar button, html[data-layout="short"] .tabbar button { flex: none; padding: 9px 2px 8px; }
+html[data-layout="short"] .tabbar { width: 66px; }
+html[data-layout="short"] .tabbar button { padding: 6px 2px 5px; font-size: 10.5px; }
+html[data-layout="short"] .tabbar svg { width: 21px; height: 21px; }
+html[data-layout="wide"] body { padding-left: calc(112px + env(safe-area-inset-left, 0px)); padding-bottom: 24px; }
+html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-left, 0px)); }
 .situ { grid-template-columns: minmax(0, 1fr) 110px; }
 .seg { margin-top: 10px; display: flex; overflow-x: auto; }
 .seg button { flex: 1; white-space: nowrap; }
@@ -1157,7 +1208,7 @@ function renderGameView() {
     shellKey = key;
     $("view").innerHTML = `
       <div class="gamebar" id="gamebar"></div>
-      ${book ? `<section class="board" id="board" aria-label="Line score"></section>` : `<section class="bug" id="bug" aria-label="Score"></section>`}
+      ${book ? `<section class="board" id="board" aria-label="Line score"></section>` : ""}
       <div id="finalBox"></div>
       ${book ? `
       <section class="panel" aria-label="Scorebook">
@@ -1166,13 +1217,33 @@ function renderGameView() {
       </section>
       <section class="panel"><h2>Play by play</h2><ol class="pbp" id="pbp"></ol></section>` : `
       <div class="play">
-        <section class="panel" aria-label="Current at-bat"><div class="atbat" id="atbat"></div></section>
-        <section class="panel"><div class="pad" id="pad"></div></section>
+        <div class="colL">
+          <section class="bug" id="bug" aria-label="Score"></section>
+          <section class="panel atbatp" aria-label="Current at-bat"><div class="atbat" id="atbat"></div></section>
+          <section class="panel extra" id="extra" aria-label="Due up and last plays"></section>
+        </div>
+        <section class="panel padp"><div class="pad" id="pad"></div></section>
       </div>`}`;
   }
   renderGamebar(); renderBoard();
   if (book) { renderBook(); renderLog(); }
-  else { renderBug(); renderAtBat(); renderPad(); }
+  else { renderBug(); renderAtBat(); renderPad(); renderExtra(); }
+}
+
+// Extra panel for bigger screens: who's due up for your team, and the last few plays.
+function renderExtra() {
+  const el = $("extra"); if (!el) return;
+  const our = G.ourSide, L = lineLen(S, our);
+  let due = "";
+  if (!S.final && !ui.peekId) {
+    const batting = S.half === our, start = batting ? curSlot(S) + 1 : S.order[our] % L;
+    due = `<h2>${batting ? "On deck" : "Due up next inning"}</h2><ol class="dueup">${[0, 1, 2].map(i => {
+      const slot = (start + i) % L, who = occ(S, our, slot), st = S.stats[our][keyOf(who, our, slot)];
+      return `<li><span class="n">${slot + 1}</span><span>${esc(entryName(who))}${who.pos ? ` <span class="ln">${esc(who.pos)}</span>` : ""}</span><span class="ln">${st && st.PA ? `${st.H}-for-${st.AB}` : "—"}</span></li>`;
+    }).join("")}</ol>`;
+  }
+  const plays = S.log.slice(-4).reverse();
+  el.innerHTML = `${due}<h2>Last plays</h2>${plays.length ? `<ol class="pbp">${plays.map(l => `<li><span class="inn">${l.inn}</span><span>${l.text}</span></li>`).join("")}</ol>` : `<p style="color:var(--muted);margin:0">Plays show up here as you score them.</p>`}`;
 }
 
 function renderGamebar() {
@@ -1796,7 +1867,7 @@ function renderSheet() {
       <div class="field" style="max-width:120px"><label for="d-oppAbbr">Short name</label><input id="d-oppAbbr" data-ch="setting" maxlength="5" value="${esc(d.oppAbbr || "")}" placeholder="${esc(abbrOf(d.opponent))}" autocomplete="off" style="text-transform:uppercase"></div></div>
       ${rulesFields(d, true)}
       <div class="setlist"><button class="setrow" data-act="sounds"><span><b>Sounds &amp; walk-up songs</b><small>Game sounds, situation sounds, between-innings music and walk-ups.</small></span><span class="chev" aria-hidden="true">›</span></button></div>
-      <p style="font-size:13px">Changes apply right away.</p>
+      <p style="font-size:13px">Changes apply right away. Screen layout: ${LAYOUT_NAMES[document.documentElement.dataset.layout] || "Phone"}, picked automatically from this screen's size and turned with the device.</p>
       <div class="acts" style="justify-content:space-between">
         <button class="tbtn ${ui.confirm === "discard" ? "danger" : ""}" data-act="discard">${ui.confirm === "discard" ? "Tap again to delete this game" : "Delete game"}</button>
         <span style="display:flex;gap:8px;flex-wrap:wrap"><button class="tbtn" data-act="endgame">End game now (time limit)</button><button class="tbtn primary" data-act="close">Done</button></span>
@@ -2215,6 +2286,19 @@ document.addEventListener("keydown", ev => {
   if (ev.key === "Escape" && ui.sheet) closeSheet();
   if ((ev.key === "Enter" || ev.key === " ") && ev.target.matches && ev.target.matches(".base")) { ev.preventDefault(); ev.target.dispatchEvent(new MouseEvent("click", { bubbles: true })); }
 });
+
+// Pick a layout from the screen's size and shape, and again whenever it rotates or resizes.
+const LAYOUT_NAMES = { phone: "Phone", short: "Phone on its side / small landscape screen", tablet: "Tablet, upright", wide: "Tablet on its side / computer" };
+function detectLayout() {
+  const w = window.innerWidth, h = window.innerHeight;
+  const L = h <= 560 && w > h ? "short" : w < 600 ? "phone" : w >= 1000 && w > h * 1.1 ? "wide" : "tablet";
+  if (document.documentElement.dataset.layout === L) return false;
+  document.documentElement.dataset.layout = L;
+  return true;
+}
+let layoutTimer = null;
+window.addEventListener("resize", () => { clearTimeout(layoutTimer); layoutTimer = setTimeout(() => { if (detectLayout()) { shellKey = ""; render(); } }, 120); });
+detectLayout();
 
 store = ensureSeasons(load() || sampleStore());
 loadClips();

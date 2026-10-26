@@ -14,6 +14,13 @@ A tab bar along the bottom has five pages, so there's little scrolling:
 - **Scout**: every team you've played, with a spray chart for the team and each of its hitters, and where to shade your defense.
 - **Team**: your roster, positions, walk-up songs and **team colors**. Pick a primary and a secondary color from a palette of common uniform colors; the app name, scoreboard, buttons and tabs pick them up, and the app keeps every combination readable.
 
+ScoreKeep picks a layout for the screen it's on, and switches when you rotate the device:
+
+- **Phone, upright:** everything stacked on one screen, tabs along the bottom.
+- **Phone on its side, or a small landscape screen like a Raspberry Pi touchscreen:** score bug and batter on the left, buttons on the right, tabs in a slim rail on the left edge.
+- **Tablet, upright:** bigger buttons and score bug, plus who's on deck and the last few plays.
+- **Tablet on its side, or a computer:** two columns, with the score bug, batter, on deck and last plays on the left, large buttons on the right, and tabs in a side rail.
+
 The speaker button at the top mutes and unmutes. The gear opens Game Settings during a game, or Sounds otherwise.
 
 ## Using it at the field
