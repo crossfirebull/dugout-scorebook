@@ -1,6 +1,6 @@
 {
-  "name": "Dugout Scorebook",
-  "short_name": "Scorebook",
+  "name": "ScoreKeep",
+  "short_name": "ScoreKeep",
   "description": "A softball scorebook for the dugout: live scoring, season stats, spray charts and walk-up songs.",
   "start_url": "./",
   "scope": "./",
@@ -9,7 +9,15 @@
   "background_color": "#0e1d38",
   "theme_color": "#14284b",
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
   ]
 }

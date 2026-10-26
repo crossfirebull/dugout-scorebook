@@ -1,4 +1,4 @@
-# Dugout Scorebook
+# ScoreKeep
 
 A softball scorebook for an iPad or Raspberry Pi sitting in the dugout. Tap what happened and it keeps the score, the base runners, a classic scorebook grid and season-long stats.
 
@@ -19,7 +19,7 @@ The speaker button at the top mutes and unmutes. The gear opens Game Settings du
 ## Using it at the field
 
 1. Turn on your phone's hotspot and connect the iPad.
-2. On the **Team** tab, set your team colors first, then open the link in Safari and tap **Share → Add to Home Screen**. The icon (a softball with a varsity "D") is drawn in your team colors at that moment.
+2. On the **Team** tab, set your team colors first, then open the link in Safari and tap **Share → Add to Home Screen**. The icon (a scorebook with a lit R·H·E box score) is drawn in your team colors at that moment.
 3. On the **Roster** tab, add your players with their number, up to three positions (main one first) and which side they bat from.
 4. On game day, tap **New Game**. A pregame checklist covers the opponent, lineup, game settings, sound, walk-up songs and your last backup, each with a check mark when it's ready. Set the batting order and positions. Each player's own positions are offered first, a position that's taken is locked for everyone else, and bench players are one tap away. Pick a mode in **Game settings**:
    - **Dugout mode** scores your batters one at a time. The other team's half-inning gets quick **+1 Run** and **+1 Out** buttons, so you can coach and score at the same time.
