@@ -9,10 +9,10 @@ A softball scorebook for an iPad or Raspberry Pi sitting in the dugout. Tap what
 1. Turn on your phone's hotspot and connect the iPad.
 2. Open the link above in Safari. Tap **Share → Add to Home Screen** so it opens like an app.
 3. On the **Roster** tab, add your players with their number, up to three positions (main one first) and which side they bat from.
-4. On game day, tap **Start a game**, then set the batting order and positions. Each player's own positions are offered first, a position that's taken is locked for everyone else, and bench players are one tap away. Pick a mode in **Game settings**:
+4. On game day, tap **New Game**. A pregame checklist covers the opponent, lineup, game settings, sound, walk-up songs and your last backup, each with a check mark when it's ready. Set the batting order and positions. Each player's own positions are offered first, a position that's taken is locked for everyone else, and bench players are one tap away. Pick a mode in **Game settings**:
    - **Dugout mode** scores your batters one at a time. The other team's half-inning gets quick **+1 Run** and **+1 Out** buttons, so you can coach and score at the same time.
    - **Scorekeeper mode** scores every batter on both teams.
-5. When the game ends, tap **Save to season**. The **Season** tab adds it to everyone's stats, and **Season → Lineups** shows who batted where and played which position in every game.
+5. When the game ends, tap **Save to season**. Start a fresh season any time with **Season → New Season**; past seasons stay saved and you can switch between them (or see all seasons together) from the season menu. The **Season** tab adds it to everyone's stats, and **Season → Lineups** shows who batted where and played which position in every game.
 
 Games are saved on the iPad as you go, so closing Safari or losing signal mid-inning doesn't lose anything. If you tap the wrong thing, use **Undo**. Every so often, use **Season → Export & backup → Download backup** so a lost iPad doesn't mean a lost season.
 
