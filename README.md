@@ -1,8 +1,8 @@
 # Dugout Scorebook
 
-A softball scorebook for an iPad or Raspberry Pi sitting in the dugout. Tap what happened and it keeps the line score, the count, the base runners and a classic scorebook grid.
+A softball scorebook for an iPad or Raspberry Pi sitting in the dugout. Tap what happened and it keeps the score, the base runners, a classic scorebook grid and season-long stats.
 
-**Open the app:** `https://<your-github-username>.github.io/dugout-scorebook/`
+**Open the app:** https://crossfirebull.github.io/dugout-scorebook/
 
 ## Getting around
 
