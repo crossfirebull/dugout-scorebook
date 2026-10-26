@@ -2,3 +2,5 @@ scorebook.html
 python/game.json
 __pycache__/
 .DS_Store
+node_modules/
+test-results/

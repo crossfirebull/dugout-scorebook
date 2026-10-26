@@ -35,7 +35,13 @@ The speaker button at the top mutes and unmutes. The gear opens Game Settings du
    - **Scorekeeper mode** scores every batter on both teams.
 5. When the game ends, tap **Save to season**. Start a fresh season any time with **Season → New Season**; past seasons stay saved and you can switch between them (or see all seasons together) from the season menu. The **Season** tab adds it to everyone's stats, and **Season → Lineups** shows who batted where and played which position in every game.
 
-Games are saved on the iPad as you go, so closing Safari or losing signal mid-inning doesn't lose anything. If you tap the wrong thing, use **Undo**. Every so often, use **Season → Export & backup → Download backup** so a lost iPad doesn't mean a lost season.
+## Keeping your data safe
+
+- **Works with no signal.** After you open ScoreKeep once with a connection, it keeps a copy of itself on the device and opens and scores with no signal at all. Updates arrive the next time it's online.
+- **Saves every tap** on the device as you go, so closing the app, a dead battery or losing signal mid-inning doesn't lose anything. Tap the wrong thing? **Undo**.
+- **Protected storage.** ScoreKeep asks the device to keep its data out of the browser's automatic cleanup. Using it from the Home Screen icon helps too.
+- **Never overwrites a problem.** If saved data ever can't be read, ScoreKeep sets it aside and tells you rather than starting over on top of it. If a save ever fails (for example in Private Browsing), a red warning appears.
+- **Backups in one tap.** **Stats → Overview → Export & backup → Save backup** opens the share sheet on iPhone and iPad: save to Files or iCloud Drive, or email it to yourself. A reminder appears when it's been more than a week. **Restore from backup** brings everything back on any device.
 
 ## Sounds and walk-up songs
 
@@ -60,6 +66,8 @@ Stats are recalculated from the play-by-play every time, so new stats added late
 | --- | --- |
 | `index.html` | The whole app: one file, with no install needed. |
 | `icons/`, `manifest.webmanifest` | The Home Screen icon and app name for phones and tablets. |
+| `sw.js` | Offline support: keeps a copy of the app on the device. |
+| `tests/`, `package.json`, `.github/workflows/tests.yml` | Automated checks that play through the app on GitHub after every change. |
 | `python/` | A five-step tutorial that builds the same scorebook in Python. Start with `python/README.md`. |
 
 ## Making changes

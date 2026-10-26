@@ -449,6 +449,10 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 .bug .outs i.on { background: var(--stitch); border-color: #ffffff; box-shadow: 0 0 6px var(--stitch); }
 @media (max-width: 520px) { .bug .nm { visibility: hidden; } .bug .inn { padding: 0 10px; } .bug .bases { padding: 6px 8px; } .bug .abbr { min-width: 60px; font-size: 16px; } }
 .play .atbat { border-top: 0; margin-top: 0; padding-top: 0; }
+.banner.slim { padding: 4px 6px 4px 12px; font-size: 13px; flex-wrap: nowrap; }
+.banner.slim .tbtn { min-height: 32px; font-size: 13px; padding: 0 10px; }
+.banner.alert.bad { background: var(--stitch-soft); border-color: color-mix(in srgb, var(--stitch) 40%, var(--rule)); }
+.banner.alert.bad b { color: var(--stitch); }
 .prow.head { font-family: var(--f-label); font-weight: 700; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .roster-top { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; margin-bottom: 12px; }
 .roster-top .field { flex: 1; min-width: 200px; }
@@ -477,6 +481,7 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
     <button class="iconbtn" id="soundBtn" data-act="sound" aria-pressed="false" aria-label="Sound is off. Tap to turn on."></button>
     <button class="iconbtn" data-act="settings" aria-label="Settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
   </header>
+  <div id="alertBox"></div>
   <div id="sampleBox"></div>
   <main id="view" class="view"></main>
 </div>
@@ -541,11 +546,45 @@ function ensureSeasons(st) {
 }
 const viewSeason = () => ui.seasonView || store.currentSeasonId;
 const inSeason = g => viewSeason() === "all" || g.seasonId === viewSeason();
+// Data-safety state shown in the alert banner
+const safety = { unreadable: false, saveFailed: false, blocked: false, protected: null };
 function load() {
-  try { const raw = localStorage.getItem(KEY); if (raw) { const d = JSON.parse(raw); if (d && d.team && Array.isArray(d.games)) return d; } } catch (e) {}
+  let raw = null;
+  try { raw = localStorage.getItem(KEY); } catch (e) { safety.blocked = true; return null; }
+  if (!raw) return null;
+  try { const d = JSON.parse(raw); if (d && d.team && Array.isArray(d.games)) return d; } catch (e) {}
+  // Saved data is there but can't be read. Set it aside instead of starting over on top of it.
+  try { localStorage.setItem(KEY + ".unreadable-" + Date.now(), raw); } catch (e) {}
+  safety.unreadable = true;
   return null;
 }
-function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} }
+function save() {
+  try {
+    localStorage.setItem(KEY, JSON.stringify(store));
+    if (safety.saveFailed) { safety.saveFailed = false; renderAlert(); }
+  } catch (e) {
+    if (!safety.saveFailed) { safety.saveFailed = true; renderAlert(); }
+  }
+}
+// Ask the browser to keep ScoreKeep's storage out of its automatic cleanup.
+async function protectStorage() {
+  try {
+    if (!navigator.storage || !navigator.storage.persist) return;
+    safety.protected = (await navigator.storage.persisted()) || (await navigator.storage.persist());
+  } catch (e) {}
+}
+const daysSinceBackup = () => store.lastBackup ? Math.floor((Date.now() - store.lastBackup) / 864e5) : null;
+function renderAlert() {
+  const box = $("alertBox"); if (!box) return;
+  const items = [];
+  if (safety.saveFailed || safety.blocked) items.push(["bad", `<b>ScoreKeep can't save on this device right now.</b> Storage may be full or blocked (Private Browsing does this). Save a backup now so nothing is lost.`, true]);
+  if (safety.unreadable) items.push(["bad", `<b>Your saved data couldn't be read</b>, so ScoreKeep set a copy aside instead of overwriting it. Restore your latest backup from Stats → Overview → Export &amp; backup.`, false]);
+  if (!navigator.onLine) items.push(["info", `<b>Offline.</b> Everything keeps working and saves on this device.`, false]);
+  const days = daysSinceBackup(), played = store.games.some(g => g.done);
+  if (!items.length && !store.sample && played && (days === null || days >= 7) && ui.view !== "game")
+    items.push(["info", days === null ? "<b>No backup yet.</b> Save one so a lost or reset device doesn't cost you the season." : `<b>Last backup was ${days} days ago.</b> Save a fresh one to be safe.`, true]);
+  box.innerHTML = items.map(([kind, text, btn]) => `<div class="banner alert ${kind}"><span>${text}</span><span class="spacer"></span>${btn ? `<button class="tbtn primary" data-act="dl-backup">Save backup</button>` : ""}</div>`).join("");
+}
 
 // Created at the bottom of the script, once every function below exists.
 let store = null;
@@ -1176,7 +1215,10 @@ function render() {
   applyTeamColors();
   $("tabbar").innerHTML = TABS.map(([v, l, icon]) => `<button role="tab" aria-selected="${ui.view === v}" data-act="view" data-v="${v}"><svg viewBox="0 0 24 24">${icon}</svg>${l}</button>`).join("");
   syncSoundBtn();
-  $("sampleBox").innerHTML = store.sample ? `<div class="banner"><span>This is a <b>made-up sample season</b> so you can see how the stats work.</span><span class="spacer"></span>
+  renderAlert();
+  const slim = ui.view === "game" && /^(phone|short)$/.test(document.documentElement.dataset.layout || "");   // keep the buttons on screen
+  const hideSample = ui.view === "game" && document.documentElement.dataset.layout === "short";   // no height to spare; shown on other tabs
+  $("sampleBox").innerHTML = store.sample && !hideSample ? `<div class="banner ${slim ? "slim" : ""}"><span>${slim ? "<b>Sample season</b> (made-up data)" : "This is a <b>made-up sample season</b> so you can see how the stats work."}</span><span class="spacer"></span>
     <button class="tbtn ${ui.confirm === "clear" ? "danger" : ""}" data-act="clearsample">${ui.confirm === "clear" ? "Tap again to erase sample data" : "Clear sample data"}</button></div>` : "";
   if (ui.view === "game" || ui.view === "book") renderGameView();
   else if (ui.view === "stats") { shellKey = ""; renderStats(); }
@@ -1925,9 +1967,14 @@ function renderSheet() {
       <div class="acts"><button class="tbtn" data-act="close">Cancel</button><button class="tbtn primary" data-act="startseason">Start the season</button></div>`;
   } else if (sh.type === "backup") {
     body = `<h3>Export &amp; backup</h3>
-      <p>Your games live in this browser on this device. Download a backup now and then. If the iPad is lost or Safari's data is cleared, you can restore everything from it.</p>
+      <p>Your games live on this device. A backup is one small file with everything: roster, games, stats and settings. Save one after each game day, ideally somewhere off the device like iCloud Drive or email. If the device is lost or reset, Restore brings it all back.</p>
+      <ul class="checklist">
+        <li class="ck ${daysSinceBackup() !== null && daysSinceBackup() < 7 ? "ok" : "info"}"><span class="mark" aria-hidden="true">${daysSinceBackup() !== null && daysSinceBackup() < 7 ? "✓" : "•"}</span><span class="ckt"><b>Last backup</b><small>${daysSinceBackup() === null ? "None yet from this device." : daysSinceBackup() === 0 ? "Today." : daysSinceBackup() + " day" + (daysSinceBackup() === 1 ? "" : "s") + " ago."}</small></span></li>
+        <li class="ck ${safety.protected ? "ok" : "info"}"><span class="mark" aria-hidden="true">${safety.protected ? "✓" : "•"}</span><span class="ckt"><b>Storage on this device</b><small>${safety.protected ? "Protected from the browser's automatic cleanup." : "Not marked as protected. Using ScoreKeep from the Home Screen icon and saving backups keeps it safe."}</small></span></li>
+        <li class="ck ${navigator.serviceWorker && navigator.serviceWorker.controller ? "ok" : "info"}"><span class="mark" aria-hidden="true">${navigator.serviceWorker && navigator.serviceWorker.controller ? "✓" : "•"}</span><span class="ckt"><b>Works offline</b><small>${navigator.serviceWorker && navigator.serviceWorker.controller ? "Saved on this device; opens with no signal." : "Open ScoreKeep once with a connection to make it work offline."}</small></span></li>
+      </ul>
       <div class="acts" style="justify-content:flex-start">
-        <button class="tbtn primary" data-act="dl-backup">Download backup</button>
+        <button class="tbtn primary" data-act="dl-backup">Save backup</button>
         <button class="tbtn" data-act="restore">Restore from backup…</button>
         <button class="tbtn" data-act="dl-csv">Download season stats (CSV)</button>
         <button class="tbtn" data-act="copy-csv">Copy stats for a spreadsheet</button>
@@ -2030,6 +2077,18 @@ function endGame() {
   save(); ui.sheet = null; ui.draft = null; ui.view = "stats"; render();
 }
 
+// Save a file: on iPhone/iPad this opens the share sheet (Save to Files, iCloud Drive, Mail, AirDrop);
+// elsewhere it downloads. Resolves "shared", "downloaded", "cancelled" or "failed".
+async function saveFile(name, text, type) {
+  try {
+    const file = new File([text], name, { type });
+    if (navigator.canShare && navigator.canShare({ files: [file] }) && /iPhone|iPad|Macintosh|Android/.test(navigator.userAgent) && "ontouchend" in document) {
+      await navigator.share({ files: [file], title: name });
+      return "shared";
+    }
+  } catch (e) { if (e && e.name === "AbortError") return "cancelled"; }
+  return download(name, text, type) ? "downloaded" : "failed";
+}
 function download(name, text, type) {
   try {
     const a = document.createElement("a");
@@ -2196,9 +2255,14 @@ document.addEventListener("click", ev => {
     case "backup": ui.msg = ""; ui.sheet = { type: "backup" }; renderSheet(); break;
     case "dl-backup":
       readDraftRows();
-      store.lastBackup = Date.now(); save();
-      ui.msg = download(`scorebook-backup-${today()}.json`, JSON.stringify(store), "application/json") ? "Backup downloaded. On iPad, look in the Files app under Downloads." : "This browser blocked the download.";
-      renderSheet(); break;
+      saveFile(`scorekeep-backup-${today()}.json`, JSON.stringify(store), "application/json").then(r => {
+        if (r === "shared" || r === "downloaded") { store.lastBackup = Date.now(); save(); }
+        ui.msg = r === "shared" ? "Backup saved. Keep it somewhere off this device, like iCloud Drive or email, to be safe."
+          : r === "downloaded" ? "Backup downloaded. On iPhone or iPad it's in the Files app under Downloads."
+          : r === "cancelled" ? "Backup not saved." : "This browser blocked saving the file.";
+        render();
+      });
+      break;
     case "dl-csv":
       ui.msg = download(`${store.team.name.replace(/[^\w]+/g, "-")}-stats-${today()}.csv`, seasonCSV(), "text/csv") ? "Stats downloaded. They open in Numbers, Excel or Google Sheets." : "This browser blocked the download.";
       renderSheet(); break;
@@ -2304,6 +2368,14 @@ detectLayout();
 
 store = ensureSeasons(load() || sampleStore());
 loadClips();
+protectStorage();
+document.addEventListener("click", () => { if (safety.protected === false) protectStorage(); }, { once: true });
+window.addEventListener("online", renderAlert);
+window.addEventListener("offline", renderAlert);
+// Keep a copy of the app on the device so it opens with no signal (the site only; not the preview)
+if ("serviceWorker" in navigator && ((location.protocol === "https:" && /github\.io$/.test(location.hostname)) || /^(localhost|127\.0\.0\.1)$/.test(location.hostname))) {
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
 if (store.currentId) ui.view = "game";
 render();
 })();
