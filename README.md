@@ -8,8 +8,8 @@ A softball scorebook for an iPad or Raspberry Pi sitting in the dugout. Tap what
 
 A tab bar along the bottom has five pages, so there's little scrolling:
 
-- **Game**: the scoreboard, bases, count, batter and scoring buttons. Fits one screen on a phone.
-- **Book**: the scorebook grid and play-by-play.
+- **Game**: a TV-style score bug (team blocks in your colors, runs, inning, bases and outs; tap a lit base to move a runner), the batter, and the scoring buttons. Fits one screen on a phone. Softball has no balls-and-strikes count, so there isn't one.
+- **Book**: the full inning-by-inning line score, the scorebook grid and play-by-play.
 - **Stats**: Overview (games and leaders), Batting tables, Spray charts and Lineups, for any season.
 - **Scout**: every team you've played, with a spray chart for the team and each of its hitters, and where to shade your defense.
 - **Team**: your roster, positions, walk-up songs and **team colors**. Pick a primary and a secondary color from a palette of common uniform colors; the app name, scoreboard, buttons and tabs pick them up, and the app keeps every combination readable.

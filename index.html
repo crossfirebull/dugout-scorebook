@@ -358,6 +358,32 @@ table.stats.lu td:first-child, table.stats.lu th:first-child { text-align: left;
 .colorpreview .miniboard { background: var(--team-board, var(--board)); color: var(--board-ink); border-radius: 8px; padding: 6px 12px; font-family: var(--f-display); font-weight: 700; font-size: 20px; display: inline-flex; gap: 12px; align-items: center; }
 .colorpreview .miniboard b { color: var(--team-lamp, var(--lamp)); font-weight: 700; }
 .colorpreview .tbtn { pointer-events: none; }
+/* Score bug on the Game tab, in the style of a TV broadcast */
+:root { --opp-chip: #3d4b58; --opp-chip-ink: #ffffff; }
+.bug { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; background: var(--team-board, var(--board)); color: var(--board-ink); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); }
+.bug .rows { display: grid; }
+.bug .row { display: grid; grid-template-columns: 10px auto minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 6px 12px 6px 6px; }
+.bug .row + .row { border-top: 1px solid rgba(255, 255, 255, .12); }
+.bug .up { width: 0; height: 0; border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-left: 8px solid var(--team-lamp, var(--lamp)); visibility: hidden; }
+.bug .row.bat .up { visibility: visible; }
+.bug .abbr { font-family: var(--f-varsity); font-size: 17px; min-width: 58px; text-align: center; padding: 5px 6px 4px; border-radius: 6px; background: var(--opp-chip); color: var(--opp-chip-ink); }
+.bug .row.us .abbr { background: var(--team-p, var(--ink)); color: var(--team-p-ink, var(--paper)); box-shadow: inset -5px 0 0 var(--team-q, var(--stitch)); }
+.bug .nm { font-family: var(--f-label); font-weight: 600; font-size: 15px; letter-spacing: .05em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: .85; }
+.bug .r { font-family: var(--f-display); font-weight: 800; font-size: 32px; line-height: 1; min-width: 30px; text-align: right; font-variant-numeric: tabular-nums; }
+.bug .inn { display: grid; place-content: center; justify-items: center; padding: 0 14px; border-left: 1px solid rgba(255, 255, 255, .12); font-family: var(--f-display); font-weight: 800; font-size: 26px; line-height: 1; }
+.bug .inn .arrow { color: var(--team-lamp, var(--lamp)); font-size: 13px; }
+.bug .inn .fin { font-size: 18px; letter-spacing: .04em; }
+.bug .bases { display: grid; justify-items: center; align-content: center; gap: 3px; padding: 6px 12px; border-left: 1px solid rgba(255, 255, 255, .12); }
+.bug .bases svg { width: 84px; height: 46px; display: block; }
+.bug .bbase rect.b { fill: rgba(255, 255, 255, .14); stroke: rgba(255, 255, 255, .6); stroke-width: 1.5; }
+.bug .bbase.on rect.b { fill: var(--team-lamp, var(--lamp)); stroke: var(--team-lamp, var(--lamp)); }
+.bug .bbase.on { cursor: pointer; }
+.bug .hitbox { fill: transparent; }
+.bug .outs { display: flex; gap: 5px; align-items: center; font-family: var(--f-label); font-weight: 700; font-size: 11px; letter-spacing: .1em; }
+.bug .outs i { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid rgba(255, 255, 255, .6); }
+.bug .outs i.on { background: var(--stitch); border-color: var(--stitch); }
+@media (max-width: 520px) { .bug .nm { visibility: hidden; } .bug .inn { padding: 0 10px; } .bug .bases { padding: 6px 8px; } }
+.play .atbat { border-top: 0; margin-top: 0; padding-top: 0; }
 .prow.head { font-family: var(--f-label); font-weight: 700; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .roster-top { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; margin-bottom: 12px; }
 .roster-top .field { flex: 1; min-width: 200px; }
@@ -467,7 +493,7 @@ const player = pid => store.team.players.find(p => p.id === pid);
 const entryName = x => (x.pid && player(x.pid) ? player(x.pid).name : x.name) || "";
 const teamNames = g => g.ourSide === 0 ? [store.team.name, g.opponent || "Opponent"] : [g.opponent || "Opponent", store.team.name];
 const modeOf = g => g.settings.mode === "dugout" ? "dugout" : "scorekeeper";
-const countOn = g => g.settings.trackCount !== false;
+const countOn = g => false;   // softball: no balls-and-strikes count (a baseball mode could switch it back on)
 // Team colors: a basic palette of common uniform colors
 const PALETTE = [
   ["navy", "Navy", "#14284b"], ["royal", "Royal blue", "#1d4fb8"], ["columbia", "Columbia blue", "#6fa8dc"], ["teal", "Teal", "#00808a"],
@@ -492,6 +518,9 @@ function applyTeamColors() {
   const fill = bg => [P, Q].find(x => contrast(x, bg) >= 3) || (lum(bg) > .5 ? "#14212c" : "#eef2f5");
   const fl = fill("#f4f7f9"), fd = fill("#0e1418");
   const set = (k, v) => document.documentElement.style.setProperty(k, v);
+  // Score-bug team block: primary, unless it blends into the scoreboard; then secondary
+  const chip = [P, Q].find(x => contrast(x, board) >= 1.6) || mixHex(P, "#ffffff", .3);
+  set("--team-p", chip); set("--team-p-ink", textOn(chip)); set("--team-q", chip === P ? Q : P);
   set("--team-board", board); set("--team-lamp", lamp); set("--sel-bg", sel); set("--sel-ink", textOn(sel));
   set("--team-brand", fl); set("--team-shadow", fl === P ? Q : P);
   set("--team-brand-d", fd); set("--team-shadow-d", fd === P ? Q : P);
@@ -1052,7 +1081,7 @@ function renderGameView() {
     shellKey = key;
     $("view").innerHTML = `
       <div class="gamebar" id="gamebar"></div>
-      <section class="board" id="board" aria-label="Line score"></section>
+      ${book ? `<section class="board" id="board" aria-label="Line score"></section>` : `<section class="bug" id="bug" aria-label="Score"></section>`}
       <div id="finalBox"></div>
       ${book ? `
       <section class="panel" aria-label="Scorebook">
@@ -1061,25 +1090,19 @@ function renderGameView() {
       </section>
       <section class="panel"><h2>Play by play</h2><ol class="pbp" id="pbp"></ol></section>` : `
       <div class="play">
-        <section class="panel sitpanel" aria-label="Current at-bat">
-          <div class="situ">
-            <svg class="diamond" id="diamond" viewBox="0 0 220 220" role="group" aria-label="Bases. Tap a runner to move them."></svg>
-            <div class="count" id="count"></div>
-          </div>
-          <div class="atbat" id="atbat"></div>
-        </section>
+        <section class="panel" aria-label="Current at-bat"><div class="atbat" id="atbat"></div></section>
         <section class="panel"><div class="pad" id="pad"></div></section>
       </div>`}`;
   }
   renderGamebar(); renderBoard();
   if (book) { renderBook(); renderLog(); }
-  else { renderDiamond(); renderCount(); renderAtBat(); renderPad(); }
+  else { renderBug(); renderAtBat(); renderPad(); }
 }
 
 function renderGamebar() {
   const names = teamNames(G), peek = !!ui.peekId;
   const status = peek ? "Final" : S.final ? "Final" : (S.half ? "Bottom " : "Top ") + ordinal(S.inning);
-  $("gamebar").innerHTML = `<span class="chip ${peek || S.final ? "" : "live"}">${status}</span>${peek ? "" : `<span class="chip">${modeOf(G) === "dugout" ? "Dugout mode" : "Scorekeeper"}</span>`}
+  $("gamebar").innerHTML = `${ui.view === "book" || peek ? `<span class="chip ${peek || S.final ? "" : "live"}">${status}</span>` : ""}${peek ? "" : `<span class="chip">${modeOf(G) === "dugout" ? "Dugout mode" : "Scorekeeper"}</span>`}
     <span class="matchup">${esc(names[0])} at ${esc(names[1])} · ${esc(G.date)}</span><span class="spacer"></span>
     ${peek ? `<button class="tbtn" data-act="unpeek">Back to stats</button>
               <button class="tbtn" data-act="reopen" ${store.currentId ? "disabled title=\"Finish the game in progress first\"" : ""}>Reopen to edit</button>`
@@ -1106,13 +1129,32 @@ function renderBoard() {
     if (canAdd) h += "<td></td>";
     h += `<td class="tot">${total(S, t)}</td><td class="tot" style="border:0">${S.hits[t]}</td><td class="tot" style="border:0">${S.errors[t]}</td></tr>`;
   });
-  $("board").innerHTML = h + "</tbody></table>";
+  if ($("board")) $("board").innerHTML = h + "</tbody></table>";
   const ended = S.final && !ui.peekId;
   if (ended) {
     const a = total(S, 0), hm = total(S, 1), w = a > hm ? 0 : 1;
     $("finalBox").innerHTML = `<div class="final"><b>Final</b><span>${a === hm ? `Tie game, ${a}–${hm}.` : `${esc(names[w])} win ${Math.max(a, hm)}–${Math.min(a, hm)}.`}</span><span style="flex:1"></span>
       <button class="tbtn" data-act="addinning">Play another inning</button><button class="tbtn" data-act="endgame">Save to season</button></div>`;
   } else $("finalBox").innerHTML = "";
+}
+
+const abbrOf = name => (String(name || "").trim().split(/\s+/).pop() || "?").slice(0, 3).toUpperCase();
+const teamAbbr = t => t === G.ourSide ? (store.team.abbr || abbrOf(store.team.name)) : abbrOf(G.opponent);
+function renderBug() {
+  const names = teamNames(G), live = !S.final && !ui.peekId;
+  const row = t => `<div class="row ${t === G.ourSide ? "us" : ""} ${live && S.half === t ? "bat" : ""}">
+      <span class="up" aria-hidden="true"></span><span class="abbr">${esc(teamAbbr(t))}</span>
+      <span class="nm">${esc(names[t])}</span><span class="r">${total(S, t)}</span></div>`;
+  const spots = [[80, 30], [50, 13], [20, 30]];     // 1st, 2nd, 3rd
+  const bases = spots.map(([x, y], b) => {
+    const r = S.bases[b], who = r ? esc(nameAt(S, r.team, r.slot)) : "";
+    return `<g class="bbase ${r ? "on" : ""}" data-act="base" data-b="${b}" role="button" tabindex="${r ? 0 : -1}" aria-label="${["First", "Second", "Third"][b]} base${r ? ": " + who + ". Tap to move the runner." : ", empty"}">
+      <rect class="hitbox" x="${x - 16}" y="${y - 13}" width="32" height="26" /><rect class="b" x="${x - 8}" y="${y - 8}" width="16" height="16" rx="2" transform="rotate(45 ${x} ${y})" /></g>`;
+  }).join("");
+  $("bug").innerHTML = `<div class="rows">${row(0)}${row(1)}</div>
+    <div class="inn">${S.final ? `<span class="fin">FINAL</span>` : `<span class="arrow" aria-hidden="true">${S.half ? "▼" : "▲"}</span><span aria-label="${S.half ? "Bottom" : "Top"} of the ${ordinal(S.inning)}">${S.inning}</span>`}</div>
+    <div class="bases"><svg viewBox="0 0 100 44" role="group" aria-label="Bases">${bases}</svg>
+      <div class="outs" aria-label="${S.outs} out">${[0, 1].map(i => `<i class="${i < S.outs ? "on" : ""}"></i>`).join("")}<span>OUT</span></div></div>`;
 }
 
 function renderDiamond() {
@@ -1159,6 +1201,8 @@ function renderAtBat() {
   $("atbat").innerHTML = `<div class="meta">${esc(teamNames(G)[t])} batting${countOn(G) ? ` · ${S.balls}–${S.strikes} count` : ""}${who.pos ? " · plays " + esc(who.pos) : ""}</div>
     <div class="now"><small>#${slot + 1}</small>${esc(entryName(who))}</div>
     <div class="meta">${todayLine(t, slot)} · On deck: ${esc(nameAt(S, t, next))}</div>
+    <div class="meta">${(() => { const on = S.bases.map((r, b) => r ? `${["1st", "2nd", "3rd"][b]} ${esc(nameAt(S, r.team, r.slot).split(" ")[0])}` : "").filter(Boolean);
+      return on.length ? `On base: ${on.join(" · ")} <span style="opacity:.75">(tap a base to move a runner)</span>` : "Bases empty"; })()}</div>
     ${walkupSlot(who) ? `<button class="tbtn walkup" data-act="walkup" data-v="${walkupSlot(who)}">${nowPlaying && nowPlaying.slot === walkupSlot(who) ? "■ Stop walk-up" : "♪ Play walk-up song"}</button>` : ""}`;
 }
 
@@ -1495,6 +1539,7 @@ function renderRoster() {
   $("view").innerHTML = `${flash ? `<div class="banner"><span>${flash}</span><span class="spacer"></span>${store.currentId ? "" : `<button class="tbtn primary" data-act="newgame" ${ps.length ? "" : "disabled"}>New Game</button>`}</div>` : ""}<section class="panel">
     <div class="roster-top">
       <div class="field"><label for="teamName">Your team</label><input id="teamName" data-ch="teamName" value="${esc(store.team.name)}" autocomplete="off"></div>
+      <div class="field" style="flex:0 0 96px;min-width:0"><label for="teamAbbr">Short name</label><input id="teamAbbr" data-ch="teamAbbr" maxlength="4" value="${esc(store.team.abbr || abbrOf(store.team.name))}" autocomplete="off" style="text-transform:uppercase"></div>
       <button class="tbtn" data-act="sounds">Walk-up songs &amp; sounds</button>
       <button class="tbtn primary" data-act="addplayer">Add player</button>
     </div>
@@ -1575,9 +1620,6 @@ function rulesFields(d, live) {
   return `<div class="setlist">
     ${sw("dugout", "Dugout mode", d.mode === "dugout" ? "Your batters one at a time; their half-innings with quick run and out buttons." : "Off: scorekeeper mode, every batter on both teams.", d.mode === "dugout", ' data-ch="draftMode"')}
     ${sw("askHits", "Hit location", "Ask which fielder made the play and where hits went. Needed for fielding and spray stats.", d.askHits)}
-    ${sw("trackCount", "Track balls and strikes", "Off: tap only the result of each at-bat.", d.trackCount)}
-    ${sw("startCount", "Start at a 1–1 count", "Common slowpitch rule.", d.startCount)}
-    ${sw("foulOut", "Two-strike foul is an out", "When tracking the count, a foul with two strikes is recorded as a foul ball out (FBO).", d.foulOut)}
     ${sw("ties", "Games can end in a tie", "A tie after the last inning stands, with no extra innings. Tap + on the scoreboard to play on anyway.", d.ties)}
     <div class="setrow"><span><b>Innings</b><small>Ties go to extra innings automatically. Tap + to play an extra inning anyway.</small></span>
       <span class="stepper"><button data-act="inn" data-v="-1" aria-label="One fewer inning">−</button><b>${d.innings}</b><button data-act="inn" data-v="1" aria-label="One more inning">+</button></span></div>
@@ -1607,7 +1649,7 @@ function pregameChecklist(d) {
   return `<ul class="checklist">
     ${item(d.opponent.trim() ? "ok" : "bad", "Opponent", d.opponent.trim() ? `${esc(d.opponent.trim())} · we're ${d.ourSide ? "home" : "the visitors"} · ${esc(d.date)}` : "Enter the other team's name below.")}
     ${item(filled.length >= 8 && !clash ? "ok" : "bad", "Lineup", clash || `${filled.length} batting · ${field.length} in the field${filled.length < 8 ? " · most leagues need at least 8" : ""}`)}
-    ${item("ok", "Game settings", `${d.mode === "dugout" ? "Dugout" : "Scorekeeper"} mode · ${d.innings} innings${d.ties ? " · ties allowed" : ""}${d.askHits ? "" : " · hit location off"}${d.trackCount ? "" : " · no count"}`)}
+    ${item("ok", "Game settings", `${d.mode === "dugout" ? "Dugout" : "Scorekeeper"} mode · ${d.innings} innings${d.ties ? " · ties allowed" : ""}${d.askHits ? "" : " · hit location off"}`)}
     ${item(ui.sound ? "ok" : "info", "Sound", ui.sound ? "On. Connect the speaker, then test it." : "Off. Turn it on if you're using a speaker.",
       `<button class="tbtn" data-act="sound-toggle">${ui.sound ? "Turn off" : "Turn on"}</button><button class="tbtn" data-act="testsound">Test speaker</button>`)}
     ${item(filled.length && walk === filled.length ? "ok" : "info", "Walk-up songs", `${walk} of ${filled.length} batters have one · ${songs ? songs + " between-innings song" + (songs === 1 ? "" : "s") : "no between-innings music"}`,
@@ -2040,6 +2082,7 @@ document.addEventListener("change", ev => {
     if (ch === "clip-start") c.start = n; else if (ch === "clip-dur") c.dur = n; else c.vol = Math.min(1.5, n);
     saveClip(el.dataset.slot);
   }
+  else if (ch === "teamAbbr") { store.team.abbr = el.value.trim().toUpperCase().slice(0, 4); save(); }
   else if (ch === "teamName") { store.team.name = el.value.trim() || "My Team"; save(); }
   else if (p) {
     if (ch === "pname") p.name = el.value.trim();
