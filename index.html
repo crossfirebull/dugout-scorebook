@@ -491,7 +491,7 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 /* =====================================================================
    Constants
    ===================================================================== */
-const KEY = "dugout-scorebook.v2";
+const KEY = "dugout-scorebook.v2" + (/[?&]preview\b/.test(location.search) ? ".preview" : "");   // the screen preview page keeps its own data
 const POS = [null, "P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "LCF", "RCF", "SF"];   // scorebook numbers: 10 = left-center, 11 = right-center, 12 = short fielder
 const POS_NAME = [null, "Pitcher", "Catcher", "First base", "Second base", "Third base", "Shortstop", "Left field", "Center field", "Right field", "Left-center field", "Right-center field", "Short field"];
 const FIELD_POS = ["P", "C", "1B", "2B", "3B", "SS", "LF", "LCF", "CF", "RCF", "RF", "SF"];

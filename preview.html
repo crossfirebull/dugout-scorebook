@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ScoreKeep Screen Preview</title>
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<style>
+/* Layout: a header with controls, then every device frame in a wrapping row, each scaled to fit. */
+:root { --bg: #e9eef2; --fg: #14212c; --muted: #586a7a; --card: #ffffff; --rule: #c7d5e1; --frame: #1b2733; color-scheme: light; }
+@media (prefers-color-scheme: dark) { :root { --bg: #0e1418; --fg: #e5ecf1; --muted: #93a5b4; --card: #161f26; --rule: #2b3b48; --frame: #000000; color-scheme: dark; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 16px 32px; }
+header { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+h1 { margin: 0; font-size: 20px; }
+header p { margin: 0; color: var(--muted); flex-basis: 100%; }
+label { display: inline-flex; gap: 6px; align-items: center; color: var(--muted); }
+select, button { font: inherit; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--rule); background: var(--card); color: var(--fg); }
+button { cursor: pointer; font-weight: 600; }
+.grid { display: flex; flex-wrap: wrap; gap: 22px; align-items: flex-start; }
+.dev { display: grid; gap: 6px; }
+.dev b { font-size: 14px; }
+.dev span { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+.shell { background: var(--frame); padding: 8px; border-radius: 18px; box-shadow: 0 6px 18px rgba(0, 0, 0, .2); }
+.screen { overflow: hidden; border-radius: 10px; background: #fff; }
+iframe { border: 0; display: block; transform-origin: 0 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>ScoreKeep screen preview</h1>
+  <label for="zoom">Size <select id="zoom"><option value=".3">Small</option><option value=".42" selected>Medium</option><option value=".6">Large</option></select></label>
+  <label for="tab">Tab <select id="tab"><option value="game">Game</option><option value="book">Book</option><option value="stats">Stats</option><option value="scout">Scout</option><option value="roster">Team</option></select></label>
+  <button id="reload">Reload all</button>
+  <p>Each frame runs the real app at that screen's size, so it picks the same layout a real device would. The frames use their own practice copy of the data, so nothing you tap here touches your real games. After scoring in one frame, tap Reload all to update the rest.</p>
+</header>
+<div class="grid" id="grid"></div>
+<script>
+const DEVICES = [
+  ["iPhone", 390, 844], ["iPhone on its side", 844, 390], ["Raspberry Pi 7\" screen", 800, 480],
+  ["iPad mini", 744, 1133], ["iPad", 820, 1180], ["iPad on its side", 1180, 820], ["Laptop", 1440, 900]
+];
+const grid = document.getElementById("grid"), zoomSel = document.getElementById("zoom"), tabSel = document.getElementById("tab");
+function build() {
+  grid.innerHTML = "";
+  const room = grid.clientWidth - 16;                 // keep every frame inside a small screen too
+  DEVICES.forEach(([name, w, h]) => {
+    const z = Math.min(+zoomSel.value, room / w);
+    const dev = document.createElement("div"); dev.className = "dev";
+    dev.innerHTML = `<b>${name}</b><span>${w} × ${h}</span><div class="shell"><div class="screen" style="width:${Math.round(w * z)}px;height:${Math.round(h * z)}px"><iframe title="${name} preview" width="${w}" height="${h}" style="transform:scale(${z})" src="./?preview"></iframe></div></div>`;
+    grid.appendChild(dev);
+    const frame = dev.querySelector("iframe");
+    frame.addEventListener("load", () => {
+      try { const btn = frame.contentDocument.querySelector(`.tabbar [data-v="${tabSel.value}"]`); if (btn) btn.click(); } catch (e) {}
+    });
+  });
+}
+zoomSel.addEventListener("change", build);
+tabSel.addEventListener("change", build);
+document.getElementById("reload").addEventListener("click", build);
+build();
+</script>
+</body>
+</html>

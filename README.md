@@ -21,6 +21,8 @@ ScoreKeep picks a layout for the screen it's on, and switches when you rotate th
 - **Tablet, upright:** bigger buttons and score bug, plus who's on deck and the last few plays.
 - **Tablet on its side, or a computer:** two columns, with the score bug, batter, on deck and last plays on the left, large buttons on the right, and tabs in a side rail.
 
+To see every layout at once, open the **screen preview**: https://crossfirebull.github.io/dugout-scorebook/preview.html. It shows ScoreKeep on an iPhone, an iPhone on its side, a Raspberry Pi 7" screen, an iPad mini, an iPad, an iPad on its side and a laptop. The preview uses its own practice data, so it never touches your real games.
+
 The speaker button at the top mutes and unmutes. The gear opens Game Settings during a game, or Sounds otherwise.
 
 ## Using it at the field
