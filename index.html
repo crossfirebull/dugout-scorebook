@@ -85,6 +85,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .board td.tot { color: var(--lamp); border-left: 2px solid rgba(255,255,255,.12); }
 .board th.tot { border-left: 2px solid rgba(255,255,255,.12); }
 .board td.blank { color: var(--board-dim); opacity: .35; }
+.board th.addinn { width: 30px; padding: 0; }
+.board th.addinn button { width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--board-dim); background: transparent; color: var(--board-ink); font-size: 16px; line-height: 1; padding: 0; }
 
 /* Main columns */
 .main { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); }
@@ -948,6 +950,8 @@ function renderBoard() {
   const names = teamNames(G), cols = Math.max(G.settings.innings, S.inning), live = !S.final && !ui.peekId;
   let h = '<table><thead><tr><th class="team">Team</th>';
   for (let i = 1; i <= cols; i++) h += `<th>${i}</th>`;
+  const canAdd = !ui.peekId;
+  if (canAdd) h += `<th class="addinn"><button data-act="addinning" aria-label="Add an inning" title="Add an inning">+</button></th>`;
   h += '<th class="tot">R</th><th>H</th><th>E</th></tr></thead><tbody>';
   [0, 1].forEach(t => {
     h += `<tr class="${live && S.half === t ? "batting" : ""}"><td class="team"><span class="bat"></span>${esc(names[t])}</td>`;
@@ -957,6 +961,7 @@ function renderBoard() {
       if (S.final && t === 1 && v === undefined && S.runs[0][i] !== undefined) txt = "X";
       h += `<td class="${now ? "now" : ""} ${txt === "" ? "blank" : ""}">${txt === "" ? "·" : txt}</td>`;
     }
+    if (canAdd) h += "<td></td>";
     h += `<td class="tot">${total(S, t)}</td><td class="tot" style="border:0">${S.hits[t]}</td><td class="tot" style="border:0">${S.errors[t]}</td></tr>`;
   });
   $("board").innerHTML = h + "</tbody></table>";
@@ -964,7 +969,7 @@ function renderBoard() {
   if (ended) {
     const a = total(S, 0), hm = total(S, 1), w = a > hm ? 0 : 1;
     $("finalBox").innerHTML = `<div class="final"><b>Final</b><span>${esc(names[w])} win ${Math.max(a, hm)}–${Math.min(a, hm)}.</span><span style="flex:1"></span>
-      <button class="tbtn" data-act="endgame">Save to season</button></div>`;
+      <button class="tbtn" data-act="addinning">Play another inning</button><button class="tbtn" data-act="endgame">Save to season</button></div>`;
   } else $("finalBox").innerHTML = "";
 }
 
@@ -1563,6 +1568,12 @@ document.addEventListener("click", ev => {
       ui.bookTeam = null; save(); render(); break;
     }
     case "quick": push({ t: "quick", k: v }); break;
+    case "addinning": {
+      // One more inning than the game is set for (or than it has reached in extras).
+      const g = curGame(); if (!g) break;
+      g.settings.innings = Math.min(15, Math.max(g.settings.innings, S.inning) + 1);
+      save(); render(); break;
+    }
     case "toggleloc": {
       const g = curGame(); if (!g) break;
       g.settings.askHits = g.settings.askHits === false;
