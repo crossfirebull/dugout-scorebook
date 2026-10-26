@@ -1,4 +1,10 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<meta name="theme-color" content="#14284b">
+</head><body>
 <title>Dugout Scorebook</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -530,6 +536,41 @@ function applyTeamColors() {
   set("--team-board", board); set("--team-lamp", lamp); set("--sel-bg", sel); set("--sel-ink", textOn(sel));
   set("--team-brand", fl); set("--team-shadow", fl === P ? Q : P);
   set("--team-brand-d", fd); set("--team-shadow-d", fd === P ? Q : P);
+  updateHomeIcon(P, Q, board);
+}
+
+// Home Screen icon in the team's colors: a softball with a varsity "D".
+// iPhone and iPad read it when you tap Add to Home Screen.
+let iconKey = "";
+async function updateHomeIcon(P, Q, board) {
+  const key = P + Q; if (key === iconKey) return; iconKey = key;
+  try { await document.fonts.load("100px Graduate"); } catch (e) {}
+  if (key !== iconKey) return;
+  const cv = document.createElement("canvas"); cv.width = cv.height = 180;
+  const x = cv.getContext("2d"); x.scale(180 / 1024, 180 / 1024);
+  const bg = x.createRadialGradient(512, 390, 0, 512, 390, 770);
+  bg.addColorStop(0, mixHex(board, "#ffffff", .14)); bg.addColorStop(1, mixHex(board, "#000000", .4));
+  x.fillStyle = bg; x.fillRect(0, 0, 1024, 1024);
+  x.fillStyle = "rgba(0,0,0,.28)"; x.beginPath(); x.arc(512, 530, 380, 0, Math.PI * 2); x.fill();
+  const ball = x.createRadialGradient(410, 350, 0, 410, 350, 720);
+  ball.addColorStop(0, "#fff59a"); ball.addColorStop(.55, "#f3e03a"); ball.addColorStop(1, "#cdb514");
+  x.fillStyle = ball; x.beginPath(); x.arc(512, 512, 376, 0, Math.PI * 2); x.fill();
+  x.save(); x.beginPath(); x.arc(512, 512, 372, 0, Math.PI * 2); x.clip();
+  x.strokeStyle = "#c8102e"; x.lineWidth = 12; x.lineCap = "round";
+  ["M250 170 C400 360 400 664 250 854", "M774 170 C624 360 624 664 774 854"].forEach(d => x.stroke(new Path2D(d)));
+  x.setLineDash([4, 30]);
+  ["M274 182 C424 372 424 652 274 842", "M750 182 C600 372 600 652 750 842"].forEach(d => x.stroke(new Path2D(d)));
+  x.restore();
+  let fill = lum(P) <= lum(Q) ? P : Q;                       // the darker team color reads best on the yellow ball
+  if (contrast(fill, "#f3e03a") < 2.5) fill = "#14284b";
+  const shade = fill === P ? Q : P;
+  x.font = "560px Graduate, Rockwell, Georgia, serif"; x.textAlign = "center"; x.lineJoin = "round"; x.lineWidth = 24;
+  x.fillStyle = x.strokeStyle = shade; x.strokeText("D", 530, 726); x.fillText("D", 530, 726);
+  x.strokeStyle = "#ffffff"; x.strokeText("D", 512, 708); x.fillStyle = fill; x.fillText("D", 512, 708);
+  let link = document.querySelector('link[rel="apple-touch-icon"]');
+  if (!link) { link = document.createElement("link"); link.rel = "apple-touch-icon"; document.head.appendChild(link); }
+  try { link.href = cv.toDataURL("image/png"); } catch (e) {}
+  const theme = document.querySelector('meta[name="theme-color"]'); if (theme) theme.content = board;
 }
 const curGame = () => store.games.find(g => g.id === store.currentId) || null;
 const viewGame = () => ui.peekId ? store.games.find(g => g.id === ui.peekId) : curGame();
