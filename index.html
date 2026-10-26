@@ -4,7 +4,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Scorebook">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Graduate&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap">
 <style>
 /* Layout: scoreboard band across the top; below it the live situation + input pad on the left, the scorebook grid on the right (stacked on phones). */
 :root {
@@ -29,6 +29,7 @@
   --f-display: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
   --f-body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-label: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --f-varsity: "Graduate", Rockwell, "Roboto Slab", Georgia, serif;   /* collegiate block lettering for the app name */
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -62,7 +63,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 
 /* Top bar */
 .topbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.brand { font-family: var(--f-display); font-weight: 800; font-size: 22px; letter-spacing: .02em; text-transform: uppercase; margin: 0; line-height: 1; }
+.brand { font-family: var(--f-varsity); font-weight: 400; font-size: clamp(16px, 4.8vw, 24px); white-space: nowrap; letter-spacing: .04em; text-transform: uppercase; margin: 0; line-height: 1.1; color: var(--ink); text-shadow: 2px 2px 0 var(--stitch); }
 .chip { font-family: var(--f-label); font-weight: 600; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; background: var(--rule-soft); color: var(--muted); }
 .chip.live { background: var(--stitch); color: #fff; }
 .topbar .spacer { flex: 1; }
