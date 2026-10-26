@@ -326,7 +326,7 @@ const POS_NAME = [null, "Pitcher", "Catcher", "First base", "Second base", "Thir
 const FIELD_POS = ["P", "C", "1B", "2B", "3B", "SS", "LF", "LCF", "CF", "RCF", "RF", "SF"];
 const LINEUP_POS = [...FIELD_POS, "EH"];                       // EH = extra hitter: bats, doesn't field
 const posList = pl => pl ? [pl.pos, ...(pl.alt || [])].filter((x, i, a) => x && LINEUP_POS.includes(x) && a.indexOf(x) === i) : [];
-const NEEDS_POS = { GO: "Who fielded the grounder?", FO: "Who caught the fly ball?", LO: "Who caught the liner?", PO: "Who caught the pop-up?", SF: "Who caught the sacrifice fly?", E: "Who made the error? Optional: skip it if you're not sure." };
+const NEEDS_POS = { GO: "Who fielded the grounder? Optional.", FO: "Who caught the fly ball? Optional.", LO: "Who caught the liner? Optional.", PO: "Who caught the pop-up? Optional.", SF: "Who caught the sacrifice fly? Optional.", E: "Who made the error? Optional: skip it if you're not sure." };
 const HIT_CODES = ["1B", "2B", "3B", "HR"];
 const BASES_FOR = { "1B": 1, "2B": 2, "3B": 3, HR: 4 };
 const BB_OF = { GO: "GB", FO: "FB", LO: "LD", PO: "PU", SF: "FB", DP: "GB", FC: "GB", HRO: "FB" };   // batted-ball type implied by an out
@@ -1308,7 +1308,7 @@ function renderSheet() {
   if (sh.type === "pos") {
     body = `<h3>${esc({ GO: "Ground out", FO: "Fly out", LO: "Line out", PO: "Pop out", SF: "Sacrifice fly", E: "Error" }[sh.r])}</h3><p>${NEEDS_POS[sh.r]}</p>
       ${posGrid("pos")}
-      <div class="acts"><button class="tbtn" data-act="close">Cancel</button>${sh.r === "E" ? `<button class="tbtn primary" data-act="posskip">Skip, just record the error</button>` : ""}</div>`;
+      <div class="acts"><button class="tbtn" data-act="close">Cancel</button><button class="tbtn primary" data-act="posskip">Skip, just record the ${sh.r === "E" ? "error" : "out"}</button></div>`;
   } else if (sh.type === "hit") {
     body = `<h3>${{ "1B": "Single", "2B": "Double", "3B": "Triple", HR: "Home run" }[sh.r]}</h3>
       <p>What kind of hit, and where did it go? Tap the fielder nearest the ball.</p>
