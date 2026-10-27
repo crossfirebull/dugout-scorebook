@@ -49,8 +49,8 @@ Tap what the batter did. The app moves the runners the usual way, and you can fi
 - **Batter reaches:** 1B, 2B, 3B, HR, BB (walk), E (error), and **FC** (fielder's choice: a runner is out, the batter is safe). FC asks which runner was out, or whether everyone was safe, and is grayed out with nobody on base.
 - **Batter out:** K swinging, backwards K looking, GO, F, L, P, SF (sac fly), DP, **HR out** (for leagues with a home run limit) and **FBO** (foul ball out).
 - **Where it went:** with **Hit location** on, the app asks which fielder made the play or where the hit landed, for spray charts and fielding stats. Every question has **Skip**.
-- **Moving runners:** tap a runner's base to advance, steal, score or put them out. Right after a play, scoring a runner offers **Scored on the play** (RBI to the batter) or **Scored, no RBI** (error, overthrow, passed ball). A steal of home is never an RBI.
-- **Courtesy runner:** also on the runner menu. Once per inning for each team; runs and steals from then on count for the courtesy runner.
+- **Moving runners:** tap a runner's base to advance, score or put them out. Right after a play, scoring a runner offers **Scored on the play** (RBI to the batter) or **Scored, no RBI** (error, overthrow, passed ball).
+- **Courtesy runner:** also on the runner menu. Once per inning for each team; if they score, the run counts for the courtesy runner.
 - **Walk-offs:** the game ends the moment the home team takes the lead in the last inning. Only the winning run counts, unless it's a home run.
 - **Undo** takes back the last tap, as many times as you need.
 
@@ -112,7 +112,7 @@ Sounds play in order, so the next batter's walk-up starts when the previous play
 
 ## Stats it tracks
 
-- **Standard:** G, PA, AB, R, H, 2B, 3B, HR, RBI, BB, K, SB, AVG, OBP, SLG, OPS
+- **Standard:** G, PA, AB, R, H, 2B, 3B, HR, RBI, BB, K, AVG, OBP, SLG, OPS
 - **Advanced:** wOBA, ISO, BABIP, K%, BB%, BB/K, AVG with runners in scoring position, runs created, reached on error
 - **Batted ball:** grounder / line drive / fly ball / pop-up rates, and pull / center / opposite-field rates
 - **Fielding:** positions played, plays made, errors, fielding %
@@ -151,7 +151,7 @@ The checks include simulated seasons: `tests/season-sim.js` plays random five-ga
 
 **Someday**
 - Sync between devices, so a second iPad or a parent's phone sees the same season.
-- A baseball / softball switch.
+- A baseball / softball switch (baseball would bring back stolen bases).
 - Apple Music for walk-up songs (needs an Apple developer account; see the note below).
 - An App Store version.
 - The Python version (see `python/`), as a separate learning project.

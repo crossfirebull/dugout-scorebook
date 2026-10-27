@@ -19,7 +19,7 @@ function rng(seed) {
   return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 }
 
-const blank = () => ({ G: 0, PA: 0, AB: 0, R: 0, H: 0, "1B": 0, "2B": 0, "3B": 0, HR: 0, RBI: 0, BB: 0, K: 0, SB: 0, SF: 0,
+const blank = () => ({ G: 0, PA: 0, AB: 0, R: 0, H: 0, "1B": 0, "2B": 0, "3B": 0, HR: 0, RBI: 0, BB: 0, K: 0, SF: 0,
   ROE: 0, HRO: 0, FBO: 0, TB: 0, RAB: 0, RH: 0 });
 
 function simulateSeason(seed = 2026) {
@@ -129,19 +129,19 @@ function simulateSeason(seed = 2026) {
       if (["GO", "FO", "LO", "PO"].includes(r) && b[2] && R() < .35) tapScore(2, true);
     };
 
-    // Between batters: steals, caught stealing, passed balls
+    // Between batters: passed balls and overthrows move runners up (no stealing in softball), runners picked off
     const runnerPlays = () => {
       const b = g.bases;
       if (b[2] && R() < .04) {                     // passed ball: scores, no RBI
         const x = b[2]; b[2] = null; events.push({ t: "run", b: 2, a: "score" }); score(x); return;
       }
-      if (b[2] && R() < .02) {                     // steal of home
-        const x = b[2]; b[2] = null; events.push({ t: "run", b: 2, a: "sb" }); if (x.pid) sheet[x.pid].SB++; score(x); return;
+      if (b[2] && R() < .02) {                     // overthrow: scores, no RBI
+        const x = b[2]; b[2] = null; events.push({ t: "run", b: 2, a: "score" }); score(x); return;
       }
-      if (b[1] && !b[2] && R() < .08) { const x = b[1]; b[1] = null; b[2] = x; events.push({ t: "run", b: 1, a: "sb" }); if (x.pid) sheet[x.pid].SB++; return; }
+      if (b[1] && !b[2] && R() < .08) { const x = b[1]; b[1] = null; b[2] = x; events.push({ t: "run", b: 1, a: "adv" }); return; }
       if (b[0] && !b[1]) {
         const roll = R();
-        if (roll < .12) { const x = b[0]; b[0] = null; b[1] = x; events.push({ t: "run", b: 0, a: "sb" }); if (x.pid) sheet[x.pid].SB++; }
+        if (roll < .12) { const x = b[0]; b[0] = null; b[1] = x; events.push({ t: "run", b: 0, a: "adv" }); }
         else if (roll < .15) { b[0] = null; events.push({ t: "run", b: 0, a: "out" }); out(); if (g.outs >= 3) endHalf(); }
       }
     };

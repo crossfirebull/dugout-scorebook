@@ -821,7 +821,7 @@ const viewGame = () => ui.peekId ? store.games.find(g => g.id === ui.peekId) : c
    to every game ever scored.
    ===================================================================== */
 function blankStat() {
-  return { PA: 0, AB: 0, H: 0, "1B": 0, "2B": 0, "3B": 0, HR: 0, HRO: 0, FBO: 0, TB: 0, R: 0, RBI: 0, BB: 0, HBP: 0, K: 0, SF: 0, SB: 0, ROE: 0,
+  return { PA: 0, AB: 0, H: 0, "1B": 0, "2B": 0, "3B": 0, HR: 0, HRO: 0, FBO: 0, TB: 0, R: 0, RBI: 0, BB: 0, HBP: 0, K: 0, SF: 0, ROE: 0,
            RAB: 0, RH: 0, GB: 0, LD: 0, FB: 0, PU: 0, PULL: 0, CENT: 0, OPPO: 0 };
 }
 function fresh(g) {
@@ -1022,16 +1022,16 @@ function runnerMove(s, g, b, a, rbi) {
     if (s.outs >= 3) endHalf(s, g);
     return;
   }
-  if (a === "sb") { stat(s, x.team, x.key).SB++; cellOf(s, x).notes.push("SB"); }
+  // Softball has no stealing. Games saved with a steal ("sb") replay it as the runner moving up.
   if (a === "score" || b === 2) {
     s.bases[b] = null; scoreRunner(s, g, x);
     // Scored on the batter's play (ground out, fly ball, fielder's choice, hit): the batter gets the RBI
-    const credit = rbi && a !== "sb" && s.lastPA && s.lastPA.team === x.team ? s.lastPA : null;
+    const credit = rbi && s.lastPA && s.lastPA.team === x.team ? s.lastPA : null;
     if (credit) stat(s, credit.team, credit.key).RBI++;
-    log(s, who + (a === "sb" ? " steals home." : " scores.") + ' <span class="run">1 run scores.</span>' + (credit ? ` RBI: ${esc(credit.name)}.` : ""));
+    log(s, who + " scores." + ' <span class="run">1 run scores.</span>' + (credit ? ` RBI: ${esc(credit.name)}.` : ""));
   } else if (!s.bases[b + 1]) {
     move(s, b, b + 1);
-    log(s, who + (a === "sb" ? " steals " : " advances to ") + ["", "second", "third"][b + 1] + ".");
+    log(s, who + " advances to " + ["", "second", "third"][b + 1] + ".");
   }
 }
 
@@ -1052,7 +1052,7 @@ function quickEvent(s, g, k) {
   else if (k === "end") { log(s, "Half-inning ended."); endHalf(s, g); }
 }
 
-// Courtesy runner: someone else runs for the player on base. Runs and steals from here count for the runner.
+// Courtesy runner: someone else runs for the player on base. A run scored from here counts for the runner.
 function courtesy(s, e) {
   const x = s.bases[e.b]; if (!x) return;
   const was = runnerName(s, x);
@@ -1147,7 +1147,7 @@ const fmt = {
 };
 // better: 1 = higher is better, -1 = lower is better, 0 = no leader highlight
 const TABLES = {
-  std: { label: "Standard", cols: [["G", "int"], ["PA", "int"], ["AB", "int"], ["R", "int", 1], ["H", "int", 1], ["2B", "int", 1], ["3B", "int", 1], ["HR", "int", 1], ["RBI", "int", 1], ["BB", "int", 1], ["K", "int"], ["SB", "int", 1], ["AVG", "avg", 1], ["OBP", "avg", 1], ["SLG", "avg", 1], ["OPS", "avg", 1]] },
+  std: { label: "Standard", cols: [["G", "int"], ["PA", "int"], ["AB", "int"], ["R", "int", 1], ["H", "int", 1], ["2B", "int", 1], ["3B", "int", 1], ["HR", "int", 1], ["RBI", "int", 1], ["BB", "int", 1], ["K", "int"], ["AVG", "avg", 1], ["OBP", "avg", 1], ["SLG", "avg", 1], ["OPS", "avg", 1]] },
   adv: { label: "Advanced", cols: [["PA", "int"], ["OPS", "avg", 1], ["wOBA", "avg", 1], ["ISO", "avg", 1], ["BABIP", "avg", 0], ["Kp", "pct", -1, "K%"], ["BBp", "pct", 1, "BB%"], ["BBK", "dec2", 1, "BB/K"], ["RISP", "avg", 1, "RISP AVG"], ["RC", "dec", 1], ["ROE", "int", 0], ["HRO", "int", 0, "HR out"], ["FBO", "int", 0]] },
   bb: { label: "Batted ball", cols: [["BIP", "int"], ["GBp", "pct", 0, "GB%"], ["LDp", "pct", 1, "LD%"], ["FBp", "pct", 0, "FB%"], ["PUp", "pct", -1, "IFFB%"], ["PULLp", "pct", 0, "Pull%"], ["CENTp", "pct", 0, "Cent%"], ["OPPOp", "pct", 0, "Oppo%"]] },
   fld: { label: "Fielding", cols: [["POS", "txt", 0, "Positions"], ["PL", "int", 1, "Plays"], ["E", "int", -1], ["FLD", "pct", 1, "Fld%"]] }
@@ -1187,7 +1187,6 @@ function sampleStore() {
     while (!s.final && guard++ < 500 && !(stop && s.inning > stop)) {
       const t = s.half, who = occ(s, t, curSlot(s));
       const sk = who.pid ? (skill[who.pid] || 1) : 0.95;
-      if (s.bases[0] && !s.bases[1] && rng() < .06) { g.events.push({ t: "run", b: 0, a: "sb" }); s = derive(g); continue; }
       let r = pickW([["1B", .19 * sk], ["2B", .055 * sk], ["3B", .012 * sk], ["HR", .025 * sk * sk], ["BB", .07 * sk], ["E", .04],
                      ["K", .07 / sk], ["GO", .2], ["FO", .17 / sk], ["LO", .06], ["PO", .05 / sk]]);
       if (r === "FO" && s.bases[2] && s.outs < 2 && rng() < .6) r = "SF";
@@ -1766,7 +1765,7 @@ function renderStats() {
 
   const cur = curGame();
   const minQual = games * 2;
-  const leaderCats = [["AVG", "avg"], ["OPS", "avg"], ["wOBA", "avg"], ["HR", "int"], ["RBI", "int"], ["SB", "int"]];
+  const leaderCats = [["AVG", "avg"], ["OPS", "avg"], ["wOBA", "avg"], ["HR", "int"], ["RBI", "int"], ["R", "int"]];
   const leaders = leaderCats.map(([k, f]) => {
     const pool = list.filter(r => r[k] != null && (f === "int" || r.PA >= minQual)).sort((a, b) => b[k] - a[k]);
     const top = pool[0];
@@ -2203,10 +2202,10 @@ const HELP = [
     <p>With <b>Hit location</b> on, it asks who fielded the ball or where a hit went. That feeds the spray charts and fielding stats. Every question has <b>Skip</b>.</p>`],
   ["Moving runners", `
     <p>Tap a lit base on the score bug (or the diamond) to open that runner:</p>
-    <ul><li><b>Advance</b> one base, or <b>Steal</b> (counts a stolen base).</li>
-    <li><b>Scored on the play</b> gives the batter who just hit the RBI. Use <b>Scored, no RBI</b> for an error, overthrow or passed ball. A steal of home is never an RBI.</li>
+    <ul><li><b>Advance</b> one base.</li>
+    <li><b>Scored on the play</b> gives the batter who just hit the RBI. Use <b>Scored, no RBI</b> for an error, overthrow or passed ball.</li>
     <li><b>Out</b> for a pickoff or a runner thrown out.</li>
-    <li><b>Courtesy runner</b>: pick who runs instead. Once per inning for each team. Runs and steals from then on count for the courtesy runner.</li></ul>`],
+    <li><b>Courtesy runner</b>: pick who runs instead. Once per inning for each team. If they score, the run counts for the courtesy runner.</li></ul>`],
   ["Fixing mistakes", `
     <ul><li><b>Undo</b> takes back the last tap, as many times as you need.</li>
     <li><b>Lineups</b> changes the batting order or positions. Mid-game, each change is saved as a substitution.</li>
@@ -2369,7 +2368,6 @@ function renderSheet() {
     body = `<h3>${who}</h3><p>On ${["first", "second", "third"][b]} base. What happened?</p>
       <div class="keys" style="grid-template-columns:repeat(2,minmax(0,1fr))">
         ${b < 2 ? `<button class="key on" data-act="run" data-v="adv" ${nextTaken ? "disabled" : ""}><b>Advance</b><span>To ${nextName}${nextTaken ? " (occupied)" : ""}</span></button>` : ""}
-        <button class="key on" data-act="run" data-v="sb" ${nextTaken ? "disabled" : ""}><b>Steal</b><span>Steals ${nextName}, no RBI</span></button>
         ${rbiTo ? `<button class="key on" data-act="run" data-v="score" data-rbi="1"><b>Scored on the play</b><span>RBI to ${esc(rbiTo.split(" ")[0])}</span></button>
         <button class="key on" data-act="run" data-v="score"><b>Scored, no RBI</b><span>Error, overthrow, passed ball</span></button>`
           : `<button class="key on" data-act="run" data-v="score"><b>Score</b><span>Comes home</span></button>`}
@@ -2384,7 +2382,7 @@ function renderSheet() {
       ? (() => { const inLu = S.lu[r.team].map(x => x.pid); return store.team.players.filter(p => !onBase.includes("p:" + p.id)).sort((a, b) => inLu.includes(a.id) - inLu.includes(b.id)).map(p => ({ pid: p.id, name: p.name, note: inLu.includes(p.id) ? "In the lineup" : "Bench" })); })()
       : S.lu[r.team].filter((x, i) => !onBase.includes(keyOf(x, r.team, i))).map(x => ({ pid: null, name: x.name, note: "" })).concat([{ pid: null, name: "Courtesy runner", note: "No name" }]);
     sh.list = list;
-    body = `<h3>Courtesy runner</h3><p>Who runs for ${esc(runnerName(S, r))} at ${["first", "second", "third"][sh.b]}? Runs and steals from here count for the courtesy runner. One per inning.</p>
+    body = `<h3>Courtesy runner</h3><p>Who runs for ${esc(runnerName(S, r))} at ${["first", "second", "third"][sh.b]}? If they score, the run counts for the courtesy runner. One per inning.</p>
       <div class="keys" style="grid-template-columns:repeat(2,minmax(0,1fr))">${list.map((x, i) => `<button class="key on" data-act="cr" data-v="${i}"><b>${esc(x.name)}</b><span>${esc(x.note)}</span></button>`).join("")}</div>
       <div class="acts"><button class="tbtn" data-act="close">Cancel</button></div>`;
   } else if (sh.type === "newgame") {

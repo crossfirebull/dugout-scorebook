@@ -348,7 +348,7 @@ function expectedRow(s) {
   const x = Object.assign({}, s, rates(s));
   return {
     G: show.int(s.G), PA: show.int(s.PA), AB: show.int(s.AB), R: show.int(s.R), H: show.int(s.H), "2B": show.int(s["2B"]), "3B": show.int(s["3B"]),
-    HR: show.int(s.HR), RBI: show.int(s.RBI), BB: show.int(s.BB), K: show.int(s.K), SB: show.int(s.SB),
+    HR: show.int(s.HR), RBI: show.int(s.RBI), BB: show.int(s.BB), K: show.int(s.K),
     AVG: show.avg(x.AVG), OBP: show.avg(x.OBP), SLG: show.avg(x.SLG), OPS: show.avg(x.OPS), wOBA: show.avg(x.wOBA), ISO: show.avg(x.ISO),
     BABIP: show.avg(x.BABIP), "K%": show.pct(x["K%"]), "BB%": show.pct(x["BB%"]), "BB/K": show.dec2(s.K ? s.BB / s.K : null),
     "RISP AVG": show.avg(x["RISP AVG"]), RC: show.dec(x.RC), ROE: show.int(s.ROE), "HR out": show.int(s.HRO), FBO: show.int(s.FBO)
@@ -529,6 +529,7 @@ test("courtesy runner: someone runs for the batter, once per inning, and gets th
   const { page, context, errors } = await openGame(ruleGame({}, [...threeOuts()]));
   await tapResult(page, "1B");
   await page.click("#bug [data-act=base][data-b='0']");
+  assert.doesNotMatch(await text(page, ".sheet"), /Steal/i, "no stealing in softball");
   await page.click("[data-act=crpick]");
   await page.click(".sheet [data-act=cr] >> text=Player 12");
   assert.match(await page.getAttribute("#bug [data-act=base][data-b='0']", "aria-label"), /Player 12/);
