@@ -307,3 +307,23 @@ test("a runner who scores on the batter's play earns that batter an RBI", async 
   assert.doesNotMatch(await text(page, "#pbp li:first-child"), /RBI/);
   await context.close();
 });
+
+test("the spray tab shows a team chart that can show only hits or only outs", async () => {
+  const { page, context, errors } = await open(1180, 820);
+  await page.click(".tabbar [data-v=stats]");
+  await page.click("[data-act=statstab][data-v=spray]");
+  await page.waitForSelector(".teamcard svg.spray");
+  const dots = async () => page.$$eval(".teamcard svg.spray circle", c => c.map(x => x.getAttribute("class")));
+  const all = await dots();
+  assert.ok(all.length > 0, "team chart has balls in play");
+  await page.click("[data-act=sprayfilter][data-v=hits]");
+  const hits = await dots();
+  assert.ok(hits.length > 0 && hits.every(c => c !== "o"), "hits only");
+  await page.click("[data-act=sprayfilter][data-v=outs]");
+  const outs = await dots();
+  assert.ok(outs.length > 0 && outs.every(c => c === "o"), "outs only");
+  assert.ok(hits.length + outs.length <= all.length);
+  await page.screenshot({ path: process.env.SHOT || "/dev/null" });
+  assert.deepEqual(errors, []);
+  await context.close();
+});

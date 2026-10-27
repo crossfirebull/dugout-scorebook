@@ -10,7 +10,7 @@ A tab bar along the bottom has five pages, so there's little scrolling:
 
 - **Game**: a TV-style score bug (team blocks in your colors, runs, inning, bases and outs; tap a lit base to move a runner), the batter, and the scoring buttons. Fits one screen on a phone. Softball has no balls-and-strikes count, so there isn't one.
 - **Book**: the full inning-by-inning line score, the scorebook grid and play-by-play.
-- **Stats**: Overview (games and leaders), Batting tables, Spray charts and Lineups, for any season.
+- **Stats**: Overview (games and leaders), Batting tables, Spray charts (a whole-team chart with All / Hits / Outs filters, then one per player) and Lineups, for any season.
 - **Scout**: every team you've played, with a spray chart for the team and each of its hitters, and where to shade your defense.
 - **Team**: your team name and colors up top (**Edit team** changes them), then the roster. Tap a player to edit their number, up to three positions, batting side and walk-up song. **+ Add player** sits right under the list.
 

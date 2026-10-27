@@ -310,6 +310,13 @@ table.stats.lu td:first-child, table.stats.lu th:first-child { text-align: left;
 .spraycard h3 span { color: var(--muted); font-family: var(--f-label); margin-right: 6px; }
 .spraycard p { margin: 2px 0 6px; font-size: 13px; color: var(--muted); }
 .spray { display: block; width: 100%; height: auto; }
+.teamspray { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); margin-bottom: 4px; }
+@media (min-width: 640px) { .teamspray { grid-template-columns: minmax(0, 480px) minmax(180px, 1fr); align-items: start; } }
+.teamcard h3 { font-family: var(--f-display); font-size: 22px; text-transform: uppercase; letter-spacing: .02em; }
+.teamfacts { display: grid; gap: 10px; align-content: start; }
+.teamfacts .scoutbar { margin: 0; }
+.teamfacts p { margin: 0; font-size: 15px; color: var(--muted); line-height: 1.5; }
+.teamfacts p b { display: block; color: var(--ink); font-family: var(--f-label); font-size: 13px; letter-spacing: .06em; text-transform: uppercase; }
 .spray .grass { fill: var(--grass); }
 .spray .dirt { fill: var(--infield); }
 .spray .line { stroke: var(--surface); stroke-width: 1.5; fill: none; }
@@ -1654,17 +1661,17 @@ function renderStats() {
 const ZONE = { 1: [100, 128], 2: [100, 152], 3: [133, 116], 4: [118, 98], 5: [67, 116], 6: [82, 98], 7: [48, 76], 8: [100, 60], 9: [152, 76], 10: [73, 64], 11: [127, 64], 12: [100, 84] };
 const HOME = [100, 162];
 function sprayField(balls) {
-  const n = {};
+  const n = {}, sz = balls.length > 60 ? .65 : 1;   // a season of team dots: smaller and tighter so they don't pile up
   const marks = balls.map(b => {
     const k = b.p + (b.r === "HR" ? "hr" : ""), i = n[k] = (n[k] || 0) + 1;
     let [x, y] = ZONE[b.p] || ZONE[8];
     if (b.r === "HR") { const dx = x - HOME[0], dy = y - HOME[1], len = Math.hypot(dx, dy); x = HOME[0] + dx / len * 148; y = HOME[1] + dy / len * 148; }
-    if (i > 1) { const a = i * 2.4, rad = 2.5 + 3 * Math.sqrt(i); x += Math.cos(a) * rad; y += Math.sin(a) * rad; }
+    if (i > 1) { const a = i * 2.4, rad = (2.5 + 3 * Math.sqrt(i)) * sz; x += Math.cos(a) * rad; y += Math.sin(a) * rad; }
     const tip = `<title>${b.r === "E" ? "Error" : b.r} to ${POS[b.p]} · ${esc(b.date)} vs ${esc(b.opp)}</title>`;
     x = x.toFixed(1); y = y.toFixed(1);
-    if (b.r === "E") return `<g class="e">${tip}<path d="M${x - 3} ${y - 3} l6 6 M${x - 3} ${+y + 3} l6 -6" /></g>`;
+    if (b.r === "E") { const e = (3 * sz).toFixed(1); return `<g class="e">${tip}<path d="M${x - e} ${y - e} l${2 * e} ${2 * e} M${x - e} ${+y + +e} l${2 * e} -${2 * e}" /></g>`; }
     const cls = { "1B": "h1", "2B": "h2", "3B": "h3", HR: "hr" }[b.r] || "o";
-    return `<circle class="${cls}" cx="${x}" cy="${y}" r="${cls === "o" ? 3.2 : 4.2}">${tip}</circle>`;
+    return `<circle class="${cls}" cx="${x}" cy="${y}" r="${((cls === "o" ? 3.2 : 4.2) * sz).toFixed(1)}">${tip}</circle>`;
   }).join("");
   return `<svg class="spray" viewBox="0 8 200 164" role="img" aria-label="Spray chart, ${balls.length} balls in play">
     <path class="grass" d="M100 166 L11 77 A126 126 0 0 1 189 77 Z" />
@@ -1687,8 +1694,30 @@ function sprayData() {
   });
   return by;
 }
+const SPRAY_FILTERS = [["all", "All"], ["hits", "Hits"], ["outs", "Outs"]];
+function sprayFilter(balls) {
+  const f = ui.sprayFilter || "all";
+  return f === "all" ? balls : balls.filter(b => f === "hits" ? HIT_CODES.includes(b.r) : !HIT_CODES.includes(b.r) && b.r !== "E");
+}
+function teamSpray(all) {
+  const balls = sprayFilter(all), hits = all.filter(b => HIT_CODES.includes(b.r)).length;
+  const t = balls.length ? tendency(balls) : null;
+  const typ = { GB: 0, LD: 0, FB: 0, PU: 0 }; all.forEach(b => { if (b.bb in typ) typ[b.bb]++; });
+  const typed = typ.GB + typ.LD + typ.FB + typ.PU, pc = v => Math.round(v / typed * 100) + "%";
+  const avg = all.length ? (hits / all.length).toFixed(3).replace(/^0/, "") : ".000";
+  return `<div class="teamspray">
+    <div class="spraycard teamcard"><h3>${esc(store.team.name || "Our team")}</h3>
+      <p>${all.length} ball${all.length === 1 ? "" : "s"} in play · ${hits} hit${hits === 1 ? "" : "s"} · ${avg} on balls in play</p>
+      ${sprayField(balls)}</div>
+    <div class="teamfacts">
+      <div class="scoutbar">${SPRAY_FILTERS.map(([k, l]) => `<button class="chipbtn ${(ui.sprayFilter || "all") === k ? "on" : ""}" data-act="sprayfilter" data-v="${k}">${l}</button>`).join("")}</div>
+      ${t ? `<p><b>Where it goes</b>${t.line.replace(/ · /g, "<br>")}</p>` : `<p>No ${ui.sprayFilter === "hits" ? "hits" : "outs"} to show yet.</p>`}
+      ${typed ? `<p><b>How it's hit</b>Grounders ${pc(typ.GB)}<br>Line drives ${pc(typ.LD)}<br>Fly balls ${pc(typ.FB)}<br>Pop-ups ${pc(typ.PU)}</p>` : ""}
+    </div></div>`;
+}
 function sprayCharts() {
   const by = sprayData();
+  const every = Object.values(by).flat();
   const order = store.team.players.map(x => x.id).concat(Object.keys(by).filter(id => !player(id)));
   const cards = order.filter(id => by[id]).map(id => {
     const pl = player(id), balls = by[id], hits = balls.filter(b => HIT_CODES.includes(b.r)).length;
@@ -1700,11 +1729,11 @@ function sprayCharts() {
       dir = ` · Pull ${pc(c.pull)} · Cent ${pc(c.cent)} · Oppo ${pc(c.oppo)}`;
     }
     return `<div class="spraycard"><h3><span>${esc(pl ? pl.num : "")}</span>${esc(pl ? pl.name : "Former player")}</h3>
-      <p>${balls.length} ball${balls.length === 1 ? "" : "s"} in play · ${hits} hit${hits === 1 ? "" : "s"}${pl && pl.bats ? " · bats " + esc(pl.bats) : ""}${dir}</p>${sprayField(balls)}</div>`;
+      <p>${balls.length} ball${balls.length === 1 ? "" : "s"} in play · ${hits} hit${hits === 1 ? "" : "s"}${pl && pl.bats ? " · bats " + esc(pl.bats) : ""}${dir}</p>${sprayField(sprayFilter(balls))}</div>`;
   }).join("");
   const dot = (cls, r) => `<svg class="spray" viewBox="0 0 12 12"><circle class="${cls}" cx="6" cy="6" r="${r}" /></svg>`;
   return `<div class="spraykey"><span>${dot("h1", 4.5)}Single</span><span>${dot("h2", 4.5)}Double</span><span>${dot("h3", 4.5)}Triple</span><span>${dot("hr", 4.5)}Home run (past the fence)</span><span>${dot("o", 3.5)}Out</span><span><svg class="spray" viewBox="0 0 12 12"><path class="e" d="M3 3 l6 6 M3 9 l6 -6" /></svg>Error</span></div>
-    ${cards ? `<div class="spraygrid spray-wrap">${cards}</div>` : `<p style="color:var(--muted)">No hit locations yet. Turn on Hit location in Game Settings, and each ball in play will show up here.</p>`}
+    ${cards ? `${teamSpray(every)}<h2 style="margin:16px 0 8px">By player</h2><div class="spraygrid spray-wrap">${cards}</div>` : `<p style="color:var(--muted)">No hit locations yet. Turn on Hit location in Game Settings, and each ball in play will show up here.</p>`}
     <p class="gloss" style="display:block">Only plays where you picked the fielder or location are drawn. Each dot sits near that fielder's spot; tap or hover a dot for the play and game.</p>`;
 }
 
@@ -2496,6 +2525,7 @@ document.addEventListener("click", ev => {
     case "sort": ui.sort = ui.sort.k === v ? { k: v, d: -ui.sort.d } : { k: v, d: v === "name" ? 1 : -1 }; render(); break;
     case "table": ui.table = v; render(); break;
     case "statstab": ui.statsTab = v; render(); break;
+    case "sprayfilter": ui.sprayFilter = v; render(); break;
     case "teamcolor": store.team.colors = Object.assign(teamColors(), { [el.dataset.k]: v }); save(); render(); break;
     case "scoutteam": ui.scoutTeam = v; render(); break;
     case "settings":
