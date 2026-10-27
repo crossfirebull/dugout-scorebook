@@ -74,7 +74,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 /* Top bar */
 .topbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .brand, .teamword { font-family: var(--f-varsity); font-weight: 800; font-style: italic; letter-spacing: .02em; text-transform: uppercase; line-height: 1.1; color: var(--brand-fill); text-shadow: 2px 2px 0 var(--brand-shadow); }
-.brand { font-size: clamp(16px, 4.8vw, 24px); white-space: nowrap; margin: 0; }
+.brand { font-size: clamp(24px, 8.6vw, 42px); white-space: nowrap; margin: 0; letter-spacing: .05em; text-shadow: .08em .08em 0 var(--brand-shadow); padding: 0 .1em .08em 0; }
 .teamword { font-size: 20px; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --brand-fill: var(--team-brand-d); --brand-shadow: var(--team-shadow-d); } }
 :root[data-theme="dark"] { --brand-fill: var(--team-brand-d); --brand-shadow: var(--team-shadow-d); }
@@ -374,7 +374,7 @@ html[data-layout="wide"] .play .colL { display: grid; gap: 12px; }
 /* Short: everything on one screen with little height to work with */
 html[data-layout="short"] body { padding-block: 6px 12px; }
 html[data-layout="short"] .wrap { gap: 8px; }
-html[data-layout="short"] .brand { font-size: 17px; }
+html[data-layout="short"] .brand { font-size: 28px; }
 html[data-layout="short"] .iconbtn { width: 36px; height: 36px; }
 html[data-layout="short"] .banner { padding: 6px 10px; font-size: 13px; }
 html[data-layout="short"] .banner .tbtn { min-height: 32px; }
