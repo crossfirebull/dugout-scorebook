@@ -864,14 +864,14 @@ function fielderAt(s, t, p) {
   return i < 0 ? null : keyOf(s.lu[t][i], t, i);
 }
 
-function plateAppearance(s, g, r, p, bb, foulK) {
+function plateAppearance(s, g, r, p, bb, foulK, fcOut) {
   const bt = s.half, ft = 1 - bt, slot = curSlot(s), who = occ(s, bt, slot), key = keyOf(who, bt, slot), st = stat(s, bt, key);
   const risp = !!(s.bases[1] || s.bases[2]);
   const cell = { slot, inning: s.inning, code: codeFor(r, p), base: 0, scored: false, out: 0, looking: r === "KC", notes: [] };
   if (foulK) cell.notes.push("FOUL");
   s.book[bt].push(cell);
   const me = { team: bt, cell: s.book[bt].length - 1, slot, key };
-  let runs = 0;
+  let runs = 0, fcNote = "";
   const sc = x => { scoreRunner(s, g, x); runs++; };
   const advAll = n => { for (let b = 2; b >= 0; b--) { const x = s.bases[b]; if (!x) continue; s.bases[b] = null; const nb = b + n; if (nb >= 3) sc(x); else { s.bases[nb] = x; cellOf(s, x).base = nb + 1; } } };
   const forceAll = () => { if (!s.bases[0]) return; if (s.bases[1]) { if (s.bases[2]) { const x = s.bases[2]; s.bases[2] = null; sc(x); } move(s, 1, 2); } move(s, 0, 1); };
@@ -911,8 +911,12 @@ function plateAppearance(s, g, r, p, bb, foulK) {
     case "SF": outRunner(s, me); st.SF++; if (s.outs < 3 && s.bases[2]) { const x = s.bases[2]; s.bases[2] = null; sc(x); } break;
     case "E": forceAll(); put(1); s.errors[ft]++; break;
     case "FC": {
-      const lead = s.bases[0] ? 0 : [2, 1].find(b => s.bases[b]);
-      if (lead !== undefined) { const x = s.bases[lead]; s.bases[lead] = null; outRunner(s, x); }
+      // fcOut: the base (0-2) of the runner put out, -1 if everyone was safe; older games guess the lead forced runner
+      const lead = fcOut === -1 ? undefined : fcOut !== undefined && s.bases[fcOut] ? fcOut : s.bases[0] ? 0 : [2, 1].find(b => s.bases[b]);
+      if (lead !== undefined) {
+        const x = s.bases[lead]; s.bases[lead] = null; outRunner(s, x);
+        fcNote = ` ${esc(nameAt(s, x.team, x.slot))} out at ${["second", "third", "home"][lead]}`;
+      } else fcNote = ", everyone safe";
       if (s.outs < 3) { forceAll(); put(1); }
       break;
     }
@@ -924,7 +928,7 @@ function plateAppearance(s, g, r, p, bb, foulK) {
     }
   }
   if (!["E", "DP"].includes(r)) st.RBI += runs;
-  log(s, esc(entryName(who)) + " " + verbFor(r, p) + (foulK ? " (foul with two strikes)" : "") + "." + (runs ? ` <span class="run">${runs} run${runs > 1 ? "s" : ""} score${runs > 1 ? "" : "s"}.</span>` : ""));
+  log(s, esc(entryName(who)) + " " + verbFor(r, p) + (fcNote ? (fcNote[0] === "," ? fcNote : ";" + fcNote) : "") + (foulK ? " (foul with two strikes)" : "") + "." + (runs ? ` <span class="run">${runs} run${runs > 1 ? "s" : ""} score${runs > 1 ? "" : "s"}.</span>` : ""));
   s.order[bt]++;
   resetCount(s, g);
   if (s.outs >= 3 && !s.final) endHalf(s, g);
@@ -982,7 +986,7 @@ function derive(g) {
     if (s.final) break;
     s.fx = { bat: s.half };
     if (e.t === "pitch") pitch(s, g, e.k);
-    else if (e.t === "pa") plateAppearance(s, g, e.r, e.p, e.bb);
+    else if (e.t === "pa") plateAppearance(s, g, e.r, e.p, e.bb, false, e.out);
     else if (e.t === "run") runnerMove(s, g, e.b, e.a);
     else if (e.t === "quick") quickEvent(s, g, e.k);
   }
@@ -1478,8 +1482,8 @@ function renderAtBat() {
     ${walkupSlot(who) ? `<button class="tbtn walkup" data-act="walkup" data-v="${walkupSlot(who)}">${nowPlaying && nowPlaying.slot === walkupSlot(who) ? "■ Stop walk-up" : "♪ Play walk-up song"}</button>` : ""}`;
 }
 
-function key(act, val, big, small, cls) {
-  return `<button class="key ${cls || ""}" data-act="${act}" data-v="${val}" ${S.final || ui.peekId ? "disabled" : ""}><b>${big}</b><span>${small}</span></button>`;
+function key(act, val, big, small, cls, off) {
+  return `<button class="key ${cls || ""}" data-act="${act}" data-v="${val}" ${S.final || ui.peekId || off ? "disabled" : ""}><b>${big}</b><span>${small}</span></button>`;
 }
 function quickHalf() { return G && S && modeOf(G) === "dugout" && !S.final && !ui.peekId && S.half !== G.ourSide; }
 function renderPad() {
@@ -1506,7 +1510,7 @@ function renderPad() {
     </div></div>` : ""}
     <div class="group"><div class="gl">Batter reaches</div><div class="keys">
       ${key("pa", "1B", "1B", "Single", "on")}${key("pa", "2B", "2B", "Double", "on")}${key("pa", "3B", "3B", "Triple", "on")}${key("pa", "HR", "HR", "Home run", "on")}
-      ${key("pa", "BB", "BB", "Walk", "on")}${key("pa", "E", "E", "Error", "on")}${key("pa", "FC", "FC", "Fielder's choice", "on wide")}
+      ${key("pa", "BB", "BB", "Walk", "on")}${key("pa", "E", "E", "Error", "on")}${key("pa", "FC", "FC", S.bases.some(Boolean) ? "Runner out, batter safe" : "Needs a runner on base", "on wide", !S.bases.some(Boolean))}
     </div></div>
     <div class="group"><div class="gl">Batter out</div><div class="keys" style="grid-template-columns:repeat(5,minmax(0,1fr))">
       ${key("pa", "K", "K", "Swinging", "out")}${key("pa", "KC", '<span class="kc">K</span>', "Looking", "out")}${key("pa", "GO", "GO", "Ground out", "out")}${key("pa", "FO", "F", "Fly out", "out")}
@@ -2151,6 +2155,16 @@ function renderSheet() {
       <p>Your roster carries over. Next you'll review it: add new players, update positions, and remove anyone who left. Their past stats stay in the old season.</p>
       ${ui.msg ? `<p style="color:var(--stitch)">${esc(ui.msg)}</p>` : ""}
       <div class="acts"><button class="tbtn" data-act="close">Cancel</button><button class="tbtn primary" data-act="startseason">Start the season</button></div>`;
+  } else if (sh.type === "fc") {
+    const opts = [2, 1, 0].filter(b => S.bases[b]).map(b => {
+      const r = S.bases[b];
+      return `<button class="key out" data-act="fcout" data-v="${b}"><b>${esc(nameAt(S, r.team, r.slot).split(" ")[0])}</b><span>Runner from ${["1st", "2nd", "3rd"][b]} out at ${["2nd", "3rd", "home"][b]}</span></button>`;
+    }).join("");
+    body = `<h3>Fielder's choice</h3><p>${esc(nameAt(S, S.half, curSlot(S)))} is safe at first. Which runner was put out?</p>
+      <div class="keys" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">${opts}
+        <button class="key on" data-act="fcout" data-v="-1"><b>Nobody</b><span>Everyone safe</span></button></div>
+      <p style="font-size:13px">Was the batter out at first while a runner moved up instead? That's a ground out: tap GO, then tap the runner's base to move them.</p>
+      <div class="acts"><button class="tbtn" data-act="close">Cancel</button></div>`;
   } else if (sh.type === "player") {
     const pl = player(sh.id);
     if (!pl) { ui.sheet = null; o.innerHTML = ""; return; }
@@ -2353,11 +2367,13 @@ document.addEventListener("click", ev => {
     case "view": ui.view = v; ui.peekId = null; ui.confirm = null; render(); break;
     case "pitch": push({ t: "pitch", k: v }); break;
     case "pa":
+      if (v === "FC") { ui.sheet = { type: "fc" }; renderSheet(); break; }
       if (NEEDS_POS[v] && G.settings.askHits !== false) { ui.sheet = { type: "pos", r: v }; renderSheet(); }
       else if (HIT_CODES.includes(v) && G.settings.askHits !== false) { ui.bb = v === "HR" ? "FB" : null; ui.sheet = { type: "hit", r: v }; renderSheet(); }
       else push({ t: "pa", r: v });
       break;
     case "pos": push({ t: "pa", r: ui.sheet.r, p: +v }); break;
+    case "fcout": push({ t: "pa", r: "FC", out: +v }); break;
     case "posskip": push({ t: "pa", r: ui.sheet.r }); break;
     case "bbtype": ui.bb = ui.bb === v ? null : v; renderSheet(); break;
     case "hitpos": { const e = { t: "pa", r: ui.sheet.r, p: +v }; if (ui.bb) e.bb = ui.bb; push(e); break; }

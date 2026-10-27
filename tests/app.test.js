@@ -256,3 +256,34 @@ test("Team tab: add a player and edit them in their own panel", async () => {
   assert.match(row, /77/); assert.match(row, /New Hitter/); assert.match(row, /2B \/ SS/); assert.match(row, /Bats L/);
   await context.close();
 });
+
+test("fielder's choice asks which runner was out, and allows everyone safe", async () => {
+  const { page, context } = await open();
+  // put two runners on: single, single
+  await tapResult(page, "1B"); await tapResult(page, "1B");
+  const outsBefore = await page.$$eval("#bug .outs i.on", x => x.length);
+  await page.click("[data-act=pa][data-v=FC]");
+  assert.match(await text(page, ".sheet"), /Which runner was put out/);
+  const choices = await page.$$eval(".sheet [data-act=fcout]", b => b.map(x => x.dataset.v));
+  assert.deepEqual(choices, ["1", "0", "-1"], "runners on 2nd and 1st, plus nobody");
+  await page.click(".sheet [data-act=fcout][data-v='1']");                  // lead runner out at third
+  assert.equal(await page.$$eval("#bug .outs i.on", x => x.length), (outsBefore + 1) % 3);
+  await page.click(".tabbar [data-v=book]");
+  assert.match(await text(page, "#pbp li:first-child"), /fielder's choice; .+ out at third/);
+  await page.click(".tabbar [data-v=game]");
+  await page.click("[data-act=pa][data-v=FC]");
+  await page.click(".sheet [data-act=fcout][data-v='-1']");                 // everyone safe
+  await page.click(".tabbar [data-v=book]");
+  assert.match(await text(page, "#pbp li:first-child"), /everyone safe/);
+  await context.close();
+});
+
+test("the FC button is off when nobody is on base", async () => {
+  const { page, context } = await open();
+  for (let i = 0; i < 3 && await page.$$eval("#bug .bbase.on", x => x.length); i++) {
+    // clear the bases by making outs until the side changes, if needed
+    await tapResult(page, "K");
+  }
+  if (await page.$$eval("#bug .bbase.on", x => x.length) === 0) assert.ok(await page.$eval("[data-act=pa][data-v=FC]", b => b.disabled));
+  await context.close();
+});
