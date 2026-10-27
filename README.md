@@ -119,12 +119,23 @@ To run the automated checks on your own computer: `npm install`, then `npm test`
 
 ## On the list
 
-- **Polish each screen on its own display:** phone, phone on its side, Raspberry Pi, iPad mini, iPad, iPad on its side and laptop.
-- Automatic +2 home run limit rule and other league-specific rules.
+**Next up**
+- Check the stats math against a hand-scored game, and add tests for seasons, substitutions, scouting and restoring older backups.
+- League rules: a run limit per inning, a mercy (run-ahead) rule, the automatic home run limit (+2), and courtesy runners.
+- A help screen covering how to score each play.
+
+**Planned**
+- Polish each screen on its own display: phone, phone on its side, Raspberry Pi, iPad mini, iPad, iPad on its side and laptop.
+- Share a game summary (box score and line score) by text or email.
+- Choose a layout by hand instead of letting the app pick.
+- Your own organ clips to replace the built-in sounds.
+
+**Someday**
+- Sync between devices, so a second iPad or a parent's phone sees the same season.
 - A baseball / softball switch.
-- Share a game summary.
-- Sync between devices.
 - Apple Music for walk-up songs (needs an Apple developer account; see the note below).
+- An App Store version.
+- The Python version (see `python/`), as a separate learning project.
 
 ### About Apple Music
 
