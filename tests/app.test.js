@@ -323,7 +323,6 @@ test("the spray tab shows a team chart that can show only hits or only outs", as
   const outs = await dots();
   assert.ok(outs.length > 0 && outs.every(c => c === "o"), "outs only");
   assert.ok(hits.length + outs.length <= all.length);
-  await page.screenshot({ path: process.env.SHOT || "/dev/null" });
   assert.deepEqual(errors, []);
   await context.close();
 });
