@@ -453,6 +453,87 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 .banner.slim .tbtn { min-height: 32px; font-size: 13px; padding: 0 10px; }
 .banner.alert.bad { background: var(--stitch-soft); border-color: color-mix(in srgb, var(--stitch) 40%, var(--rule)); }
 .banner.alert.bad b { color: var(--stitch); }
+/* ---- Team tab ---- */
+.teamhead { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.teamhead .tchip { font-family: var(--f-varsity); font-size: 22px; min-width: 76px; text-align: center; padding: 8px 10px 6px; border-radius: 10px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .25), rgba(255, 255, 255, 0) 55%), var(--team-p, var(--ink)); color: var(--team-p-ink, var(--paper));
+  box-shadow: inset -6px 0 0 var(--team-q, var(--stitch)), 0 2px 6px rgba(0, 0, 0, .25); text-shadow: 1px 1px 0 rgba(0, 0, 0, .3); }
+.teamhead .tinfo { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.teamhead .teamword { font-size: clamp(18px, 5vw, 28px); line-height: 1.15; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; }
+.teamhead small { color: var(--muted); font-size: 14px; }
+.cdots { display: inline-flex; gap: 4px; vertical-align: -2px; margin-right: 4px; }
+.cdots i { width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--rule); background: var(--sw); }
+.rosterhead { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.rosterhead h2 { margin: 0; }
+.plist { list-style: none; margin: 0; padding: 0; display: grid; }
+.plist li + li { border-top: 1px solid var(--rule-soft); }
+.prow2 { width: 100%; display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 2px; border: 0; background: none; text-align: left; font: inherit; color: inherit; }
+.prow2 .pnum { font-family: var(--f-display); font-weight: 800; font-size: 22px; text-align: center; padding: 6px 0; border-radius: 8px; background: var(--rule-soft); color: var(--ink); }
+.prow2 b { display: block; font-size: 17px; font-weight: 600; }
+.prow2 small { display: block; color: var(--muted); font-size: 14px; }
+.prow2 .chev { font-size: 22px; color: var(--muted); }
+.addbtn { width: 100%; justify-content: center; margin-top: 10px; min-height: 48px; font-size: 16px; }
+.pfield { display: grid; gap: 6px; }
+.pfield .posset { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.pfield select { font: inherit; padding: 10px; border-radius: 8px; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); }
+
+/* ---- First-launch setup: full screen, like a game's opening menus ---- */
+.onb { position: fixed; inset: 0; z-index: 70; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 10px; color: #f3f6f9;
+  background: radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--team-board, var(--board)) 82%, #ffffff) 0%, var(--team-board, var(--board)) 48%, color-mix(in srgb, var(--team-board, var(--board)) 55%, #000000) 100%);
+  padding: calc(14px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(14px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.onb .top, .onb .foot, .onb .inner { width: 100%; max-width: 600px; margin: 0 auto; }
+.onb .top { display: flex; align-items: center; gap: 12px; min-height: 36px; }
+.onb .dots { display: flex; gap: 6px; flex: 1; }
+.onb .dots i { flex: 1; height: 5px; border-radius: 3px; background: rgba(255, 255, 255, .2); }
+.onb .dots i.on { background: var(--team-lamp, var(--lamp)); box-shadow: 0 0 8px var(--team-lamp, var(--lamp)); }
+.onb .skip { background: none; border: 0; color: rgba(255, 255, 255, .75); font: inherit; font-weight: 600; padding: 6px; }
+.onb .body { overflow-y: auto; display: grid; align-content: center; padding: 8px 0; }
+.onb .inner { display: grid; gap: 16px; animation: onbin .35s ease-out; }
+@keyframes onbin { from { opacity: 0; transform: translateX(28px); } }
+.onb .stepno { font-family: var(--f-label); font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--team-lamp, var(--lamp)); font-size: 13px; }
+.onb h2 { font-family: var(--f-varsity); font-weight: 400; font-size: clamp(26px, 6.5vw, 40px); line-height: 1.05; margin: 0; text-transform: uppercase; letter-spacing: .03em; color: #ffffff; text-shadow: 3px 3px 0 var(--team-q, var(--stitch)); text-wrap: balance; }
+.onb .lead { font-size: 17px; color: rgba(255, 255, 255, .82); margin: 0; }
+.onb .foot { display: flex; gap: 10px; }
+.onb .obtn { min-height: 54px; border-radius: 14px; font: inherit; font-weight: 700; font-size: 17px; padding: 0 20px; border: 2px solid rgba(255, 255, 255, .35); background: transparent; color: #ffffff; }
+.onb .obtn.go { flex: 1; background: var(--team-lamp, var(--lamp)); color: #111111; border-color: transparent; box-shadow: 0 6px 20px color-mix(in srgb, var(--team-lamp, var(--lamp)) 45%, transparent); }
+.onb .obtn:focus-visible, .onb .ocard:focus-visible { outline: 3px solid #ffffff; outline-offset: 2px; }
+.onb .fld { display: grid; gap: 6px; }
+.onb .fld label { font-family: var(--f-label); font-weight: 700; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: rgba(255, 255, 255, .72); }
+.onb input:not([type=checkbox]), .onb select { font: inherit; font-size: 18px; padding: 12px 14px; border-radius: 12px; border: 2px solid rgba(255, 255, 255, .25); background: rgba(255, 255, 255, .1); color: #ffffff; width: 100%; min-width: 0; }
+.onb input::placeholder { color: rgba(255, 255, 255, .45); }
+.onb select option { color: #111111; }
+.onb .two2 { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr) 120px; }
+.onb .ocards { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.onb .ocard { text-align: left; display: grid; gap: 6px; padding: 16px; border-radius: 16px; border: 2px solid rgba(255, 255, 255, .2); background: rgba(255, 255, 255, .06); color: #ffffff; font: inherit; }
+.onb .ocard b { font-size: 19px; }
+.onb .ocard small { color: rgba(255, 255, 255, .78); font-size: 14px; line-height: 1.4; }
+.onb .ocard[aria-pressed="true"] { border-color: var(--team-lamp, var(--lamp)); background: rgba(255, 255, 255, .13); box-shadow: 0 0 0 3px color-mix(in srgb, var(--team-lamp, var(--lamp)) 35%, transparent); }
+.onb .ocard .tag { font-family: var(--f-label); font-weight: 700; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--team-lamp, var(--lamp)); }
+.onb .swatches .swatch { width: 38px; height: 38px; border-color: rgba(255, 255, 255, .35); }
+.onb .swatch[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--team-board, var(--board)), 0 0 0 5px #ffffff; }
+.onb .clabel { font-family: var(--f-label); font-weight: 700; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: rgba(255, 255, 255, .72); }
+.onb .preview { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.onb .preview .bug { flex: 1; min-width: 240px; max-width: 440px; }
+.onb .preview img { width: 76px; height: 76px; border-radius: 18px; box-shadow: 0 6px 16px rgba(0, 0, 0, .35); }
+.onb .welcome { justify-items: center; text-align: center; }
+.onb .welcome img { width: 128px; height: 128px; border-radius: 30px; box-shadow: 0 14px 34px rgba(0, 0, 0, .45); }
+.onb .welcome .brand { font-size: clamp(36px, 10vw, 60px); color: #ffffff; text-shadow: 4px 4px 0 var(--team-q, var(--stitch)); }
+.onb .welcome .obtn { width: 100%; max-width: 360px; }
+.onb .setlist { background: rgba(255, 255, 255, .06); border-color: rgba(255, 255, 255, .2); }
+.onb .setrow { border-top-color: rgba(255, 255, 255, .12); }
+.onb .setrow small { color: rgba(255, 255, 255, .72); }
+.onb .stepper button { background: rgba(255, 255, 255, .1); border-color: rgba(255, 255, 255, .35); color: #ffffff; }
+.onb .qadd { display: grid; gap: 8px; grid-template-columns: minmax(0, 1fr) 76px 96px auto; align-items: end; }
+@media (max-width: 520px) { .onb .qadd { grid-template-columns: minmax(0, 1fr) 70px; } .onb .qadd .qpos { grid-column: 1; } .onb .qadd .obtn { grid-column: 2; } }
+.onb .qadd .obtn { min-height: 52px; padding: 0 16px; }
+.onb .qlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.onb .qlist li { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; background: rgba(255, 255, 255, .08); }
+.onb .qlist .n { font-family: var(--f-display); font-weight: 800; font-size: 20px; min-width: 32px; text-align: center; color: var(--team-lamp, var(--lamp)); }
+.onb .qlist span.nm { flex: 1; min-width: 0; }
+.onb .qlist button { background: none; border: 0; color: rgba(255, 255, 255, .7); font-size: 18px; padding: 4px 8px; }
+.onb .summary { display: grid; gap: 8px; padding: 16px; border-radius: 16px; background: rgba(255, 255, 255, .08); }
+.onb .summary div { display: flex; justify-content: space-between; gap: 12px; font-size: 16px; }
+.onb .summary span { color: rgba(255, 255, 255, .7); }
 .prow.head { font-family: var(--f-label); font-weight: 700; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .roster-top { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; margin-bottom: 12px; }
 .roster-top .field { flex: 1; min-width: 200px; }
@@ -1724,31 +1805,26 @@ function colorPicker() {
     <div class="colorpreview"><span class="teamword">${esc(store.team.name)}</span><span class="miniboard">R <b>6</b> H <b>9</b></span><span class="tbtn primary">New Game</span></div>
   </div>`;
 }
+const colorName = id => (PALETTE.find(x => x[0] === id) || [])[1] || "";
 function renderRoster() {
-  const ps = store.team.players;
+  const ps = store.team.players, c = teamColors();
   const flash = ui.flash; ui.flash = "";
-  $("view").innerHTML = `${flash ? `<div class="banner"><span>${flash}</span><span class="spacer"></span>${store.currentId ? "" : `<button class="tbtn primary" data-act="newgame" ${ps.length ? "" : "disabled"}>New Game</button>`}</div>` : ""}<section class="panel">
-    <div class="roster-top">
-      <div class="field"><label for="teamName">Your team</label><input id="teamName" data-ch="teamName" value="${esc(store.team.name)}" autocomplete="off"></div>
-      <div class="field" style="flex:0 0 96px;min-width:0"><label for="teamAbbr">Short name</label><input id="teamAbbr" data-ch="teamAbbr" maxlength="5" value="${esc(store.team.abbr || abbrOf(store.team.name))}" autocomplete="off" style="text-transform:uppercase"></div>
-      <button class="tbtn" data-act="sounds">Walk-up songs &amp; sounds</button>
-      <button class="tbtn primary" data-act="addplayer">Add player</button>
-    </div>
-    ${colorPicker()}
-    <div class="rows">
-      <div class="prow ros head"><span>#</span><span>Name</span><span class="posset">Positions: main, 2nd, 3rd</span><span>Bats</span><span></span></div>
-      ${ps.map(p => `<div class="prow ros">
-        <input aria-label="Number" data-ch="pnum" data-id="${p.id}" value="${esc(p.num)}" inputmode="numeric">
-        <input aria-label="Name" data-ch="pname" data-id="${p.id}" value="${esc(p.name)}" placeholder="Player name" autocomplete="off">
-        <div class="posset">${[0, 1, 2].map(k => { const cur = k ? (p.alt || [])[k - 1] : p.pos;
-          return `<select aria-label="${["Main", "Second", "Third"][k]} position for ${esc(p.name || "player")}" data-ch="ppos" data-k="${k}" data-id="${p.id}"><option value="">—</option>${LINEUP_POS.map(x => `<option ${x === cur ? "selected" : ""}>${x}</option>`).join("")}</select>`; }).join("")}</div>
-        <select aria-label="Bats" data-ch="pbats" data-id="${p.id}">${[["R", "R"], ["L", "L"], ["S", "S"], ["", "?"]].map(([v, l]) => `<option value="${v}" ${v === (p.bats || "") ? "selected" : ""}>${l}</option>`).join("")}</select>
-        <button class="ibtn ${ui.confirm === "rm:" + p.id ? "danger" : ""}" data-act="rmplayer" data-v="${p.id}" aria-label="Remove ${esc(p.name)}">${ui.confirm === "rm:" + p.id ? "?" : "✕"}</button>
-      </div>`).join("")}
-    </div>
-    ${ps.length ? "" : `<p style="color:var(--muted)">No players yet. Tap “Add player” to build your roster.</p>`}
-    <p style="color:var(--muted);font-size:14px;margin:14px 0 0">List up to three positions per player, main one first. When you build a lineup, each player's positions are offered first, and a position already taken is locked for everyone else. EH (extra hitter) bats but doesn't field. “Bats” (right, left, switch) is used for pull and opposite-field stats.
-      Removing a player keeps their past games in the season totals.</p>
+  $("view").innerHTML = `${flash ? `<div class="banner"><span>${flash}</span><span class="spacer"></span>${store.currentId ? "" : `<button class="tbtn primary" data-act="newgame" ${ps.length ? "" : "disabled"}>New Game</button>`}</div>` : ""}
+  <section class="panel teamhead">
+    <span class="tchip">${esc(store.team.abbr || abbrOf(store.team.name))}</span>
+    <div class="tinfo"><span class="teamword">${esc(store.team.name)}</span>
+      <small><span class="cdots"><i style="--sw:${COLOR[c.primary]}"></i><i style="--sw:${COLOR[c.secondary]}"></i></span>${esc(colorName(c.primary))} &amp; ${esc(colorName(c.secondary))} · ${ps.length} player${ps.length === 1 ? "" : "s"}</small></div>
+    <button class="tbtn" data-act="teamedit">Edit team</button>
+  </section>
+  <section class="panel">
+    <div class="rosterhead"><h2>Roster</h2><span class="spacer" style="flex:1"></span><button class="tbtn" data-act="sounds">Walk-up songs</button></div>
+    ${ps.length ? `<ul class="plist">${ps.map(p => `<li><button class="prow2" data-act="editplayer" data-v="${p.id}">
+        <span class="pnum">${esc(p.num || "–")}</span>
+        <span><b>${esc(p.name || "Unnamed player")}</b><small>${esc(posList(p).join(" / ") || "No position yet")} · ${p.bats ? "Bats " + esc(p.bats) : "Batting side not set"}${clips["walkup:" + p.id] ? " · ♪ walk-up" : ""}</small></span>
+        <span class="chev" aria-hidden="true">›</span></button></li>`).join("")}</ul>`
+      : `<p style="color:var(--muted);margin:6px 0 0">No players yet. Add your first player below.</p>`}
+    <button class="tbtn primary addbtn" data-act="addplayer">+ Add player</button>
+    <p style="color:var(--muted);font-size:14px;margin:12px 0 0">Tap a player to edit their number, positions, batting side and walk-up song. Removing a player keeps their past games in the season totals.</p>
   </section>`;
 }
 
@@ -1851,6 +1927,115 @@ function pregameChecklist(d) {
   </ul>`;
 }
 
+/* ---------- First-launch setup ---------- */
+const ONB_STEPS = ["team", "colors", "style", "rules", "roster", "done"];
+function bugPreview() {
+  const ab = store.team.abbr || abbrOf(store.team.name || "Team");
+  const base = (x, y, on) => `<g class="bbase ${on ? "on" : ""}"><rect class="b" x="${x - 8}" y="${y - 8}" width="16" height="16" rx="2" transform="rotate(45 ${x} ${y})" /></g>`;
+  return `<div class="bug" aria-hidden="true"><div class="rows">
+      <div class="row us bat lead"><span class="up"></span><span class="abbr">${esc(ab)}</span><span class="nm">${esc(store.team.name || "Your team")}</span><span class="r">5</span></div>
+      <div class="row"><span class="up"></span><span class="abbr">OPP</span><span class="nm">Opponent</span><span class="r">3</span></div></div>
+    <div class="inn"><span class="arrow">▲</span><span>6</span></div>
+    <div class="bases"><svg viewBox="0 0 100 44">${base(80, 30, true)}${base(50, 13, false)}${base(20, 30, true)}</svg><div class="outs"><i class="on"></i><i></i><span>OUT</span></div></div></div>`;
+}
+function iconPreview() {
+  try { const st = document.documentElement.style, v = k => st.getPropertyValue(k).trim(), c = teamColors();
+    return makeIcon(180, COLOR[c.primary], COLOR[c.secondary], v("--team-board"), v("--team-lamp"), v("--team-p")).toDataURL("image/png"); } catch (e) { return "icons/apple-touch-icon.png"; }
+}
+function onboardHTML(sh) {
+  const step = sh.step, i = ONB_STEPS.indexOf(step), pf = Object.assign({ mode: "dugout", askHits: true, ties: false, innings: 7 }, store.prefs);
+  const top = step === "welcome" ? "" : `<div class="dots" aria-label="Step ${i + 1} of ${ONB_STEPS.length}">${ONB_STEPS.map((x, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("")}</div>${step !== "done" ? `<button class="skip" data-act="onb-finish" data-v="team">Skip setup</button>` : ""}`;
+  const head = (n, title, lead) => `<span class="stepno">Step ${n} of 5</span><h2>${title}</h2>${lead ? `<p class="lead">${lead}</p>` : ""}`;
+  const next = (label, extra) => `<button class="obtn" data-act="onb-back">Back</button><button class="obtn go" data-act="onb-next" ${extra || ""}>${label || "Next"}</button>`;
+  let inner = "", foot = "";
+  if (step === "welcome") {
+    inner = `<div class="inner welcome">
+      <img src="${iconPreview()}" alt="">
+      <h1 class="brand">ScoreKeep</h1>
+      <p class="lead">Your softball scorebook for the dugout. Live scoring, season stats, spray charts and walk-up songs, all on this device.</p>
+      <button class="obtn go" data-act="onb-start">Set up my team</button>
+      <button class="obtn" data-act="onb-sample">Look around with sample data first</button>
+      <p class="lead" style="font-size:14px;opacity:.75">Setup takes about a minute. Every choice can be changed later under the gear.</p></div>`;
+  } else if (step === "team") {
+    inner = `<div class="inner">${head(1, "Name your team", "This goes on the scoreboard and in your stats.")}
+      <div class="two2">
+        <div class="fld"><label for="onbName">Team name</label><input id="onbName" data-onb="name" value="${esc(store.team.name === "My Team" ? "" : store.team.name)}" placeholder="Riverside Thunder" autocomplete="off"></div>
+        <div class="fld"><label for="onbAbbr">Short name</label><input id="onbAbbr" data-onb="abbr" maxlength="5" value="${esc(store.team.abbr || "")}" placeholder="${esc(abbrOf(store.team.name))}" autocomplete="off" style="text-transform:uppercase"></div>
+      </div>
+      <div class="preview" id="onbPreview">${bugPreview()}</div>
+      ${ui.msg ? `<p class="lead" style="color:var(--team-lamp,var(--lamp))"><b>${esc(ui.msg)}</b></p>` : ""}</div>`;
+    foot = next();
+  } else if (step === "colors") {
+    const c = teamColors();
+    const row = (k, label) => `<div class="fld"><span class="clabel">${label}: ${esc(colorName(c[k]))}</span><div class="swatches">${PALETTE.map(([id, name, hex]) => `<button class="swatch" style="--sw:${hex}" data-act="teamcolor" data-k="${k}" data-v="${id}" aria-pressed="${c[k] === id}" aria-label="${label}: ${name}" title="${name}"></button>`).join("")}</div></div>`;
+    inner = `<div class="inner">${head(2, "Pick your colors", "Close enough to your uniforms is perfect. They color the scoreboard, buttons and your Home Screen icon.")}
+      ${row("primary", "Primary")}${row("secondary", "Secondary")}
+      <div class="preview">${bugPreview()}<img src="${iconPreview()}" alt="Home Screen icon preview"></div></div>`;
+    foot = next();
+  } else if (step === "style") {
+    const card = (v, tag, title, desc) => `<button class="ocard" data-act="onb-mode" data-v="${v}" aria-pressed="${pf.mode === v}"><span class="tag">${tag}</span><b>${title}</b><small>${desc}</small></button>`;
+    inner = `<div class="inner">${head(3, "How do you score?", "Pick what fits how you'll use it. You can switch for any game.")}
+      <div class="ocards">
+        ${card("dugout", "For coaches", "Dugout mode", "Score your own batters one at a time. When the other team bats, just tap +1 Run and +1 Out.")}
+        ${card("scorekeeper", "For the book", "Scorekeeper mode", "Score every batter on both teams. Builds scouting reports on the teams you play.")}
+      </div>
+      <div class="setlist"><label class="setrow" for="p-askHits"><span><b>Ask where the ball went</b><small>One extra tap per ball in play: the fielder on outs, the spot on hits. Powers spray charts and fielding stats. Always skippable.</small></span><input type="checkbox" class="switch" id="p-askHits" data-ch="pref" data-k="askHits" ${pf.askHits !== false ? "checked" : ""}></label></div></div>`;
+    foot = next();
+  } else if (step === "rules") {
+    inner = `<div class="inner">${head(4, "League rules", "Set your usual game. Any single game can still be changed.")}
+      <div class="setlist">
+        <div class="setrow"><span><b>Innings</b><small>Ties go to extra innings unless ties are allowed.</small></span>
+          <span class="stepper"><button data-act="prefinn" data-v="-1" aria-label="One fewer inning">−</button><b>${pf.innings}</b><button data-act="prefinn" data-v="1" aria-label="One more inning">+</button></span></div>
+        <label class="setrow" for="p-ties"><span><b>Games can end in a tie</b><small>A tie after the last inning stands, with no extra innings.</small></span><input type="checkbox" class="switch" id="p-ties" data-ch="pref" data-k="ties" ${pf.ties ? "checked" : ""}></label>
+      </div>
+      <p class="lead" style="font-size:15px">Home runs over your league's limit and foul ball outs have their own buttons on the scoring pad (HR out and FBO), so they're ready whenever your league uses them.</p></div>`;
+    foot = next();
+  } else if (step === "roster") {
+    const ps = store.team.players;
+    inner = `<div class="inner">${head(5, "Add your players", "Name, number and main position is plenty for now. Add more positions, batting side and walk-up songs later on the Team tab.")}
+      <div class="qadd">
+        <div class="fld"><label for="onbPName">Name</label><input id="onbPName" placeholder="Player name" autocomplete="off"></div>
+        <div class="fld"><label for="onbPNum">Number</label><input id="onbPNum" inputmode="numeric" placeholder="#" autocomplete="off"></div>
+        <div class="fld qpos"><label for="onbPPos">Position</label><select id="onbPPos"><option value="">—</option>${LINEUP_POS.map(x => `<option>${x}</option>`).join("")}</select></div>
+        <button class="obtn go" data-act="onb-addp">Add</button>
+      </div>
+      ${ps.length ? `<ul class="qlist">${ps.map(p => `<li><span class="n">${esc(p.num || "–")}</span><span class="nm">${esc(p.name || "Unnamed")}</span><span style="opacity:.75">${esc(p.pos || "")}</span><button data-act="onb-rmp" data-v="${p.id}" aria-label="Remove ${esc(p.name)}">✕</button></li>`).join("")}</ul>` : `<p class="lead" style="font-size:15px">No players yet. You can also skip this and add them on the Team tab.</p>`}</div>`;
+    foot = next(store.team.players.length ? `Done adding (${store.team.players.length})` : "Skip for now");
+  } else {
+    const c = teamColors();
+    inner = `<div class="inner">
+      <span class="stepno">Setup complete</span><h2>Ready to play ball</h2>
+      <div class="preview">${bugPreview()}<img src="${iconPreview()}" alt=""></div>
+      <div class="summary">
+        <div><span>Team</span><b>${esc(store.team.name)} (${esc(store.team.abbr || abbrOf(store.team.name))})</b></div>
+        <div><span>Colors</span><b>${esc(colorName(c.primary))} &amp; ${esc(colorName(c.secondary))}</b></div>
+        <div><span>Scoring</span><b>${pf.mode === "dugout" ? "Dugout mode" : "Scorekeeper mode"}${pf.askHits !== false ? " · hit location on" : ""}</b></div>
+        <div><span>Games</span><b>${pf.innings} innings${pf.ties ? " · ties allowed" : ""}</b></div>
+        <div><span>Roster</span><b>${store.team.players.length} player${store.team.players.length === 1 ? "" : "s"}</b></div>
+      </div>
+      <p class="lead" style="font-size:15px">Tip: add ScoreKeep to your Home Screen (Share → Add to Home Screen) so the icon has your colors, and save a backup after each game day. Everything here is under the gear if you want to change it.</p></div>`;
+    foot = `<button class="obtn" data-act="onb-finish" data-v="team">Go to my team</button><button class="obtn go" data-act="onb-finish" data-v="game" ${store.team.players.length ? "" : "disabled"}>Start a game</button>`;
+  }
+  return `<div class="onb" role="dialog" aria-modal="true" aria-label="ScoreKeep setup">
+    <div class="top">${top}</div>
+    <div class="body">${inner}</div>
+    <div class="foot">${foot}</div></div>`;
+}
+function startOnboarding(step) { ui.msg = ""; ui.confirm = null; ui.sheet = { type: "onboard", step }; render(); }
+function finishOnboarding(then) {
+  store.onboarded = true; save();
+  ui.sheet = null;
+  if (then === "game" && store.team.players.length && !store.currentId) { ui.view = "game"; render(); openNewGame(); }
+  else { ui.view = "roster"; render(); }
+}
+function onbAddPlayer() {
+  const name = $("onbPName").value.trim(); if (!name) { $("onbPName").focus(); return; }
+  const pos = $("onbPPos").value;
+  store.team.players.push({ id: uid(), name, num: $("onbPNum").value.trim(), pos, alt: [], bats: "" });
+  save(); render();
+  const f = $("onbPName"); if (f) f.focus();
+}
+
 function renderSheet() {
   const sh = ui.sheet, o = $("overlay");
   if (!sh) { o.innerHTML = ""; return; }
@@ -1910,7 +2095,8 @@ function renderSheet() {
       <div class="two"><div class="field"><label for="d-opponent">Opponent</label><input id="d-opponent" data-ch="setting" value="${esc(d.opponent)}" autocomplete="off"></div>
       <div class="field" style="max-width:120px"><label for="d-oppAbbr">Short name</label><input id="d-oppAbbr" data-ch="setting" maxlength="5" value="${esc(d.oppAbbr || "")}" placeholder="${esc(abbrOf(d.opponent))}" autocomplete="off" style="text-transform:uppercase"></div></div>
       ${rulesFields(d, true)}
-      <div class="setlist"><button class="setrow" data-act="sounds"><span><b>Sounds &amp; walk-up songs</b><small>Game sounds, situation sounds, between-innings music and walk-ups.</small></span><span class="chev" aria-hidden="true">›</span></button></div>
+      <div class="setlist"><button class="setrow" data-act="sounds"><span><b>Sounds &amp; walk-up songs</b><small>Game sounds, situation sounds, between-innings music and walk-ups.</small></span><span class="chev" aria-hidden="true">›</span></button>
+        <button class="setrow" data-act="opensettings"><span><b>All settings</b><small>Team, colors, new game defaults, backup and the welcome setup.</small></span><span class="chev" aria-hidden="true">›</span></button></div>
       <p style="font-size:13px">Changes apply right away. Screen layout: ${LAYOUT_NAMES[document.documentElement.dataset.layout] || "Phone"}, picked automatically from this screen's size and turned with the device.</p>
       <div class="acts" style="justify-content:space-between">
         <button class="tbtn ${ui.confirm === "discard" ? "danger" : ""}" data-act="discard">${ui.confirm === "discard" ? "Tap again to delete this game" : "Delete game"}</button>
@@ -1965,6 +2151,55 @@ function renderSheet() {
       <p>Your roster carries over. Next you'll review it: add new players, update positions, and remove anyone who left. Their past stats stay in the old season.</p>
       ${ui.msg ? `<p style="color:var(--stitch)">${esc(ui.msg)}</p>` : ""}
       <div class="acts"><button class="tbtn" data-act="close">Cancel</button><button class="tbtn primary" data-act="startseason">Start the season</button></div>`;
+  } else if (sh.type === "player") {
+    const pl = player(sh.id);
+    if (!pl) { ui.sheet = null; o.innerHTML = ""; return; }
+    const cur = [pl.pos || "", ...(pl.alt || []), "", ""].slice(0, 3), wslot = "walkup:" + pl.id, song = clips[wslot];
+    body = `<h3>${esc(pl.name || "New player")}</h3>
+      <div class="two2" style="display:grid;gap:12px;grid-template-columns:90px minmax(0,1fr)">
+        <div class="field"><label for="pl-num">Number</label><input id="pl-num" data-ch="pnum" data-id="${pl.id}" value="${esc(pl.num)}" inputmode="numeric" autocomplete="off"></div>
+        <div class="field"><label for="pl-name">Name</label><input id="pl-name" data-ch="pname" data-id="${pl.id}" value="${esc(pl.name)}" placeholder="Player name" autocomplete="off"></div>
+      </div>
+      <div class="pfield"><span class="clabel" style="font-family:var(--f-label);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Positions (main one first)</span>
+        <div class="posset">${[0, 1, 2].map(k => `<select aria-label="${["Main", "Second", "Third"][k]} position" data-ch="ppos" data-k="${k}" data-id="${pl.id}"><option value="">—</option>${LINEUP_POS.map(x => `<option ${x === cur[k] ? "selected" : ""}>${x}</option>`).join("")}</select>`).join("")}</div></div>
+      <div class="pfield"><span style="font-family:var(--f-label);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Bats</span>
+        <div class="bbrow">${[["R", "Right"], ["L", "Left"], ["S", "Switch"]].map(([v, l]) => `<button data-act="pbats" data-id="${pl.id}" data-v="${v}" aria-pressed="${pl.bats === v}">${l}</button>`).join("")}</div></div>
+      <div class="setlist"><div class="setrow"><span><b>Walk-up song</b><small>${song ? "♪ " + esc(song.name) : "None yet"}</small></span>
+        <span style="display:flex;gap:6px">${song ? `<button class="tbtn" data-act="clip-play" data-v="${wslot}">▶</button>` : ""}<button class="tbtn" data-act="clip-choose" data-v="${wslot}">${song ? "Change" : "Choose file"}</button></span></div></div>
+      <div class="acts" style="justify-content:space-between">
+        <button class="tbtn ${ui.confirm === "rm:" + pl.id ? "danger" : ""}" data-act="rmplayer" data-v="${pl.id}">${ui.confirm === "rm:" + pl.id ? "Tap again to remove" : "Remove player"}</button>
+        <button class="tbtn primary" data-act="close">Done</button></div>`;
+  } else if (sh.type === "teamedit") {
+    body = `<h3>Edit team</h3>
+      <div class="two2" style="display:grid;gap:12px;grid-template-columns:minmax(0,1fr) 110px">
+        <div class="field"><label for="teamName">Team name</label><input id="teamName" data-ch="teamName" value="${esc(store.team.name)}" autocomplete="off"></div>
+        <div class="field"><label for="teamAbbr">Short name</label><input id="teamAbbr" data-ch="teamAbbr" maxlength="5" value="${esc(store.team.abbr || abbrOf(store.team.name))}" autocomplete="off" style="text-transform:uppercase"></div>
+      </div>
+      ${colorPicker()}
+      <div class="acts"><button class="tbtn primary" data-act="close">Done</button></div>`;
+  } else if (sh.type === "settings") {
+    const pf = Object.assign({ mode: "dugout", askHits: true, ties: false, innings: 7 }, store.prefs);
+    const psw = (k, title, desc, on) => `<label class="setrow" for="p-${k}"><span><b>${title}</b><small>${desc}</small></span><input type="checkbox" class="switch" id="p-${k}" data-ch="pref" data-k="${k}" ${on ? "checked" : ""}></label>`;
+    const link = (act, title, desc) => `<button class="setrow" data-act="${act}"><span><b>${title}</b><small>${desc}</small></span><span class="chev" aria-hidden="true">›</span></button>`;
+    const c = teamColors();
+    body = `<h3>Settings</h3>
+      <h4 style="margin:0">Team</h4>
+      <div class="setlist">${link("teamedit", esc(store.team.name), `Short name ${esc(store.team.abbr || abbrOf(store.team.name))} · ${esc(colorName(c.primary))} &amp; ${esc(colorName(c.secondary))}`)}</div>
+      <h4 style="margin:0">New game defaults</h4>
+      <div class="setlist">
+        ${psw("dugout", "Dugout mode", "Score your batters one at a time; their half-innings with quick run and out buttons. Off: score every batter on both teams.", pf.mode === "dugout")}
+        ${psw("askHits", "Hit location", "Ask which fielder made the play and where hits went, for spray charts and fielding stats.", pf.askHits !== false)}
+        ${psw("ties", "Games can end in a tie", "A tie after the last inning stands, with no extra innings.", !!pf.ties)}
+        <div class="setrow"><span><b>Innings</b><small>The usual length of a game. You can still change it for any game.</small></span>
+          <span class="stepper"><button data-act="prefinn" data-v="-1" aria-label="One fewer inning">−</button><b>${pf.innings}</b><button data-act="prefinn" data-v="1" aria-label="One more inning">+</button></span></div>
+      </div>
+      <div class="setlist">
+        ${link("sounds", "Sounds &amp; walk-up songs", "Game sounds, situation sounds, between-innings music and walk-ups.")}
+        ${link("backup", "Backup &amp; restore", "Save everything to a file, or bring it back on any device.")}
+        ${link("onb-again", "Run the welcome setup again", "Walk through team, colors, scoring style, rules and roster. Nothing is erased.")}
+      </div>
+      <p style="font-size:13px">Settings for a game in progress are under the gear during that game.</p>
+      <div class="acts"><button class="tbtn primary" data-act="close">Done</button></div>`;
   } else if (sh.type === "backup") {
     body = `<h3>Export &amp; backup</h3>
       <p>Your games live on this device. A backup is one small file with everything: roster, games, stats and settings. Save one after each game day, ideally somewhere off the device like iCloud Drive or email. If the device is lost or reset, Restore brings it all back.</p>
@@ -1982,6 +2217,7 @@ function renderSheet() {
       ${ui.msg ? `<p style="color:var(--ink)">${esc(ui.msg)}</p>` : ""}
       <div class="acts"><button class="tbtn" data-act="close">Done</button></div>`;
   }
+  if (sh.type === "onboard") { o.innerHTML = onboardHTML(sh); return; }
   o.innerHTML = `<div class="scrim" data-act="scrim"><div class="sheet ${wide ? "wide" : ""}" role="dialog" aria-modal="true">${body}</div></div>`;
 }
 
@@ -2005,7 +2241,7 @@ function syncSoundBtn() {
   b.setAttribute("aria-label", ui.sound ? "Sound is on. Tap to mute." : "Sound is off. Tap to turn on.");
   b.innerHTML = `<svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/>${ui.sound ? '<path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/>' : '<path d="M17 9.5l5 5M22 9.5l-5 5"/>'}</svg>`;
 }
-function closeSheet() { ui.sheet = null; ui.draft = null; ui.confirm = null; ui.msg = ""; ui.bb = null; renderSheet(); }
+function closeSheet() { ui.sheet = null; ui.draft = null; ui.confirm = null; ui.msg = ""; ui.bb = null; render(); }
 
 // Start from the last game's lineup; otherwise the roster, giving each player
 // their first position that isn't already taken.
@@ -2017,7 +2253,7 @@ function defaultRows() {
   return rows;
 }
 function openNewGame() {
-  ui.draft = { opponent: "", oppAbbr: "", date: today(), ourSide: 0, innings: 7, startCount: false, foulOut: false, askHits: !(store.prefs && store.prefs.askHits === false),
+  ui.draft = { opponent: "", oppAbbr: "", date: today(), ourSide: 0, innings: (store.prefs && store.prefs.innings) || 7, startCount: false, foulOut: false, askHits: !(store.prefs && store.prefs.askHits === false),
     mode: (store.prefs && store.prefs.mode) || "dugout", trackCount: !(store.prefs && store.prefs.trackCount === false), ties: !!(store.prefs && store.prefs.ties), rows: defaultRows(), opp: "" };
   ui.msg = ""; ui.sheet = { type: "newgame" }; renderSheet();
 }
@@ -2135,8 +2371,9 @@ document.addEventListener("click", ev => {
       if (ui.sound) { audio(); SFX.hit(); }
       break;
     case "sounds":
-      // Coming from New Game or Game Settings, Done brings you back there.
-      if (ui.sheet && (ui.sheet.type === "newgame" || ui.sheet.type === "gamemenu")) { readDraftRows(); ui.returnTo = ui.sheet.type; } else ui.returnTo = null;
+      // Coming from New Game, Game Settings or Settings, Done brings you back there.
+      if (ui.sheet && (ui.sheet.type === "newgame" || ui.sheet.type === "gamemenu")) { readDraftRows(); ui.returnTo = ui.sheet.type; }
+      else ui.returnTo = ui.sheet && ui.sheet.type === "settings" ? "settings" : null;
       ui.msg = ""; ui.sheet = { type: "sounds" }; renderSheet(); break;
     case "sound-toggle":
       readDraftRows(); ui.sound = !ui.sound; syncSoundBtn();
@@ -2188,12 +2425,12 @@ document.addEventListener("click", ev => {
       save(); renderGamebar(); break;
     }
     case "inning-add": ui.audioSlot = "inning:" + Date.now().toString(36); audio(); $("audioFile").click(); break;
-    case "close":
-      if (ui.sheet && ui.sheet.type === "sounds") {
-        stopClip(true);
-        if (ui.returnTo && ui.draft) { ui.sheet = { type: ui.returnTo }; ui.returnTo = null; renderSheet(); break; }
-      }
+    case "close": {
+      const t = ui.sheet && ui.sheet.type;
+      if (t === "sounds") stopClip(true);
+      if ((t === "sounds" || t === "teamedit") && ui.returnTo && (ui.returnTo === "settings" || ui.draft)) { ui.sheet = { type: ui.returnTo }; ui.returnTo = null; render(); break; }
       closeSheet(); break;
+    }
     case "newgame": openNewGame(); break;
     case "startgame": startGame(); break;
     case "lineups": openLineups(); break;
@@ -2238,20 +2475,50 @@ document.addEventListener("click", ev => {
     case "scoutteam": ui.scoutTeam = v; render(); break;
     case "settings":
       if (curGame()) { G = curGame(); S = derive(G); openGameMenu(); }
-      else { ui.msg = ""; ui.returnTo = null; ui.sheet = { type: "sounds" }; renderSheet(); }
+      else { ui.msg = ""; ui.returnTo = null; ui.sheet = { type: "settings" }; render(); }
       break;
+    case "opensettings": ui.msg = ""; ui.returnTo = null; ui.draft = null; ui.sheet = { type: "settings" }; render(); break;
+    case "teamedit": ui.returnTo = ui.sheet && ui.sheet.type === "settings" ? "settings" : null; ui.sheet = { type: "teamedit" }; render(); break;
+    case "editplayer": ui.confirm = null; ui.sheet = { type: "player", id: v }; render(); break;
     case "addplayer": {
-      store.team.players.push({ id: uid(), name: "", num: "", pos: "Bench", bats: "" });
-      save(); render();
-      const inputs = document.querySelectorAll('[data-ch="pname"]'); if (inputs.length) inputs[inputs.length - 1].focus();
+      const np = { id: uid(), name: "", num: "", pos: "", alt: [], bats: "" };
+      store.team.players.push(np); save();
+      ui.sheet = { type: "player", id: np.id }; render();
+      const f = $("pl-name"); if (f) f.focus();
       break;
     }
+    case "pbats": { const pl = player(el.dataset.id); if (pl) { pl.bats = pl.bats === v ? "" : v; save(); render(); } break; }
     case "rmplayer":
       if (ui.confirm !== "rm:" + v) { ui.confirm = "rm:" + v; render(); break; }
-      store.team.players = store.team.players.filter(p => p.id !== v); ui.confirm = null; save(); render(); break;
+      store.team.players = store.team.players.filter(p => p.id !== v); ui.confirm = null;
+      if (ui.sheet && ui.sheet.type === "player") ui.sheet = null;
+      save(); render(); break;
     case "clearsample":
       if (ui.confirm !== "clear") { ui.confirm = "clear"; render(); break; }
-      store = blankStore(); ui.seasonView = null; ui.confirm = null; ui.view = "roster"; ui.peekId = null; save(); render(); break;
+      store = blankStore(); ui.seasonView = null; ui.confirm = null; ui.view = "roster"; ui.peekId = null; save();
+      startOnboarding("team"); break;
+    case "prefinn": {
+      store.prefs = Object.assign({}, store.prefs);
+      store.prefs.innings = Math.min(15, Math.max(3, (store.prefs.innings || 7) + +v));
+      save(); render(); break;
+    }
+    case "onb-start": startOnboarding("team"); break;
+    case "onb-sample":
+      store = ensureSeasons(sampleStore()); store.onboarded = true; ui.sheet = null; ui.view = "game"; save(); render(); break;
+    case "onb-again": startOnboarding("team"); break;
+    case "onb-next": {
+      const i = ONB_STEPS.indexOf(ui.sheet.step);
+      if (ui.sheet.step === "team" && (!store.team.name.trim() || store.team.name === "My Team") && !($("onbName") && $("onbName").value.trim())) { ui.msg = "Enter your team's name to keep going."; render(); break; }
+      ui.msg = ""; ui.sheet = { type: "onboard", step: ONB_STEPS[Math.min(i + 1, ONB_STEPS.length - 1)] }; render(); break;
+    }
+    case "onb-back": {
+      const i = ONB_STEPS.indexOf(ui.sheet.step);
+      ui.msg = ""; ui.sheet = { type: "onboard", step: i <= 0 ? (store.onboarded ? "team" : "welcome") : ONB_STEPS[i - 1] }; render(); break;
+    }
+    case "onb-mode": store.prefs = Object.assign({}, store.prefs, { mode: v }); save(); render(); break;
+    case "onb-addp": onbAddPlayer(); break;
+    case "onb-rmp": store.team.players = store.team.players.filter(p => p.id !== v); save(); render(); break;
+    case "onb-finish": finishOnboarding(v); break;
     case "backup": ui.msg = ""; ui.sheet = { type: "backup" }; renderSheet(); break;
     case "dl-backup":
       readDraftRows();
@@ -2276,12 +2543,25 @@ document.addEventListener("click", ev => {
   }
 });
 
+document.addEventListener("input", ev => {
+  const k = ev.target && ev.target.dataset && ev.target.dataset.onb; if (!k) return;
+  if (k === "name") store.team.name = ev.target.value.trim() || "My Team";
+  if (k === "abbr") store.team.abbr = ev.target.value.trim().toUpperCase().slice(0, 5);
+  save();
+  const pv = $("onbPreview"); if (pv) pv.innerHTML = bugPreview();
+  const ab = $("onbAbbr"); if (ab && k === "name") ab.placeholder = abbrOf(store.team.name);
+});
 document.addEventListener("change", ev => {
   const el = ev.target, ch = el.dataset && el.dataset.ch; if (!ch) return;
   const p = el.dataset.id ? player(el.dataset.id) : null;
   if (ch === "minPA") { ui.minPA = +el.value; render(); }
   else if (ch === "seasonSel") { ui.seasonView = el.value === store.currentSeasonId ? null : el.value; render(); }
   else if (ch === "draft") { readDraftRows(); renderSheet(); }
+  else if (ch === "pref") {
+    store.prefs = Object.assign({}, store.prefs);
+    if (el.dataset.k === "dugout") store.prefs.mode = el.checked ? "dugout" : "scorekeeper"; else store.prefs[el.dataset.k] = el.checked;
+    save();
+  }
   else if (ch === "incCur") { ui.incCur = el.checked; render(); }
   else if (ch === "lu") {
     const i = +el.dataset.i, before = ui.draft.rows[i] && ui.draft.rows[i].pid;
@@ -2349,7 +2629,8 @@ $("restoreFile").addEventListener("change", ev => {
 });
 
 document.addEventListener("keydown", ev => {
-  if (ev.key === "Escape" && ui.sheet) closeSheet();
+  if (ev.key === "Escape" && ui.sheet && ui.sheet.type !== "onboard") closeSheet();
+  if (ev.key === "Enter" && ev.target && ev.target.id === "onbPName") { ev.preventDefault(); onbAddPlayer(); }
   if ((ev.key === "Enter" || ev.key === " ") && ev.target.matches && ev.target.matches(".base")) { ev.preventDefault(); ev.target.dispatchEvent(new MouseEvent("click", { bubbles: true })); }
 });
 
@@ -2366,7 +2647,10 @@ let layoutTimer = null;
 window.addEventListener("resize", () => { clearTimeout(layoutTimer); layoutTimer = setTimeout(() => { if (detectLayout()) { shellKey = ""; render(); } }, 120); });
 detectLayout();
 
-store = ensureSeasons(load() || sampleStore());
+// First launch: the welcome setup. The screen preview page always shows the sample season.
+const saved = load(), previewMode = /[?&]preview\b/.test(location.search);
+store = ensureSeasons(saved || (previewMode || safety.unreadable || safety.blocked ? sampleStore() : blankStore()));
+if (!saved && !previewMode && !safety.unreadable && !safety.blocked) ui.sheet = { type: "onboard", step: "welcome" };
 loadClips();
 protectStorage();
 document.addEventListener("click", () => { if (safety.protected === false) protectStorage(); }, { once: true });

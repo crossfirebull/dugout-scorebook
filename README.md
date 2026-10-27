@@ -12,7 +12,7 @@ A tab bar along the bottom has five pages, so there's little scrolling:
 - **Book**: the full inning-by-inning line score, the scorebook grid and play-by-play.
 - **Stats**: Overview (games and leaders), Batting tables, Spray charts and Lineups, for any season.
 - **Scout**: every team you've played, with a spray chart for the team and each of its hitters, and where to shade your defense.
-- **Team**: your roster, positions, walk-up songs and **team colors**. Pick a primary and a secondary color from a palette of common uniform colors; the app name, scoreboard, buttons and tabs pick them up, and the app keeps every combination readable.
+- **Team**: your team name and colors up top (**Edit team** changes them), then the roster. Tap a player to edit their number, up to three positions, batting side and walk-up song. **+ Add player** sits right under the list.
 
 ScoreKeep picks a layout for the screen it's on, and switches when you rotate the device:
 
@@ -23,7 +23,11 @@ ScoreKeep picks a layout for the screen it's on, and switches when you rotate th
 
 To see every layout at once, open the **screen preview**: https://crossfirebull.github.io/dugout-scorebook/preview.html. It shows ScoreKeep on an iPhone, an iPhone on its side, a Raspberry Pi 7" screen, an iPad mini, an iPad, an iPad on its side and a laptop. The preview uses its own practice data, so it never touches your real games.
 
-The speaker button at the top mutes and unmutes. The gear opens Game Settings during a game, or Sounds otherwise.
+The speaker button at the top mutes and unmutes. The gear opens **Settings** (team, colors, new-game defaults, sounds, backup, and the welcome setup again). During a game it opens that game's settings, with a link to all settings.
+
+## First launch
+
+The first time ScoreKeep opens, a short setup walks you through it like the opening screens of a video game: name your team, pick your colors (with a live preview of the score bug and Home Screen icon), choose Dugout or Scorekeeper mode, set your league's innings and tie rule, and add your players. Or tap **Look around with sample data first** to explore a made-up season. Everything you choose can be changed later in **Settings**, and **Run the welcome setup again** is there too.
 
 ## Using it at the field
 

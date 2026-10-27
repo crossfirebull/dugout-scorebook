@@ -35,6 +35,7 @@ async function open(width = 390, height = 844, options = {}) {
   page.on("pageerror", e => errors.push(e.message));
   await page.goto(base);
   await page.waitForSelector(".tabbar button");
+  if (!options.keepSetup && await page.$(".onb [data-act=onb-sample]")) await page.click(".onb [data-act=onb-sample]");   // first launch: use the sample season
   return { page, context, errors };
 }
 const text = async (page, sel) => (await page.textContent(sel)).replace(/\s+/g, " ").trim();
@@ -143,12 +144,14 @@ test("saving a game adds it to the season record and stats", async () => {
 test("everything is still there after closing and reopening", async () => {
   const { page, context } = await open();
   await page.click(".tabbar [data-v=roster]");
+  await page.click("[data-act=teamedit]");
   await page.fill("#teamName", "Reload Test");
   await page.press("#teamName", "Tab");
+  await page.click(".sheet [data-act=close]");
   await tapResult(page, "1B").catch(() => {});
   await page.reload(); await page.waitForSelector(".tabbar button");
   await page.click(".tabbar [data-v=roster]");
-  assert.equal(await page.inputValue("#teamName"), "Reload Test");
+  assert.equal(await text(page, ".teamhead .teamword"), "Reload Test");
   await context.close();
 });
 
@@ -196,5 +199,60 @@ test("works offline after the first visit", async () => {
   await page.reload(); await page.waitForSelector(".tabbar button");
   assert.equal(await page.title(), "ScoreKeep");
   assert.match(await text(page, "#alertBox"), /Offline/);
+  await context.close();
+});
+
+test("first launch walks through setup, and the choices land in Settings", async () => {
+  const { page, context, errors } = await open(390, 844, { keepSetup: true });
+  assert.ok(await page.$(".onb .welcome"), "welcome screen on first launch");
+  await page.click("[data-act=onb-start]");
+  await page.click("[data-act=onb-next]");                                   // no name yet
+  assert.match(await text(page, ".onb"), /Enter your team's name/);
+  await page.fill("#onbName", "Test Tigers");
+  assert.match(await text(page, "#onbPreview"), /TIG/, "score bug preview uses the short name");
+  await page.click("[data-act=onb-next]");
+  await page.click("[data-act=teamcolor][data-k=primary][data-v=maroon]");
+  await page.click("[data-act=teamcolor][data-k=secondary][data-v=gold]");
+  await page.click("[data-act=onb-next]");
+  await page.click("[data-act=onb-mode][data-v=scorekeeper]");
+  await page.click("[data-act=onb-next]");
+  await page.click("[data-act=prefinn][data-v='1']");
+  await page.click("label[for=p-ties]");
+  await page.click("[data-act=onb-next]");
+  for (const [name, num, pos] of [["Ava Ruiz", "4", "SS"], ["Jo Kim", "12", "C"]]) {
+    await page.fill("#onbPName", name); await page.fill("#onbPNum", num); await page.selectOption("#onbPPos", pos);
+    await page.click("[data-act=onb-addp]");
+  }
+  assert.equal((await page.$$(".onb .qlist li")).length, 2);
+  await page.click("[data-act=onb-next]");
+  const summary = await text(page, ".onb .summary");
+  assert.match(summary, /Test Tigers/); assert.match(summary, /Maroon & Gold/); assert.match(summary, /Scorekeeper mode/); assert.match(summary, /8 innings · ties allowed/); assert.match(summary, /2 players/);
+  await page.click("[data-act=onb-finish][data-v=game]");
+  assert.match(await text(page, ".sheet h3"), /New Game/, "Start a game opens New Game");
+  assert.match(await text(page, ".sheet .stepper"), /8/, "new game uses the 8-inning default");
+  await page.click(".sheet [data-act=close]");
+  await page.click("[data-act=settings]");
+  assert.match(await text(page, ".sheet"), /Test Tigers/);
+  assert.equal(await page.isChecked("#p-dugout"), false); assert.equal(await page.isChecked("#p-ties"), true);
+  await page.reload(); await page.waitForSelector(".tabbar button");
+  assert.equal(await page.$(".onb"), null, "setup doesn't come back after it's done");
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("Team tab: add a player and edit them in their own panel", async () => {
+  const { page, context } = await open();
+  await page.click(".tabbar [data-v=roster]");
+  const before = (await page.$$(".plist li")).length;
+  await page.click("[data-act=addplayer]");
+  await page.fill("#pl-name", "New Hitter"); await page.press("#pl-name", "Tab");
+  await page.fill("#pl-num", "77"); await page.press("#pl-num", "Tab");
+  await page.selectOption("[data-ch=ppos][data-k='0']", "2B");
+  await page.selectOption("[data-ch=ppos][data-k='1']", "SS");
+  await page.click("[data-act=pbats][data-v=L]");
+  await page.click(".sheet [data-act=close]");
+  assert.equal((await page.$$(".plist li")).length, before + 1);
+  const row = await text(page, ".plist li:last-child");
+  assert.match(row, /77/); assert.match(row, /New Hitter/); assert.match(row, /2B \/ SS/); assert.match(row, /Bats L/);
   await context.close();
 });
