@@ -336,3 +336,61 @@ test("the built-in organ sounds play without errors", async () => {
   assert.deepEqual(errors, []);
   await context.close();
 });
+
+// ---------- A simulated season, checked against a hand-kept stat sheet ----------
+const { simulateSeason, rates } = require("./season-sim");
+const show = {
+  int: v => String(v), avg: v => v == null ? "—" : (v >= 1 ? v.toFixed(3) : v.toFixed(3).slice(1)),
+  pct: v => v == null ? "—" : Math.round(v * 100) + "%", dec: v => v == null ? "—" : v.toFixed(1), dec2: v => v == null ? "—" : v.toFixed(2)
+};
+function expectedRow(s) {
+  const x = Object.assign({}, s, rates(s));
+  return {
+    G: show.int(s.G), PA: show.int(s.PA), AB: show.int(s.AB), R: show.int(s.R), H: show.int(s.H), "2B": show.int(s["2B"]), "3B": show.int(s["3B"]),
+    HR: show.int(s.HR), RBI: show.int(s.RBI), BB: show.int(s.BB), K: show.int(s.K), SB: show.int(s.SB),
+    AVG: show.avg(x.AVG), OBP: show.avg(x.OBP), SLG: show.avg(x.SLG), OPS: show.avg(x.OPS), wOBA: show.avg(x.wOBA), ISO: show.avg(x.ISO),
+    BABIP: show.avg(x.BABIP), "K%": show.pct(x["K%"]), "BB%": show.pct(x["BB%"]), "BB/K": show.dec2(s.K ? s.BB / s.K : null),
+    "RISP AVG": show.avg(x["RISP AVG"]), RC: show.dec(x.RC), ROE: show.int(s.ROE), "HR out": show.int(s.HRO), FBO: show.int(s.FBO)
+  };
+}
+async function loadSeason(page, store) {
+  await page.addInitScript(data => { if (!sessionStorage.getItem("seeded")) { localStorage.setItem("dugout-scorebook.v2", data); sessionStorage.setItem("seeded", "1"); } }, JSON.stringify(store));
+  await page.goto(base);
+  await page.waitForSelector(".tabbar button");
+}
+async function readTable(page, which) {
+  await page.click(`[data-act=table][data-v=${which}]`);
+  return page.$$eval("table.stats", ([t]) => {
+    const heads = [...t.querySelectorAll("thead th")].map(th => th.textContent.replace(/[▲▼]/g, "").trim());
+    const row = tr => Object.fromEntries([...tr.children].map((td, i) => [heads[i], td.textContent.trim()]));
+    return { rows: [...t.querySelectorAll("tbody tr")].map(row), team: row(t.querySelector("tfoot tr")) };
+  });
+}
+
+// Seed 283 has every kind of play, 39 an extra-inning game, 9 a walk-off triple with two runners on
+for (const seed of [283, 39, 9]) test(`simulated season ${seed}: every batting stat matches a hand-kept sheet`, async () => {
+  const { store, sheet, results, names } = simulateSeason(seed);
+  const { page, context, errors } = await open(1180, 820, { keepSetup: true });
+  await loadSeason(page, store);
+  await page.click(".tabbar [data-v=stats]");
+  // Game results
+  const games = await page.$$eval(".games li .who b", b => b.map(x => x.textContent.trim()));
+  assert.deepEqual(games.slice().sort(), results.map(r => `${r.us}–${r.them}`).sort(), "final scores");
+  await page.click("[data-act=statstab][data-v=batting]");
+  const mismatches = [];
+  const total = Object.assign(...Object.keys(sheet.p1).map(k => ({ [k]: Object.values(sheet).reduce((a, s) => a + s[k], 0) })));
+  total.G = 5;
+  for (const which of ["std", "adv"]) {
+    const { rows, team } = await readTable(page, which);
+    for (const [pid, s] of Object.entries(sheet)) {
+      const got = rows.find(r => r.Player.endsWith(names[pid])), want = expectedRow(s);
+      assert.ok(got, `${names[pid]} has a row`);
+      for (const k of Object.keys(got)) if (k !== "Player" && want[k] !== undefined && got[k] !== want[k]) mismatches.push(`${names[pid]} ${k}: app ${got[k]}, sheet ${want[k]}`);
+    }
+    const want = expectedRow(total);
+    for (const k of Object.keys(team)) if (k !== "Player" && want[k] !== undefined && team[k] !== want[k]) mismatches.push(`Team ${k}: app ${team[k]}, sheet ${want[k]}`);
+  }
+  assert.deepEqual(mismatches, []);
+  assert.deepEqual(errors, []);
+  await context.close();
+});

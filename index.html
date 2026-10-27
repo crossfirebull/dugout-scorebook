@@ -883,7 +883,7 @@ function plateAppearance(s, g, r, p, bb, foulK, fcOut) {
   s.book[bt].push(cell);
   const me = { team: bt, cell: s.book[bt].length - 1, slot, key };
   let runs = 0, fcNote = "";
-  const sc = x => { scoreRunner(s, g, x); runs++; };
+  const sc = x => { if (s.final && r !== "HR") return; scoreRunner(s, g, x); runs++; };   // a walk-off ends the game with the winning run, unless it's a home run
   const advAll = n => { for (let b = 2; b >= 0; b--) { const x = s.bases[b]; if (!x) continue; s.bases[b] = null; const nb = b + n; if (nb >= 3) sc(x); else { s.bases[nb] = x; cellOf(s, x).base = nb + 1; } } };
   const forceAll = () => { if (!s.bases[0]) return; if (s.bases[1]) { if (s.bases[2]) { const x = s.bases[2]; s.bases[2] = null; sc(x); } move(s, 1, 2); } move(s, 0, 1); };
   const put = b => { s.bases[b - 1] = me; cell.base = b; };
