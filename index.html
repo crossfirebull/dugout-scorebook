@@ -1158,23 +1158,71 @@ function tone(f, at, dur, type, vol, slideTo) {
   gn.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
   o.connect(gn).connect(a.destination); o.start(t0); o.stop(t0 + dur + 0.05);
 }
-const SFX = {
-  charge() { [[392, 0], [523, .16], [659, .32], [784, .48], [659, .8], [784, .96]].forEach(([f, t], i) => tone(f, t, i === 5 ? .7 : .14, "square", .07)); },
-  hit() { tone(660, 0, .08, "triangle", .14); tone(990, .08, .14, "triangle", .14); },
-  run() { tone(1046, 0, .5, "sine", .12); tone(1318, .12, .6, "sine", .1); },
-  k() { tone(520, 0, .45, "sawtooth", .05, 180); },
-  side() { tone(392, 0, .16, "triangle", .12); tone(330, .18, .16, "triangle", .12); tone(262, .36, .3, "triangle", .12); },
-  rally() { [[523, 0, .12], [523, .2, .12], [659, .4, .12], [784, .6, .12], [659, .8, .12], [784, 1, .45]].forEach(([f, t, d]) => tone(f, t, d, "square", .07)); },
-  win() { [[523, 0, .15], [659, .15, .15], [784, .3, .15], [1046, .45, .55], [784, 1.05, .15], [1046, 1.25, .9]].forEach(([f, t, d]) => tone(f, t, d, "square", .07)); }
+/* ---------- Built-in sounds: a little ballpark organ ----------
+   Each note stacks sine "drawbars" at organ harmonics, with a slow vibrato,
+   a key click and a room echo, so the defaults sound like a stadium organ
+   instead of video-game beeps. Phrases are [beat, MIDI note(s), beats long]. */
+const DRAWBARS = [[.5, .5], [1, 1], [1.5, .3], [2, .75], [3, .35], [4, .45], [6, .14], [8, .22]];   // [harmonic, level]
+let organBus = null;
+function organOut() {
+  const a = audio(); if (!a) return null;
+  if (organBus && organBus.ctx === a) return organBus;
+  const input = a.createGain(), trem = a.createGain(), tone = a.createBiquadFilter(), comp = a.createDynamicsCompressor(), verb = a.createConvolver(), wet = a.createGain();
+  tone.type = "lowpass"; tone.frequency.value = 4500;
+  const len = Math.floor(a.sampleRate * 1.3), ir = a.createBuffer(2, len, a.sampleRate);   // fading noise = an outdoor PA echo
+  for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 4); }
+  verb.buffer = ir; wet.gain.value = .3;
+  const lfo = (hz, amt, target) => { const o = a.createOscillator(), g = a.createGain(); o.frequency.value = hz; g.gain.value = amt; o.connect(g).connect(target); o.start(); return g; };
+  lfo(5.8, .12, trem.gain);                                                    // a touch of rotating-speaker tremolo
+  input.connect(trem).connect(tone); tone.connect(comp); tone.connect(verb).connect(wet).connect(comp); comp.connect(a.destination);
+  const vib = a.createGain(); lfo(6.4, 7, vib);                              // vibrato, in cents, fed to every note's pitch
+  organBus = { ctx: a, input, vib };
+  return organBus;
+}
+const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
+function organ(notes, at, dur, vol) {
+  const bus = organOut(); if (!bus) return;
+  const a = bus.ctx, t0 = a.currentTime + .03 + at, t1 = t0 + dur, lvl = .045 * (vol || 1) / Math.sqrt(notes.length);
+  const g = a.createGain(); g.connect(bus.input);
+  g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(lvl, t0 + .006); g.gain.setValueAtTime(lvl, t1); g.gain.linearRampToValueAtTime(0, t1 + .07);
+  notes.forEach(m => DRAWBARS.forEach(([h, l]) => {
+    const f = mtof(m) * h; if (f > 8000) return;
+    const o = a.createOscillator(), og = a.createGain(); o.frequency.value = f; og.gain.value = l;
+    bus.vib.connect(o.detune); o.connect(og).connect(g); o.start(t0); o.stop(t1 + .12);
+  }));
+  const top = mtof(Math.max(...notes)) * 3, c = a.createOscillator(), cg = a.createGain();   // key click
+  c.frequency.value = Math.min(top, 6000); cg.gain.setValueAtTime(lvl * .7, t0); cg.gain.exponentialRampToValueAtTime(.0001, t0 + .12);
+  c.connect(cg).connect(bus.input); c.start(t0); c.stop(t0 + .15);
+}
+function phrase(bpm, steps, vol) {
+  const b = 60 / bpm; let end = 0;
+  steps.forEach(([at, n, len]) => { organ([].concat(n), at * b, len * b * .9, vol); end = Math.max(end, (at + len) * b); });
+  return end + .5;                                                             // seconds, including the echo tail
+}
+const CMAJ = [60, 64, 67], FMAJ = [60, 65, 69], GMAJ = [59, 62, 67], up = (ch, k) => ch.map(m => m + k);
+const SFX = {   // each returns how long it lasts, so the next sound waits for it
+  charge() { return phrase(150, [[0, 55, .25], [.25, 57, .25], [.5, 59, .25], [.75, 60, .25], [1, 62, .25], [1.25, 64, .25], [1.5, 66, .25], [1.75, 67, .25],
+    [2.5, 67, .5], [3, 72, .5], [3.5, 76, .5], [4, 79, 1], [5.5, [64, 76], .5], [6, [48, 60, 64, 67, 72, 79], 3]]); },
+  hit() { return phrase(190, [[0, up(CMAJ, 7), .5], [.75, up(CMAJ, 12), 1.25]]); },
+  run() { return phrase(170, [[0, 67, .4], [.5, 72, .4], [1, 76, .4], [1.5, [60, 64, 67, 72, 79], 2]]); },
+  walk() { return phrase(200, [[0, 67, .4], [.5, 69, .4], [1, [64, 67, 72], 1.2]]); },
+  k() { return phrase(150, [[0, [67, 71, 74], .7], [1, [66, 70, 73], .7], [2, [65, 69, 72], .7], [3, [52, 59, 64], 1.75]]); },
+  side() { return phrase(200, [[0, 72, 1], [1, 67, .5], [1.5, 67, .5], [2, 69, 1], [3, 67, 1.5], [5, [62, 67, 71], 1], [6, [64, 67, 72], 1.5]]); },
+  rally() { return phrase(165, [[0, CMAJ, .6], [1, CMAJ, .6], [2, CMAJ, .3], [2.5, CMAJ, .3], [3, CMAJ, .6],
+    [4, up(CMAJ, 2), .6], [5, up(CMAJ, 2), .6], [6, up(CMAJ, 2), .3], [6.5, up(CMAJ, 2), .3], [7, up(CMAJ, 2), .6], [8, [55, 60, 64, 67, 72], 2]]); },
+  lead() { return phrase(140, [[0, [58, 62, 65, 70], .6], [.75, [58, 62, 65, 70], .3], [1, [60, 64, 67, 72], .6], [1.75, [60, 64, 67, 72], .3], [2, [48, 60, 64, 67, 72, 76, 79], 2.5]]); },
+  tie() { return phrase(160, [[0, up(GMAJ, 12), .6], [1, up(GMAJ, 12), .6], [2, up(CMAJ, 12), 1.5]]); },
+  bigout() { return phrase(150, [[0, [43, 55, 62], .5], [.75, [43, 55, 62], .5], [1.5, [48, 55, 60, 64], 1.5]]); },
+  win() { return phrase(150, [[0, 60, .5], [.5, 64, .5], [1, 67, .5], [1.5, 72, 1], [2.5, FMAJ, .75], [3.25, FMAJ, .25], [3.5, GMAJ, 1],
+    [4.5, [48, 60, 64, 67, 72, 76, 84], 3]]); }
 };
 /* ---------- Your own sound clips ----------
    Audio files picked on this device are kept in the browser's IndexedDB
    (never uploaded). Slots: "fx:<event>" for game sounds, "walkup:<playerId>" for walk-up songs.
    Each clip = { name, data (ArrayBuffer), start, dur, vol }. dur 0 = play to the end. */
-const SFX_LEN = { charge: 1.75, hit: .3, run: .75, k: .5, side: .7, rally: 1.5, win: 2.2 };   // seconds, for queueing
-const SIT_EVENTS = [["lead", "We take the lead", null], ["tie", "We tie it up", null], ["rally", "Rally: runner in scoring position, we're tied or behind", "rally"],
-                    ["bigout", "Big out: on defense with runners in scoring position", null], ["win", "We win", "win"]];
-const FX_EVENTS = [["hr", "Home run", "charge"], ["run", "Run scores", "run"], ["hit", "Base hit", "hit"], ["walk", "Walk", null],
+const SIT_EVENTS = [["lead", "We take the lead", "lead"], ["tie", "We tie it up", "tie"], ["rally", "Rally: runner in scoring position, we're tied or behind", "rally"],
+                    ["bigout", "Big out: on defense with runners in scoring position", "bigout"], ["win", "We win", "win"]];
+const FX_EVENTS = [["hr", "Home run", "charge"], ["run", "Run scores", "run"], ["hit", "Base hit", "hit"], ["walk", "Walk", "walk"],
                    ["k", "Strikeout", "k"], ["out", "Other outs", null], ["side", "Side retired", "side"]];
 const clips = {};
 let idb = null, nowPlaying = null;
@@ -1265,7 +1313,7 @@ function runQueue(items) {
     if (gen !== queueGen) return;
     const it = queue.shift(); if (!it) return;
     if (it.slot) { const ok = await playClip(it.slot, () => { if (gen === queueGen) queueTimer = setTimeout(step, 250); }); if (!ok) step(); }
-    else { SFX[it.sfx](); queueTimer = setTimeout(step, SFX_LEN[it.sfx] * 1000 + 250); }
+    else { const len = SFX[it.sfx]() || 1; queueTimer = setTimeout(step, len * 1000 + 150); }
   };
   step();
 }

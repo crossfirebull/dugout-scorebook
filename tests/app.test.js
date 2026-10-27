@@ -326,3 +326,13 @@ test("the spray tab shows a team chart that can show only hits or only outs", as
   assert.deepEqual(errors, []);
   await context.close();
 });
+
+test("the built-in organ sounds play without errors", async () => {
+  const { page, context, errors } = await open();
+  await page.click("#soundBtn");
+  assert.equal(await page.getAttribute("#soundBtn", "aria-pressed"), "true");
+  for (const code of ["1B", "BB", "HR", "K"]) await tapResult(page, code);
+  await page.waitForTimeout(1500);
+  assert.deepEqual(errors, []);
+  await context.close();
+});

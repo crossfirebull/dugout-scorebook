@@ -60,11 +60,37 @@ Tap what the batter did. The app moves the runners the usual way, and you can fi
 
 ## Sounds and walk-up songs
 
-Open **Settings → Sounds** (the gear), the **Sounds** row in Game settings, or **Team → Walk-up songs** to pick your own audio files from the iPad (MP3, M4A or WAV; the Files app is the easiest place to keep them). You can set a sound for home runs, runs scoring, hits, walks, strikeouts, other outs and the end of an inning, plus a walk-up song for each player. Each clip has its own start time, length and volume, so one full song can supply a 15-second snippet.
+ScoreKeep comes with a set of **built-in ballpark organ sounds**: a "Charge!" for home runs, short stings for hits, walks and runs, a strikeout taunt, "shave and a haircut" when the side is retired, a clap-along rally riff, and fanfares for taking the lead, tying it and winning. Each is 1 to 4 seconds long. Any one of them can be swapped for your own clip, and the rest keep working.
+
+### Adding your own sound or walk-up song (3 steps)
+
+1. **Get the file onto the iPad.** Save it to the **Files** app: download it in Safari (it lands in *Downloads*), AirDrop it from a computer or phone, or put it in iCloud Drive. MP3, M4A and WAV all work.
+2. **Pick it in ScoreKeep.** For a walk-up song, open the **Team** tab, tap the player, and tap **Choose file** next to Walk-up song. For a game sound, tap the gear, open **Sounds & walk-up songs**, and tap **Choose file** next to that sound.
+3. **Trim it.** Set **Start at** to the part you want (the chorus, say) and **Play for** to how many seconds. Tap **▶** to hear it. A whole song can supply a 10-second walk-up without editing the file.
+
+The files stay on the iPad. They aren't uploaded anywhere and aren't in the backup file, so after restoring a backup on a new iPad, pick them again.
+
+### Where to get clips
+
+- **Walk-up songs:** you need a song *file*. Songs streamed from Apple Music or Spotify are locked to those apps, so ScoreKeep can't play them. Buy the song as a download from a store that gives you an MP3 (Amazon Music's digital store or Bandcamp, for example) and save it to Files.
+- **Organ and crowd sounds:** **GarageBand** on the iPad has a ballpark-style organ and loops you're free to use. Play a riff, export it to Files, and pick it in ScoreKeep. Free sound sites work too: **Pixabay** sound effects (no credit needed) and **Freesound** (filter to the *CC0* license).
+
+### How long each clip should be
+
+Sounds play one after another, so long clips push back the next batter's walk-up.
+
+| Sound | Aim for |
+| --- | --- |
+| Hit, walk, out, strikeout, run scores | 2–4 seconds |
+| Rally, take the lead, tie it | 4–6 seconds |
+| Home run | 6–10 seconds |
+| Walk-up song | 8–12 seconds |
+| Win | up to 15 seconds |
+| Between innings | 30–60 seconds |
+
+### How sounds are chosen
 
 Sounds play in order, so the next batter's walk-up starts when the previous play's sound ends. The app knows which team is yours and what the score is. Hits and runs play when you bat, strikeouts and outs when you're in the field. Situation sounds cover taking the lead, tying it, a rally when you're tied or behind with a runner in scoring position, a big defensive out, and the win. Add a few **between-innings** songs and one plays after every third out.
-
-The files stay on the iPad. They aren't uploaded to GitHub and aren't in the backup file, so you never need to commit anything to change a sound.
 
 ## Stats it tracks
 
@@ -99,4 +125,8 @@ To run the automated checks on your own computer: `npm install`, then `npm test`
 - A baseball / softball switch.
 - Share a game summary.
 - Sync between devices.
-- Better built-in sounds, or a free sound library.
+- Apple Music for walk-up songs (needs an Apple developer account; see the note below).
+
+### About Apple Music
+
+Apple has a web toolkit (MusicKit) that would let ScoreKeep play songs straight from your Apple Music library, with a start time for each walk-up. It's possible later, with some catches. It needs a paid Apple developer account ($99 a year) to switch on, and it needs a signal at the field because the songs stream. Apple Music's terms also cover personal listening, not playing over a speaker at a public game. Song files you own (above) avoid all three.
