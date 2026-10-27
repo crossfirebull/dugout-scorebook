@@ -96,11 +96,11 @@ test("dugout mode: quick buttons score the other team's half", async () => {
   await context.close();
 });
 
-test("a game tied after the last inning ends as a tie when ties are allowed", async () => {
+test("a game tied after the last inning ends as a tie when there are no extra innings", async () => {
   const { page, context } = await open();
   await gameSettings(page);
   for (let i = 0; i < 3; i++) await page.click(".sheet [data-act=inn][data-v='-1']");   // 4 innings; sample is tied 0-0 in the 4th? make it so
-  await page.click("label[for=d-ties]");
+  await page.selectOption("#d-extras", "0");
   if (!(await page.isChecked("#d-dugout"))) await page.click("label[for=d-dugout]");
   await closeSheet(page);
   // play out the 4th with no more runs
@@ -217,7 +217,8 @@ test("first launch walks through setup, and the choices land in Settings", async
   await page.click("[data-act=onb-mode][data-v=scorekeeper]");
   await page.click("[data-act=onb-next]");
   await page.click("[data-act=prefinn][data-v='1']");
-  await page.click("label[for=p-ties]");
+  await page.selectOption("#p-extras", "0");
+  await page.selectOption("#p-hrRule", "max1");
   await page.click("[data-act=onb-next]");
   for (const [name, num, pos] of [["Ava Ruiz", "4", "SS"], ["Jo Kim", "12", "C"]]) {
     await page.fill("#onbPName", name); await page.fill("#onbPNum", num); await page.selectOption("#onbPPos", pos);
@@ -226,14 +227,14 @@ test("first launch walks through setup, and the choices land in Settings", async
   assert.equal((await page.$$(".onb .qlist li")).length, 2);
   await page.click("[data-act=onb-next]");
   const summary = await text(page, ".onb .summary");
-  assert.match(summary, /Test Tigers/); assert.match(summary, /Maroon & Gold/); assert.match(summary, /Scorekeeper mode/); assert.match(summary, /8 innings · ties allowed/); assert.match(summary, /2 players/);
+  assert.match(summary, /Test Tigers/); assert.match(summary, /Maroon & Gold/); assert.match(summary, /Scorekeeper mode/); assert.match(summary, /8 innings · ties stand/); assert.match(summary, /HR 1 per team/); assert.match(summary, /2 players/);
   await page.click("[data-act=onb-finish][data-v=game]");
   assert.match(await text(page, ".sheet h3"), /New Game/, "Start a game opens New Game");
   assert.match(await text(page, ".sheet .stepper"), /8/, "new game uses the 8-inning default");
   await page.click(".sheet [data-act=close]");
   await page.click("[data-act=settings]");
   assert.match(await text(page, ".sheet"), /Test Tigers/);
-  assert.equal(await page.isChecked("#p-dugout"), false); assert.equal(await page.isChecked("#p-ties"), true);
+  assert.equal(await page.isChecked("#p-dugout"), false); assert.equal(await page.inputValue("#p-extras"), "0"); assert.equal(await page.inputValue("#p-hrRule"), "max1");
   await page.reload(); await page.waitForSelector(".tabbar button");
   assert.equal(await page.$(".onb"), null, "setup doesn't come back after it's done");
   assert.deepEqual(errors, []);
@@ -391,6 +392,174 @@ for (const seed of [283, 39, 9]) test(`simulated season ${seed}: every batting s
     for (const k of Object.keys(team)) if (k !== "Player" && want[k] !== undefined && team[k] !== want[k]) mismatches.push(`Team ${k}: app ${team[k]}, sheet ${want[k]}`);
   }
   assert.deepEqual(mismatches, []);
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+// ---------- League rules ----------
+// A saved game in progress, built from taps, to check how the rules end games
+function ruleGame(settings, events, extra = {}) {
+  const players = Array.from({ length: 12 }, (_, i) => ({ id: "r" + i, name: "Player " + (i + 1), num: String(i + 1), pos: "", alt: [], bats: "R" }));
+  const ours = players.map((p, i) => ({ pid: p.id, name: p.name, pos: ["P", "C", "1B", "2B", "3B", "SS", "LF", "LCF", "RCF", "RF", "EH", "EH"][i] }));
+  const ourSide = extra.ourSide == null ? 1 : extra.ourSide;
+  const g = Object.assign({ id: "rg", seasonId: "s1", date: "2026-10-01", opponent: "Rule Testers", ourSide,
+    settings: Object.assign({ innings: 7, mode: "dugout", askHits: false, extras: -1, timeLimit: 0, runRule: [], hrRule: "none" }, settings),
+    lineups: ourSide ? [[], ours] : [ours, []], events, done: false }, extra.game || {});
+  return { v: 2, sample: false, onboarded: true, lastBackup: Date.now(), team: { name: "Home Nine", players }, games: [g], currentId: "rg",
+    seasons: [{ id: "s1", name: "Fall 2026", start: "2026-09-01" }], currentSeasonId: "s1", prefs: {}, audio: {} };
+}
+const Q = k => ({ t: "quick", k }), PA = (r, more) => Object.assign({ t: "pa", r }, more);
+const threeOuts = () => [Q("out"), Q("out"), Q("out")], ourOuts = () => [PA("K"), PA("K"), PA("K")];
+async function openGame(store) {
+  const { page, context, errors } = await open(1180, 820, { keepSetup: true });
+  await loadSeason(page, store);
+  await page.click(".tabbar [data-v=game]");
+  return { page, context, errors };
+}
+
+test("run rule: 20 after 3 ends the game when the home team is that far ahead", async () => {
+  const ev = [...threeOuts(), ...Array(10).fill(PA("HR")), ...ourOuts(), ...threeOuts(), ...Array(10).fill(PA("HR")), ...ourOuts(), ...threeOuts()];
+  const { page, context, errors } = await openGame(ruleGame({ runRule: [[3, 20], [4, 15], [5, 10]] }, ev));
+  assert.match(await text(page, ".final"), /Run rule\. Home Nine win 20–0/);
+  assert.deepEqual(await runs(page), [0, 20]);
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("run rule: the home team wins the moment it gets 10 ahead in the 5th, and only that run counts", async () => {
+  // 9-0 after four innings, then in the 5th: a walk, and a triple that would score two
+  const ev = [...threeOuts(), ...Array(9).fill(PA("HR")), ...ourOuts()];
+  for (let i = 2; i <= 4; i++) ev.push(...threeOuts(), ...ourOuts());
+  ev.push(...threeOuts(), PA("BB"), PA("BB"), PA("3B"));
+  const { page, context, errors } = await openGame(ruleGame({ runRule: [[3, 20], [4, 15], [5, 10]] }, ev));
+  assert.match(await text(page, ".final"), /Run rule\. Home Nine win 10–0/);
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("run rule: a visiting team far ahead still lets the home team bat", async () => {
+  const ev = [];
+  for (let i = 1; i <= 3; i++) ev.push(...threeOuts(), ...ourOuts());
+  ev.push(...Array(15).fill(PA("HR")), ...ourOuts());   // top of the 4th: we're the visitors, 15-0
+  const store = ruleGame({ runRule: [[3, 20], [4, 15], [5, 10]] }, [], { ourSide: 0 });
+  // we bat first here, so rebuild the order: our half, then their quick half
+  const evs = [];
+  for (let i = 1; i <= 3; i++) evs.push(...ourOuts(), ...threeOuts());
+  evs.push(...Array(15).fill(PA("HR")), ...ourOuts());
+  store.games[0].events = evs;
+  const { page, context, errors } = await openGame(store);
+  assert.equal(await page.$(".final"), null, "home team still bats in the 4th");
+  await page.click("[data-act=quick][data-v=out]"); await page.click("[data-act=quick][data-v=out]"); await page.click("[data-act=quick][data-v=out]");
+  assert.match(await text(page, ".final"), /Run rule\. Home Nine win 15–0/);
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("tied after 7: one extra inning, then it's a tie", async () => {
+  const ev = [];
+  for (let i = 1; i <= 7; i++) ev.push(...threeOuts(), ...ourOuts());
+  const { page, context, errors } = await openGame(ruleGame({ extras: 1 }, ev));
+  assert.equal(await page.$(".final"), null, "the 8th is played");
+  for (let i = 0; i < 3; i++) await page.click("[data-act=quick][data-v=out]");
+  for (let i = 0; i < 3; i++) await tapResult(page, "K");
+  assert.match(await text(page, ".final"), /Tie game, 0–0/);
+  await page.click(".tabbar [data-v=book]");
+  assert.equal(await page.$$eval("#board thead th", th => th.filter(x => /^\d+$/.test(x.textContent.trim())).length), 8);
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("+2 home run rule: the third homer without an answer is an out, until the other team hits one", async () => {
+  const { page, context, errors } = await openGame(ruleGame({ hrRule: "plus2" }, [...threeOuts()]));
+  await tapResult(page, "HR"); await tapResult(page, "HR");
+  assert.match(await text(page, "[data-act=pa][data-v=HR]"), /Over limit: out/);
+  await tapResult(page, "HR");
+  assert.deepEqual(await runs(page), [0, 2]);
+  assert.match(await text(page, "#bug .outs"), /OUT/);
+  await tapResult(page, "K"); await tapResult(page, "K");
+  await page.click("[data-act=quick][data-v=hr]");   // they hit one: now we can hit another
+  for (let i = 0; i < 3; i++) await page.click("[data-act=quick][data-v=out]");
+  assert.match(await text(page, "[data-act=pa][data-v=HR]"), /Home run/);
+  await tapResult(page, "HR");
+  assert.deepEqual(await runs(page), [1, 3]);
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("1 home run per team: the second one is an out", async () => {
+  const { page, context, errors } = await openGame(ruleGame({ hrRule: "max1" }, [...threeOuts()]));
+  await tapResult(page, "HR");
+  await tapResult(page, "HR");
+  assert.deepEqual(await runs(page), [0, 1]);
+  await page.click(".tabbar [data-v=book]");
+  assert.match(await page.textContent("#view"), /ruled an out/);
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("time limit: when time runs out, the inning being played is the last one", async () => {
+  const ev = [];
+  for (let i = 1; i <= 3; i++) ev.push(...threeOuts(), ...ourOuts());
+  ev.push(Q("run"), Q("out"));   // top of the 4th under way
+  const store = ruleGame({ timeLimit: 55, extras: 1 }, ev, { game: { clock: { start: Date.now() - 56 * 60000 } } });
+  const { page, context, errors } = await openGame(store);
+  await page.waitForSelector("#bug .clk.called");
+  assert.match(await text(page, "#bug .clk"), /LAST/);
+  await page.click("[data-act=quick][data-v=out]"); await page.click("[data-act=quick][data-v=out]");
+  await tapResult(page, "1B"); await tapResult(page, "HR");
+  assert.match(await text(page, ".final"), /Time limit\. Home Nine win 2–1/);
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("time limit: the clock starts with the first play and counts down", async () => {
+  const { page, context, errors } = await openGame(ruleGame({ timeLimit: 55 }, []));
+  assert.match(await text(page, "#bug .clk"), /55:00/);
+  await page.click("[data-act=quick][data-v=out]");
+  await page.waitForFunction(() => /54:5\d/.test(document.querySelector("#bug .clk").textContent));
+  await gameSettings(page);
+  assert.match(await text(page, ".sheet"), /Game clock/);
+  await page.click("[data-act=timecall]");
+  assert.match(await text(page, "#bug .clk"), /LAST/);
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("courtesy runner: someone runs for the batter, once per inning, and gets the run", async () => {
+  const { page, context, errors } = await openGame(ruleGame({}, [...threeOuts()]));
+  await tapResult(page, "1B");
+  await page.click("#bug [data-act=base][data-b='0']");
+  await page.click("[data-act=crpick]");
+  await page.click(".sheet [data-act=cr] >> text=Player 12");
+  assert.match(await page.getAttribute("#bug [data-act=base][data-b='0']", "aria-label"), /Player 12/);
+  await tapResult(page, "1B");
+  await page.click("#bug [data-act=base][data-b='0']");
+  assert.equal(await page.isDisabled("[data-act=crpick]"), true, "only one per inning");
+  await page.click(".sheet [data-act=close]");
+  await tapResult(page, "HR");
+  await page.click(".tabbar [data-v=book]");
+  assert.match(await page.textContent("#view"), /Courtesy runner: Player 12 runs for Player 1/);
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("league rules are in Game settings and Settings, and lineups take bat-only players", async () => {
+  const { page, context, errors } = await open(1180, 820);
+  await gameSettings(page);
+  for (const id of ["#d-extras", "#d-timeLimit", "#d-rr0a", "#d-hrRule"]) assert.ok(await page.$(id), id + " in Game settings");
+  await page.click("[data-act=opensettings]");
+  for (const id of ["#p-extras", "#p-timeLimit", "#p-rr0a", "#p-hrRule"]) assert.ok(await page.$(id), id + " in Settings");
+  await page.selectOption("#p-timeLimit", "55");
+  await page.fill("#p-rr0a", "3"); await page.fill("#p-rr0l", "20"); await page.press("#p-rr0l", "Tab");
+  await page.click(".sheet [data-act=close]");
+  await page.reload(); await page.waitForSelector(".tabbar button");
+  await gameSettings(page); await page.click("[data-act=opensettings]");
+  assert.equal(await page.inputValue("#p-rr0a"), "3"); assert.equal(await page.inputValue("#p-rr0l"), "20");
+  assert.equal(await page.inputValue("#p-timeLimit"), "55");
+  await page.click(".sheet [data-act=close]");
+  await page.click("[data-act=lineups]");
+  assert.ok(await page.$("option[value=EH]"), "EH option");
+  assert.match(await page.textContent("option[value=EH]"), /bats only/);
   assert.deepEqual(errors, []);
   await context.close();
 });

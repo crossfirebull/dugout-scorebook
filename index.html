@@ -82,6 +82,9 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 :root[data-theme="dark"] { --brand-fill: var(--team-brand-d); --brand-shadow: var(--team-shadow-d); }
 .chip { font-family: var(--f-label); font-weight: 600; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; background: var(--rule-soft); color: var(--muted); }
 .chip.live { background: var(--stitch); color: #fff; }
+.chip.clock { font-variant-numeric: tabular-nums; background: var(--rule-soft); color: var(--ink); }
+.chip.clock.warn { background: var(--lamp); color: #1b1400; }
+.chip.clock.called { background: var(--stitch); color: #fff; }
 .topbar .spacer { flex: 1; }
 .tbtn { min-height: 40px; padding: 0 12px; font-size: 15px; border-radius: 8px; border: 1px solid var(--rule); background: var(--surface); font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
 .tbtn:disabled { opacity: .4; cursor: default; }
@@ -220,7 +223,12 @@ input.switch:checked::after, .check input[type=checkbox]:checked::after { transf
 .setrow:first-child { border-top: 0; }
 .setrow b { display: block; font-weight: 600; }
 .setrow small { display: block; color: var(--muted); font-size: 13px; line-height: 1.35; margin-top: 2px; }
-.setrow select { font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); }
+.setrow select { font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); flex: none; max-width: 50%; }
+.setrow > span:first-child { flex: 1; min-width: 0; }
+.setrow.col { flex-direction: column; align-items: stretch; gap: 8px; cursor: default; }
+.rrgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 120px)); gap: 6px 12px; }
+.rrgrid span { font-family: var(--f-label); font-weight: 700; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.rrgrid input { font: inherit; width: 100%; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); }
 .danger { background: var(--stitch); color: #fff; border-color: var(--stitch); }
 .primary { background: var(--sel-bg); color: var(--sel-ink); border-color: var(--sel-bg); }
 
@@ -380,7 +388,7 @@ html[data-layout="short"] .brand { font-size: 28px; }
 html[data-layout="short"] .iconbtn { width: 36px; height: 36px; }
 html[data-layout="short"] .banner { padding: 6px 10px; font-size: 13px; }
 html[data-layout="short"] .banner .tbtn { min-height: 32px; }
-html[data-layout="short"] .gamebar .matchup, html[data-layout="short"] .gamebar .chip { display: none; }
+html[data-layout="short"] .gamebar .matchup, html[data-layout="short"] .gamebar .chip:not(.clock) { display: none; }
 html[data-layout="short"] .gamebar .tbtn { min-height: 34px; }
 html[data-layout="short"] .play { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 8px; }
 html[data-layout="short"] .play .colL { display: grid; gap: 8px; }
@@ -447,6 +455,9 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 .bug .inn { display: grid; place-content: center; justify-items: center; gap: 2px; padding: 0 14px; background: rgba(0, 0, 0, .2); border-left: 1px solid rgba(255, 255, 255, .12); font-family: var(--f-display); font-weight: 800; font-size: 28px; line-height: 1; }
 .bug .inn .arrow { color: var(--glow); font-size: 13px; text-shadow: 0 0 6px var(--glow); }
 .bug .inn .fin { font-size: 18px; letter-spacing: .04em; }
+.bug .inn .clk { font-family: var(--f-label); font-weight: 700; font-size: 12px; letter-spacing: .04em; font-variant-numeric: tabular-nums; color: rgba(255, 255, 255, .8); line-height: 1; }
+.bug .inn .clk.warn { color: var(--glow); }
+.bug .inn .clk.called { color: #ffffff; background: var(--stitch); border-radius: 3px; padding: 2px 4px; }
 .bug .bases { display: grid; justify-items: center; align-content: center; gap: 3px; padding: 6px 12px; border-left: 1px solid rgba(255, 255, 255, .12); }
 .bug .bases svg { width: 84px; height: 46px; display: block; }
 .bug .bbase rect.b { fill: rgba(255, 255, 255, .14); stroke: rgba(255, 255, 255, .6); stroke-width: 1.5; }
@@ -511,6 +522,9 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 .onb input:not([type=checkbox]), .onb select { font: inherit; font-size: 18px; padding: 12px 14px; border-radius: 12px; border: 2px solid rgba(255, 255, 255, .25); background: rgba(255, 255, 255, .1); color: #ffffff; width: 100%; min-width: 0; }
 .onb input::placeholder { color: rgba(255, 255, 255, .45); }
 .onb select option { color: #111111; }
+.onb .setrow select { width: auto; flex: none; font-size: 16px; padding: 8px 10px; }
+.onb .rrgrid input { font-size: 16px; padding: 8px; }
+.onb .rrgrid span { color: rgba(255, 255, 255, .72); }
 .onb .two2 { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr) 120px; }
 .onb .ocards { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
 .onb .ocard { text-align: left; display: grid; gap: 6px; padding: 16px; border-radius: 16px; border: 2px solid rgba(255, 255, 255, .2); background: rgba(255, 255, 255, .06); color: #ffffff; font: inherit; }
@@ -798,7 +812,12 @@ function blankStat() {
            RAB: 0, RH: 0, GB: 0, LD: 0, FB: 0, PU: 0, PULL: 0, CENT: 0, OPPO: 0 };
 }
 function fresh(g) {
+  // regEnd: the last regulation inning (earlier if time was called). lastInn: the last inning a tie can go to.
+  const rules = rulesOf(g.settings), tu = g.timeUp || 0, regEnd = tu ? Math.min(tu, rules.innings) : rules.innings;
+  let lastInn = rules.extras < 0 ? Infinity : regEnd + rules.extras + (g.bonus || 0);
+  if (tu > rules.innings) lastInn = Math.min(lastInn, tu + (g.bonus || 0));
   const s = {
+    rules, regEnd, lastInn, endWhy: "", hr: [0, 0], crUsed: {},
     inning: 1, half: 0, outs: 0, balls: 0, strikes: 0, bases: [null, null, null],
     order: [0, 0], runs: [[0], []], hits: [0, 0], errors: [0, 0],
     book: [[], []], stats: [{}, {}], field: [{}, {}], bip: [],
@@ -815,6 +834,31 @@ const occ = (s, t, slot) => s.lu[t][slot] || { pid: null, name: "Batter " + (slo
 const keyOf = (x, t, slot) => x.pid ? "p:" + x.pid : "s:" + t + ":" + slot;
 const nameAt = (s, t, slot) => entryName(occ(s, t, slot));
 const total = (s, t) => s.runs[t].reduce((a, b) => a + (b || 0), 0);
+const runnerName = (s, x) => x.cr || nameAt(s, x.team, x.slot);   // a courtesy runner goes by their own name
+
+/* ---------- League rules ----------
+   innings, extra innings when tied (-1 = until someone wins), time limit in minutes,
+   run rule as [after inning, lead] pairs, and the home run limit. Games saved before these
+   settings existed used "ties": allowed meant no extra innings, otherwise play until someone wins. */
+const HR_RULES = [["none", "No limit"], ["plus1", "+1 rule"], ["plus2", "+2 rule"], ["plus3", "+3 rule"], ["max1", "1 per team"], ["max2", "2 per team"], ["max3", "3 per team"], ["max0", "Every HR is an out"]];
+const LEAGUE_RULES = { innings: 7, extras: 1, timeLimit: 55, runRule: [[3, 20], [4, 15], [5, 10]], hrRule: "plus2" };
+function rulesOf(st) {
+  st = st || {};
+  return { innings: st.innings || 7, extras: st.extras != null ? st.extras : st.ties ? 0 : -1, timeLimit: st.timeLimit || 0,
+           runRule: Array.isArray(st.runRule) ? st.runRule.filter(x => x[0] > 0 && x[1] > 0) : [], hrRule: st.hrRule || "none" };
+}
+function mercyLead(s, inn) { let need = Infinity; s.rules.runRule.forEach(([after, lead]) => { if (inn >= after) need = Math.min(need, lead); }); return need; }
+function hrOver(s, t) {   // would this team's next home run be over the league limit?
+  const m = /^(plus|max)(\d)$/.exec(s.rules.hrRule); if (!m) return false;
+  return m[1] === "max" ? s.hr[t] >= +m[2] : s.hr[t] - s.hr[1 - t] >= +m[2];
+}
+// While the home team bats, the game ends the moment it's decided: a walk-off, or the run rule.
+function checkWalkOff(s) {
+  if (s.half !== 1 || s.final) return;
+  const lead = total(s, 1) - total(s, 0);
+  if (lead >= mercyLead(s, s.inning)) { s.final = true; s.endWhy = "run rule"; }
+  else if (s.inning >= s.regEnd && lead > 0) s.final = true;
+}
 function stat(s, t, key) { return s.stats[t][key] || (s.stats[t][key] = blankStat()); }
 function fstat(s, t, key) { return s.field[t][key] || (s.field[t][key] = { PL: 0, E: 0 }); }
 function cellOf(s, r) { return s.book[r.team][r.cell]; }
@@ -825,7 +869,7 @@ function scoreRunner(s, g, r) {
   const c = cellOf(s, r); c.base = 4; c.scored = true;
   stat(s, r.team, r.key).R++;
   s.fx.runs = (s.fx.runs || 0) + 1;
-  if (s.half === 1 && s.inning >= g.settings.innings && total(s, 1) > total(s, 0)) s.final = true;
+  checkWalkOff(s);
 }
 function outRunner(s, r) { s.outs++; cellOf(s, r).out = s.outs; s.fx.out = true; }
 function move(s, from, to) { s.bases[to] = s.bases[from]; s.bases[from] = null; cellOf(s, s.bases[to]).base = to + 1; }
@@ -833,12 +877,14 @@ function move(s, from, to) { s.bases[to] = s.bases[from]; s.bases[from] = null; 
 function endHalf(s, g) {
   s.fx.side = true; s.lastPA = null;
   s.bases = [null, null, null]; s.outs = 0; resetCount(s, g);
-  const N = g.settings.innings, a = total(s, 0), h = total(s, 1);
+  const a = total(s, 0), h = total(s, 1), need = mercyLead(s, s.inning);
   if (s.half === 0) {
-    if (s.inning >= N && h > a) { s.final = true; return; }
+    if (h - a >= need) { s.final = true; s.endWhy = "run rule"; return; }   // home team far enough ahead that it doesn't need to bat
+    if (s.inning >= s.regEnd && h > a) { s.final = true; return; }
     s.half = 1; s.runs[1][s.inning - 1] = 0;
   } else {
-    if (s.inning >= N && (a !== h || g.settings.ties)) { s.final = true; return; }   // league rule: ties can stand
+    if (Math.abs(a - h) >= need) { s.final = true; s.endWhy = "run rule"; return; }
+    if (s.inning >= s.regEnd && (a !== h || s.inning >= s.lastInn)) { s.final = true; if (a === h) s.endWhy = "tie"; return; }
     s.half = 0; s.inning++; s.runs[0][s.inning - 1] = 0;
   }
 }
@@ -876,6 +922,7 @@ function fielderAt(s, t, p) {
 }
 
 function plateAppearance(s, g, r, p, bb, foulK, fcOut) {
+  if (r === "HR" && hrOver(s, s.half)) r = "HRO";   // over the league's home run limit: the batter is out
   const bt = s.half, ft = 1 - bt, slot = curSlot(s), who = occ(s, bt, slot), key = keyOf(who, bt, slot), st = stat(s, bt, key);
   const risp = !!(s.bases[1] || s.bases[2]);
   const cell = { slot, inning: s.inning, code: codeFor(r, p), base: 0, scored: false, out: 0, looking: r === "KC", notes: [] };
@@ -913,7 +960,7 @@ function plateAppearance(s, g, r, p, bb, foulK, fcOut) {
     case "1B": advAll(1); put(1); break;
     case "2B": advAll(2); put(2); break;
     case "3B": advAll(3); put(3); break;
-    case "HR": advAll(3); sc(me); s.fx.hr = true; break;
+    case "HR": advAll(3); sc(me); s.hr[bt]++; s.fx.hr = true; break;
     case "BB": case "HBP": forceAll(); put(1); st[r]++; s.fx.walk = true; break;
     case "K": case "KC": outRunner(s, me); st.K++; s.fx.k = true; break;
     case "GO": case "FO": case "LO": case "PO": case "OUT": outRunner(s, me); break;
@@ -926,7 +973,7 @@ function plateAppearance(s, g, r, p, bb, foulK, fcOut) {
       const lead = fcOut === -1 ? undefined : fcOut !== undefined && s.bases[fcOut] ? fcOut : s.bases[0] ? 0 : [2, 1].find(b => s.bases[b]);
       if (lead !== undefined) {
         const x = s.bases[lead]; s.bases[lead] = null; outRunner(s, x);
-        fcNote = ` ${esc(nameAt(s, x.team, x.slot))} out at ${["second", "third", "home"][lead]}`;
+        fcNote = ` ${esc(runnerName(s, x))} out at ${["second", "third", "home"][lead]}`;
       } else fcNote = ", everyone safe";
       if (s.outs < 3) { forceAll(); put(1); }
       break;
@@ -956,7 +1003,7 @@ function pitch(s, g, k) {
 const RBI_PLAYS = new Set(["1B", "2B", "3B", "BB", "HBP", "GO", "FO", "LO", "PO", "SF", "FC"]);
 function runnerMove(s, g, b, a, rbi) {
   const x = s.bases[b]; if (!x) return;
-  const who = esc(nameAt(s, x.team, x.slot));
+  const who = esc(runnerName(s, x));
   if (a === "out") {
     s.bases[b] = null; outRunner(s, x); log(s, who + " is out on the bases.");
     if (s.outs >= 3) endHalf(s, g);
@@ -979,16 +1026,26 @@ function runnerMove(s, g, b, a, rbi) {
 // instead of batter by batter.
 function quickEvent(s, g, k) {
   const bt = s.half, team = esc(teamNames(g)[bt]);
-  if (k === "run") {
+  if (k === "run" || k === "hr") {
     s.runs[bt][s.inning - 1] = (s.runs[bt][s.inning - 1] || 0) + 1; s.fx.runs = 1;
-    log(s, `${team} score a run. <span class="run">1 run scores.</span>`);
-    if (s.half === 1 && s.inning >= g.settings.innings && total(s, 1) > total(s, 0)) s.final = true;
+    if (k === "hr") { s.hr[bt]++; s.hits[bt]++; s.fx.hr = true; }
+    log(s, `${team} ${k === "hr" ? "hit a home run" : "score a run"}. <span class="run">1 run scores.</span>`);
+    checkWalkOff(s);
   } else if (k === "out") {
     s.outs++; s.fx.out = true; log(s, `Out ${s.outs}.`);
     if (s.outs >= 3) endHalf(s, g);
   } else if (k === "hit") { s.hits[bt]++; log(s, `${team} get a hit.`); }
   else if (k === "err") { s.errors[1 - bt]++; log(s, `Error by ${esc(teamNames(g)[1 - bt])}.`); }
   else if (k === "end") { log(s, "Half-inning ended."); endHalf(s, g); }
+}
+
+// Courtesy runner: someone else runs for the player on base. Runs and steals from here count for the runner.
+function courtesy(s, e) {
+  const x = s.bases[e.b]; if (!x) return;
+  const was = runnerName(s, x);
+  x.key = e.pid ? "p:" + e.pid : "s:" + x.team + ":cr"; x.cr = e.name;
+  s.crUsed[x.team + ":" + s.inning] = true;
+  log(s, `Courtesy runner: ${esc(e.name)} runs for ${esc(was)} at ${["first", "second", "third"][e.b]}.`);
 }
 
 function substitute(s, e) {
@@ -1006,6 +1063,7 @@ function derive(g) {
     else if (e.t === "pa") plateAppearance(s, g, e.r, e.p, e.bb, false, e.out);
     else if (e.t === "run") runnerMove(s, g, e.b, e.a, e.rbi);
     else if (e.t === "quick") quickEvent(s, g, e.k);
+    else if (e.t === "cr") courtesy(s, e);
   }
   return s;
 }
@@ -1440,11 +1498,51 @@ function renderExtra() {
   el.innerHTML = `${due}<h2>Last plays</h2>${plays.length ? `<ol class="pbp">${plays.map(l => `<li><span class="inn">${l.inn}</span><span>${l.text}</span></li>`).join("")}</ol>` : `<p style="color:var(--muted);margin:0">Plays show up here as you score them.</p>`}`;
 }
 
+/* ---------- Game clock: the league time limit ----------
+   g.clock.start is when the first play was scored. When time runs out, g.timeUp records the
+   last inning, and the rules engine (fresh/endHalf) ends the game after it. */
+function clockLeft(g) { const lim = rulesOf(g.settings).timeLimit; return lim && g.clock ? g.clock.start + lim * 60000 - Date.now() : null; }
+const mmss = ms => { const t = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(t / 60) + ":" + String(t % 60).padStart(2, "0"); };
+// The clock as a chip (Book tab) or a small line under the inning in the score bug (Game tab)
+function clockChip(g, s, inBug) {
+  const lim = rulesOf(g.settings).timeLimit;
+  if (!lim || s.final) return "";
+  const cls = inBug ? "clk" : "chip clock";
+  if (g.timeUp) return `<span class="${cls} called">${inBug ? (s.inning > s.regEnd ? "EXTRA" : "LAST") : s.inning > s.regEnd ? "Time · extra inning" : "Time · last inning"}</span>`;
+  const left = clockLeft(g);
+  return `<span class="${cls} ${left != null && left < 5 * 60000 ? "warn" : ""}" data-clock aria-label="Time left">${inBug ? "" : "⏱ "}${left == null ? lim + ":00" : mmss(left)}</span>`;
+}
+// Time's up: the inning being played is the last one. If the next one hasn't started yet, the game ends with the inning before.
+function callTime(g) {
+  const s = derive(g);
+  const started = s.half === 1 || s.outs || s.bases.some(Boolean) || s.runs[0][s.inning - 1] || s.book[0].some(c => c.inning === s.inning);
+  g.timeUp = started || s.inning === 1 ? s.inning : s.inning - 1;
+  if (!g.clock) g.clock = { start: Date.now() };
+}
+setInterval(() => {
+  const g = curGame(); if (!g || g.done || g.timeUp || !g.clock || g.clock.manual) return;
+  const left = clockLeft(g); if (left == null) return;
+  if (left <= 0) { if (!derive(g).final) { callTime(g); save(); render(); } return; }
+  document.querySelectorAll("[data-clock]").forEach(el => { el.textContent = (el.classList.contains("clk") ? "" : "⏱ ") + mmss(left); el.classList.toggle("warn", left < 5 * 60000); });
+}, 1000);
+function clockRows(g) {
+  const lim = rulesOf(g.settings).timeLimit; if (!lim) return "";
+  const st = g.clock && new Date(g.clock.start), hhmm = st ? String(st.getHours()).padStart(2, "0") + ":" + String(st.getMinutes()).padStart(2, "0") : "";
+  const left = clockLeft(g);
+  const status = g.timeUp ? `Time's up. The ${ordinal(g.timeUp)} is the last inning.` : !g.clock ? `${lim} minutes, starting with the first play.` : left > 0 ? `${mmss(left)} left of ${lim} minutes.` : g.clock.manual ? "Time's up. Call time when the umpire does." : "Time's up.";
+  return `<div class="setlist">
+      <div class="setrow"><span><b>Game clock</b><small>${status} Change the start time to match the umpire's watch.</small></span>
+        <input type="time" id="clockStart" data-ch="clockstart" value="${hhmm}" aria-label="Clock started at"></div>
+      <div class="setrow"><span><b>${g.timeUp ? "Time called" : "Call time"}</b><small>${g.timeUp ? "Cancel if the umpire hasn't called it. You can call it by hand later." : "Make the inning being played the last one, now."}</small></span>
+        ${g.timeUp ? `<button class="tbtn" data-act="timecancel">Cancel time call</button>` : `<button class="tbtn" data-act="timecall">Call time now</button>`}</div>
+    </div>`;
+}
+
 function renderGamebar() {
   const names = teamNames(G), peek = !!ui.peekId;
   const status = peek ? "Final" : S.final ? "Final" : (S.half ? "Bottom " : "Top ") + ordinal(S.inning);
   $("gamebar").innerHTML = `${ui.view === "book" || peek ? `<span class="chip ${peek || S.final ? "" : "live"}">${status}</span>` : ""}${peek ? "" : `<span class="chip">${modeOf(G) === "dugout" ? "Dugout mode" : "Scorekeeper"}</span>`}
-    <span class="matchup">${esc(names[0])} at ${esc(names[1])} · ${esc(G.date)}</span><span class="spacer"></span>
+    ${peek || ui.view !== "book" ? "" : clockChip(G, S)}<span class="matchup">${esc(names[0])} at ${esc(names[1])} · ${esc(G.date)}</span><span class="spacer"></span>
     ${peek ? `<button class="tbtn" data-act="unpeek">Back to stats</button>
               <button class="tbtn" data-act="reopen" ${store.currentId ? "disabled title=\"Finish the game in progress first\"" : ""}>Reopen to edit</button>`
            : `<button class="tbtn" data-act="undo" ${G.events.length ? "" : "disabled"}>↶ Undo</button>
@@ -1474,8 +1572,9 @@ function renderBoard() {
   const ended = S.final && !ui.peekId;
   if (ended) {
     const a = total(S, 0), hm = total(S, 1), w = a > hm ? 0 : 1;
-    $("finalBox").innerHTML = `<div class="final"><b>Final</b><span>${a === hm ? `Tie game, ${a}–${hm}.` : `${esc(names[w])} win ${Math.max(a, hm)}–${Math.min(a, hm)}.`}</span><span style="flex:1"></span>
-      <button class="tbtn" data-act="addinning">Play another inning</button><button class="tbtn" data-act="endgame">Save to season</button></div>`;
+    const why = S.endWhy === "run rule" ? "Run rule. " : G.timeUp ? "Time limit. " : "";
+    $("finalBox").innerHTML = `<div class="final"><b>Final</b><span>${why}${a === hm ? `Tie game, ${a}–${hm}.` : `${esc(names[w])} win ${Math.max(a, hm)}–${Math.min(a, hm)}.`}</span><span style="flex:1"></span>
+      ${S.endWhy === "run rule" ? "" : `<button class="tbtn" data-act="addinning">Play another inning</button>`}<button class="tbtn" data-act="endgame">Save to season</button></div>`;
   } else $("finalBox").innerHTML = "";
 }
 
@@ -1488,12 +1587,12 @@ function renderBug() {
       <span class="nm">${esc(names[t])}</span><span class="r">${total(S, t)}</span></div>`;
   const spots = [[80, 30], [50, 13], [20, 30]];     // 1st, 2nd, 3rd
   const bases = spots.map(([x, y], b) => {
-    const r = S.bases[b], who = r ? esc(nameAt(S, r.team, r.slot)) : "";
+    const r = S.bases[b], who = r ? esc(runnerName(S, r)) : "";
     return `<g class="bbase ${r ? "on" : ""}" data-act="base" data-b="${b}" role="button" tabindex="${r ? 0 : -1}" aria-label="${["First", "Second", "Third"][b]} base${r ? ": " + who + ". Tap to move the runner." : ", empty"}">
       <rect class="hitbox" x="${x - 16}" y="${y - 13}" width="32" height="26" /><rect class="b" x="${x - 8}" y="${y - 8}" width="16" height="16" rx="2" transform="rotate(45 ${x} ${y})" /></g>`;
   }).join("");
   $("bug").innerHTML = `<div class="rows">${row(0)}${row(1)}</div>
-    <div class="inn">${S.final ? `<span class="fin">FINAL</span>` : `<span class="arrow" aria-hidden="true">${S.half ? "▼" : "▲"}</span><span aria-label="${S.half ? "Bottom" : "Top"} of the ${ordinal(S.inning)}">${S.inning}</span>`}</div>
+    <div class="inn">${S.final ? `<span class="fin">FINAL</span>` : `<span class="arrow" aria-hidden="true">${S.half ? "▼" : "▲"}</span><span aria-label="${S.half ? "Bottom" : "Top"} of the ${ordinal(S.inning)}">${S.inning}</span>${ui.peekId ? "" : clockChip(G, S, true)}`}</div>
     <div class="bases"><svg viewBox="0 0 100 44" role="group" aria-label="Bases">${bases}</svg>
       <div class="outs" aria-label="${S.outs} out">${[0, 1].map(i => `<i class="${i < S.outs ? "on" : ""}"></i>`).join("")}<span>OUT</span></div></div>`;
 }
@@ -1506,9 +1605,9 @@ function renderDiamond() {
     <path d="M102 176 h16 v6 l-8 8 l-8 -8 z" fill="var(--surface)" stroke="var(--muted)" stroke-width="2" />`;
   P.forEach(([x, y], b) => {
     const r = S.bases[b];
-    h += `<g class="base ${r ? "on" : ""}" data-act="base" data-b="${b}" role="button" tabindex="${r ? 0 : -1}" aria-label="${["First", "Second", "Third"][b]} base${r ? ": " + esc(nameAt(S, r.team, r.slot)) : ", empty"}">
+    h += `<g class="base ${r ? "on" : ""}" data-act="base" data-b="${b}" role="button" tabindex="${r ? 0 : -1}" aria-label="${["First", "Second", "Third"][b]} base${r ? ": " + esc(runnerName(S, r)) : ", empty"}">
       <circle class="hit" cx="${x}" cy="${y}" r="36" /><rect x="${x - 13}" y="${y - 13}" width="26" height="26" transform="rotate(45 ${x} ${y})" rx="2" /></g>`;
-    if (r) h += `<text class="rname" x="${labelPos[b][0]}" y="${labelPos[b][1]}" text-anchor="middle">${esc(nameAt(S, r.team, r.slot).split(" ")[0])}</text>`;
+    if (r) h += `<text class="rname" x="${labelPos[b][0]}" y="${labelPos[b][1]}" text-anchor="middle">${esc(runnerName(S, r).split(" ")[0])}</text>`;
   });
   $("diamond").innerHTML = h;
 }
@@ -1542,7 +1641,7 @@ function renderAtBat() {
   $("atbat").innerHTML = `<div class="meta">${esc(teamNames(G)[t])} batting${countOn(G) ? ` · ${S.balls}–${S.strikes} count` : ""}${who.pos ? " · plays " + esc(who.pos) : ""}</div>
     <div class="now"><small>#${slot + 1}</small>${esc(entryName(who))}</div>
     <div class="meta">${todayLine(t, slot)} · On deck: ${esc(nameAt(S, t, next))}</div>
-    <div class="meta">${(() => { const on = S.bases.map((r, b) => r ? `${["1st", "2nd", "3rd"][b]} ${esc(nameAt(S, r.team, r.slot).split(" ")[0])}` : "").filter(Boolean);
+    <div class="meta">${(() => { const on = S.bases.map((r, b) => r ? `${["1st", "2nd", "3rd"][b]} ${esc(runnerName(S, r).split(" ")[0])}` : "").filter(Boolean);
       return on.length ? `On base: ${on.join(" · ")} <span style="opacity:.75">(tap a base to move a runner)</span>` : "Bases empty"; })()}</div>
     ${walkupSlot(who) ? `<button class="tbtn walkup" data-act="walkup" data-v="${walkupSlot(who)}">${nowPlaying && nowPlaying.slot === walkupSlot(who) ? "■ Stop walk-up" : "♪ Play walk-up song"}</button>` : ""}`;
 }
@@ -1561,6 +1660,7 @@ function renderPad() {
         ${key("quick", "out", "+1 Out", S.outs === 2 ? "Third out, we're up" : (S.outs + 1) + (S.outs ? " outs" : " out"), "out")}
         ${key("quick", "hit", "+ Hit", "Optional · " + S.hits[opp] + " so far", "pitch")}
         ${key("quick", "err", "+ Our error", "Optional · " + S.errors[G.ourSide] + " so far", "pitch")}
+        ${S.rules.hrRule !== "none" ? key("quick", "hr", "+ Their HR", `Counts toward the HR limit · ${S.hr[opp]} so far`, "pitch wide") : ""}
       </div></div>
       <button class="tbtn" data-act="quick" data-v="end" style="width:100%">End their half-inning now</button>`;
     return;
@@ -1574,7 +1674,7 @@ function renderPad() {
       ${key("pitch", "F", "Foul", foulLabel, "pitch")}
     </div></div>` : ""}
     <div class="group"><div class="gl">Batter reaches</div><div class="keys">
-      ${key("pa", "1B", "1B", "Single", "on")}${key("pa", "2B", "2B", "Double", "on")}${key("pa", "3B", "3B", "Triple", "on")}${key("pa", "HR", "HR", "Home run", "on")}
+      ${key("pa", "1B", "1B", "Single", "on")}${key("pa", "2B", "2B", "Double", "on")}${key("pa", "3B", "3B", "Triple", "on")}${key("pa", "HR", "HR", hrOver(S, S.half) ? "Over limit: out" : "Home run", "on")}
       ${key("pa", "BB", "BB", "Walk", "on")}${key("pa", "E", "E", "Error", "on")}${key("pa", "FC", "FC", S.bases.some(Boolean) ? "Runner out, batter safe" : "Needs a runner on base", "on wide", !S.bases.some(Boolean))}
     </div></div>
     <div class="group"><div class="gl">Batter out</div><div class="keys" style="grid-template-columns:repeat(5,minmax(0,1fr))">
@@ -1931,7 +2031,7 @@ function lineupRows(rows, opts) {
   const ps = store.team.players, used = rows.map(r => r.pid).filter(Boolean);
   const html = rows.map((r, i) => {
     const taken = takenBy(rows, i), mine = posList(player(r.pid));
-    const opt = x => `<option value="${x}" ${x === r.pos ? "selected" : ""} ${taken.has(x) ? "disabled" : ""}>${x}${taken.has(x) ? " (taken)" : ""}</option>`;
+    const opt = x => `<option value="${x}" ${x === r.pos ? "selected" : ""} ${taken.has(x) ? "disabled" : ""}>${x === "EH" ? "EH · bats only" : x}${taken.has(x) ? " (taken)" : ""}</option>`;
     const posOpts = mine.length
       ? `<optgroup label="Plays">${mine.map(opt).join("")}</optgroup><optgroup label="Other">${LINEUP_POS.filter(x => !mine.includes(x)).map(opt).join("")}</optgroup>`
       : LINEUP_POS.map(opt).join("");
@@ -1947,7 +2047,7 @@ function lineupRows(rows, opts) {
   const bench = ps.filter(p => !used.includes(p.id));
   const warn = filled.length < 8 ? `Only ${filled.length} batter${filled.length === 1 ? "" : "s"}. Most leagues need at least 8.` : field.length < 8 ? `Only ${field.length} players in the field.` : "";
   return `<div class="rows">${html}</div>
-    <p class="lusum">Batting ${filled.length} · In the field ${field.length} (${of} outfielder${of === 1 ? "" : "s"})${filled.length > field.length ? ` · ${filled.length - field.length} EH` : ""}</p>
+    <p class="lusum">Batting ${filled.length} · In the field ${field.length} (${of} outfielder${of === 1 ? "" : "s"})${filled.length > field.length ? ` · ${filled.length - field.length} bat only (EH)` : ""}</p>
     ${warn ? `<p class="lusum warn">${warn}</p>` : ""}
     <div class="bench"><span>${opts.started ? "Bench (tap to add as an extra batter, or pick them in a row above to sub in):" : "Bench (tap to add to the batting order):"}</span>
       ${bench.length ? bench.map(p => `<button class="chipbtn" data-act="lu-bench" data-v="${p.id}">+ ${esc(p.name || "Unnamed")}${posList(p).length ? " · " + esc(posList(p).join("/")) : ""}</button>`).join("") : "<span>everyone is in the lineup.</span>"}
@@ -1970,7 +2070,54 @@ function readDraftRows() {
   if ($("d-side")) d.ourSide = +$("d-side").value;
   if ($("d-inn")) d.innings = +$("d-inn").value;
   if ($("d-dugout")) d.mode = $("d-dugout").checked ? "dugout" : "scorekeeper";
-  ["startCount", "foulOut", "askHits", "trackCount", "ties"].forEach(k => { if ($("d-" + k)) d[k] = $("d-" + k).checked; });
+  ["startCount", "foulOut", "askHits", "trackCount"].forEach(k => { if ($("d-" + k)) d[k] = $("d-" + k).checked; });
+  Object.assign(d, readRules("d-"));
+}
+/* ---------- League rule controls: New Game, Game Settings, defaults and the welcome setup ---------- */
+const EXTRA_OPTS = [[0, "None"], [1, "1 inning"], [2, "2 innings"], [3, "3 innings"], [-1, "Until decided"]];
+const TIME_OPTS = [0, 45, 50, 55, 60, 65, 70, 75, 80, 90].map(m => [m, m ? m + " min" : "None"]);
+const hrName = k => (HR_RULES.find(x => x[0] === k) || HR_RULES[0])[1];
+function hrHelp(k) {
+  const m = /^(plus|max)(\d)$/.exec(k);
+  if (!m) return "Every home run counts.";
+  if (m[1] === "plus") return `A team can hit ${m[2]} more home run${m[2] === "1" ? "" : "s"} than the other team. Past that, a homer is an out.`;
+  return +m[2] ? `Each team gets ${m[2]} home run${m[2] === "1" ? "" : "s"} a game. After that, a homer is an out.` : "Over the fence is an out.";
+}
+// Where the league rules come from for a new game: what you set last, or the league defaults
+function prefRules() {
+  const pf = store.prefs || {}, r = Object.assign({}, LEAGUE_RULES);
+  if (pf.extras == null && pf.ties) r.extras = 0;
+  ["innings", "extras", "timeLimit", "runRule", "hrRule"].forEach(k => { if (pf[k] != null) r[k] = pf[k]; });
+  return r;
+}
+function rulesRows(r, prefix, ch) {
+  const sel = (id, opts, cur) => `<select id="${prefix}${id}" data-ch="${ch}">${opts.map(([v, l]) => `<option value="${v}" ${String(v) === String(cur) ? "selected" : ""}>${l}</option>`).join("")}</select>`;
+  const rr = `<span>After inning</span><span>Ahead by</span>` + [0, 1, 2].map(i => {
+    const x = (r.runRule[i] || ["", ""]).map(n => n || "");
+    return `<input type="number" inputmode="numeric" min="1" max="15" id="${prefix}rr${i}a" data-ch="rr" data-mode="${ch}" value="${x[0]}" aria-label="Run rule ${i + 1}: after inning">
+      <input type="number" inputmode="numeric" min="1" max="50" id="${prefix}rr${i}l" data-ch="rr" data-mode="${ch}" value="${x[1]}" aria-label="Run rule ${i + 1}: runs ahead">`;
+  }).join("");
+  return `
+    <label class="setrow" for="${prefix}extras"><span><b>Extra innings when tied</b><small>After that, a tie stands. + on the scoreboard plays one more anyway.</small></span>${sel("extras", EXTRA_OPTS, r.extras)}</label>
+    <label class="setrow" for="${prefix}timeLimit"><span><b>Time limit</b><small>The clock starts with the first play. When time's up, the inning being played is the last one.</small></span>${sel("timeLimit", TIME_OPTS, r.timeLimit)}</label>
+    <div class="setrow col"><span><b>Run rule</b><small>The game ends when a team is this far ahead after an inning, or as soon as the home team gets there while batting. Leave a line blank to skip it.</small></span><div class="rrgrid">${rr}</div></div>
+    <label class="setrow" for="${prefix}hrRule"><span><b>Home run limit</b><small>${hrHelp(r.hrRule)}</small></span>${sel("hrRule", HR_RULES, r.hrRule)}</label>`;
+}
+function readRules(prefix) {
+  const v = id => { const el = $(prefix + id); return el ? el.value : null; }, out = {};
+  if (v("extras") != null) out.extras = +v("extras");
+  if (v("timeLimit") != null) out.timeLimit = +v("timeLimit");
+  if (v("hrRule") != null) out.hrRule = v("hrRule");
+  // Half-filled lines are kept so they're still there while you type; rulesOf() only uses complete ones
+  if ($(prefix + "rr0a")) out.runRule = [0, 1, 2].map(i => [+v("rr" + i + "a") || 0, +v("rr" + i + "l") || 0]).filter(x => x[0] > 0 || x[1] > 0);
+  return out;
+}
+function rulesSummary(r) {
+  const bits = [r.innings + " innings", r.extras < 0 ? "extras until decided" : r.extras ? `${r.extras} extra inning${r.extras > 1 ? "s" : ""}, then a tie` : "ties stand"];
+  if (r.timeLimit) bits.push(r.timeLimit + " min limit");
+  if (r.runRule.length) bits.push("run rule " + r.runRule.map(([a, l]) => `${l} after ${a}`).join(", "));
+  if (r.hrRule !== "none") bits.push("HR " + hrName(r.hrRule));
+  return bits.join(" · ");
 }
 function rulesFields(d, live) {
   const ch = live ? ' data-ch="setting"' : ' data-ch="draft"';
@@ -1979,9 +2126,9 @@ function rulesFields(d, live) {
   return `<div class="setlist">
     ${sw("dugout", "Dugout mode", d.mode === "dugout" ? "Your batters one at a time; their half-innings with quick run and out buttons." : "Off: scorekeeper mode, every batter on both teams.", d.mode === "dugout", ' data-ch="draftMode"')}
     ${sw("askHits", "Hit location", "Ask which fielder made the play and where hits went. Needed for fielding and spray stats.", d.askHits)}
-    ${sw("ties", "Games can end in a tie", "A tie after the last inning stands, with no extra innings. Tap + on the scoreboard to play on anyway.", d.ties)}
-    <div class="setrow"><span><b>Innings</b><small>Ties go to extra innings automatically. Tap + to play an extra inning anyway.</small></span>
+    <div class="setrow"><span><b>Innings</b><small>A full game.</small></span>
       <span class="stepper"><button data-act="inn" data-v="-1" aria-label="One fewer inning">−</button><b>${d.innings}</b><button data-act="inn" data-v="1" aria-label="One more inning">+</button></span></div>
+    ${rulesRows(Object.assign(rulesOf(d), { runRule: d.runRule || [] }), "d-", live ? "setting" : "draft")}
   </div>`;
 }
 
@@ -2008,7 +2155,7 @@ function pregameChecklist(d) {
   return `<ul class="checklist">
     ${item(d.opponent.trim() ? "ok" : "bad", "Opponent", d.opponent.trim() ? `${esc(d.opponent.trim())} · we're ${d.ourSide ? "home" : "the visitors"} · ${esc(d.date)}` : "Enter the other team's name below.")}
     ${item(filled.length >= 8 && !clash ? "ok" : "bad", "Lineup", clash || `${filled.length} batting · ${field.length} in the field${filled.length < 8 ? " · most leagues need at least 8" : ""}`)}
-    ${item("ok", "Game settings", `${d.mode === "dugout" ? "Dugout" : "Scorekeeper"} mode · ${d.innings} innings${d.ties ? " · ties allowed" : ""}${d.askHits ? "" : " · hit location off"}`)}
+    ${item("ok", "Game settings", `${d.mode === "dugout" ? "Dugout" : "Scorekeeper"} mode · ${rulesSummary(rulesOf(d))}${d.askHits ? "" : " · hit location off"}`)}
     ${item(ui.sound ? "ok" : "info", "Sound", ui.sound ? "On. Connect the speaker, then test it." : "Off. Turn it on if you're using a speaker.",
       `<button class="tbtn" data-act="sound-toggle">${ui.sound ? "Turn off" : "Turn on"}</button><button class="tbtn" data-act="testsound">Test speaker</button>`)}
     ${item(filled.length && walk === filled.length ? "ok" : "info", "Walk-up songs", `${walk} of ${filled.length} batters have one · ${songs ? songs + " between-innings song" + (songs === 1 ? "" : "s") : "no between-innings music"}`,
@@ -2075,11 +2222,11 @@ function onboardHTML(sh) {
   } else if (step === "rules") {
     inner = `<div class="inner">${head(4, "League rules", "Set your usual game. Any single game can still be changed.")}
       <div class="setlist">
-        <div class="setrow"><span><b>Innings</b><small>Ties go to extra innings unless ties are allowed.</small></span>
-          <span class="stepper"><button data-act="prefinn" data-v="-1" aria-label="One fewer inning">−</button><b>${pf.innings}</b><button data-act="prefinn" data-v="1" aria-label="One more inning">+</button></span></div>
-        <label class="setrow" for="p-ties"><span><b>Games can end in a tie</b><small>A tie after the last inning stands, with no extra innings.</small></span><input type="checkbox" class="switch" id="p-ties" data-ch="pref" data-k="ties" ${pf.ties ? "checked" : ""}></label>
+        <div class="setrow"><span><b>Innings</b><small>A full game.</small></span>
+          <span class="stepper"><button data-act="prefinn" data-v="-1" aria-label="One fewer inning">−</button><b>${prefRules().innings}</b><button data-act="prefinn" data-v="1" aria-label="One more inning">+</button></span></div>
+        ${rulesRows(prefRules(), "p-", "prefrule")}
       </div>
-      <p class="lead" style="font-size:15px">Home runs over your league's limit and foul ball outs have their own buttons on the scoring pad (HR out and FBO), so they're ready whenever your league uses them.</p></div>`;
+      <p class="lead" style="font-size:15px">Courtesy runners (once per inning) are on the runner menu: tap a runner's base. Foul ball outs have their own button (FBO).</p></div>`;
     foot = next();
   } else if (step === "roster") {
     const ps = store.team.players;
@@ -2101,7 +2248,7 @@ function onboardHTML(sh) {
         <div><span>Team</span><b>${esc(store.team.name)} (${esc(store.team.abbr || abbrOf(store.team.name))})</b></div>
         <div><span>Colors</span><b>${esc(colorName(c.primary))} &amp; ${esc(colorName(c.secondary))}</b></div>
         <div><span>Scoring</span><b>${pf.mode === "dugout" ? "Dugout mode" : "Scorekeeper mode"}${pf.askHits !== false ? " · hit location on" : ""}</b></div>
-        <div><span>Games</span><b>${pf.innings} innings${pf.ties ? " · ties allowed" : ""}</b></div>
+        <div><span>Games</span><b>${esc(rulesSummary(rulesOf(prefRules())))}</b></div>
         <div><span>Roster</span><b>${store.team.players.length} player${store.team.players.length === 1 ? "" : "s"}</b></div>
       </div>
       <p class="lead" style="font-size:15px">Tip: add ScoreKept to your Home Screen (Share → Add to Home Screen) so the icon has your colors, and save a backup after each game day. Everything here is under the gear if you want to change it.</p></div>`;
@@ -2142,7 +2289,7 @@ function renderSheet() {
       ${posGrid("hitpos")}
       <div class="acts"><button class="tbtn" data-act="close">Cancel</button><button class="tbtn primary" data-act="hitskip">Skip, just record the ${sh.r}</button></div>`;
   } else if (sh.type === "runner") {
-    const r = S.bases[sh.b], who = esc(nameAt(S, r.team, r.slot)), b = sh.b, nextTaken = b < 2 && S.bases[b + 1], nextName = ["second", "third", "home"][b];
+    const r = S.bases[sh.b], who = esc(runnerName(S, r)), b = sh.b, nextTaken = b < 2 && S.bases[b + 1], nextName = ["second", "third", "home"][b];
     const rbiTo = S.lastPA && S.lastPA.team === r.team ? S.lastPA.name : "";   // the batter whose play can earn the RBI
     body = `<h3>${who}</h3><p>On ${["first", "second", "third"][b]} base. What happened?</p>
       <div class="keys" style="grid-template-columns:repeat(2,minmax(0,1fr))">
@@ -2152,7 +2299,18 @@ function renderSheet() {
         <button class="key on" data-act="run" data-v="score"><b>Scored, no RBI</b><span>Error, overthrow, passed ball</span></button>`
           : `<button class="key on" data-act="run" data-v="score"><b>Score</b><span>Comes home</span></button>`}
         <button class="key out" data-act="run" data-v="out"><b>Out</b><span>Picked off, thrown out</span></button>
+        ${(() => { const used = S.crUsed[r.team + ":" + S.inning];
+          return `<button class="key wide" data-act="crpick" ${used || r.cr ? "disabled" : ""}><b>Courtesy runner</b><span>${r.cr ? "Already a courtesy runner" : used ? "Already used this inning" : "Someone runs for " + esc(runnerName(S, r).split(" ")[0]) + " · once per inning"}</span></button>`; })()}
       </div>
+      <div class="acts"><button class="tbtn" data-act="close">Cancel</button></div>`;
+  } else if (sh.type === "cr") {
+    const r = S.bases[sh.b], onBase = S.bases.filter(Boolean).map(x => x.key);
+    const list = r.team === G.ourSide
+      ? (() => { const inLu = S.lu[r.team].map(x => x.pid); return store.team.players.filter(p => !onBase.includes("p:" + p.id)).sort((a, b) => inLu.includes(a.id) - inLu.includes(b.id)).map(p => ({ pid: p.id, name: p.name, note: inLu.includes(p.id) ? "In the lineup" : "Bench" })); })()
+      : S.lu[r.team].filter((x, i) => !onBase.includes(keyOf(x, r.team, i))).map(x => ({ pid: null, name: x.name, note: "" })).concat([{ pid: null, name: "Courtesy runner", note: "No name" }]);
+    sh.list = list;
+    body = `<h3>Courtesy runner</h3><p>Who runs for ${esc(runnerName(S, r))} at ${["first", "second", "third"][sh.b]}? Runs and steals from here count for the courtesy runner. One per inning.</p>
+      <div class="keys" style="grid-template-columns:repeat(2,minmax(0,1fr))">${list.map((x, i) => `<button class="key on" data-act="cr" data-v="${i}"><b>${esc(x.name)}</b><span>${esc(x.note)}</span></button>`).join("")}</div>
       <div class="acts"><button class="tbtn" data-act="close">Cancel</button></div>`;
   } else if (sh.type === "newgame") {
     const d = ui.draft; wide = true;
@@ -2189,12 +2347,13 @@ function renderSheet() {
       <div class="two"><div class="field"><label for="d-opponent">Opponent</label><input id="d-opponent" data-ch="setting" value="${esc(d.opponent)}" autocomplete="off"></div>
       <div class="field" style="max-width:120px"><label for="d-oppAbbr">Short name</label><input id="d-oppAbbr" data-ch="setting" maxlength="5" value="${esc(d.oppAbbr || "")}" placeholder="${esc(abbrOf(d.opponent))}" autocomplete="off" style="text-transform:uppercase"></div></div>
       ${rulesFields(d, true)}
+      ${clockRows(curGame())}
       <div class="setlist"><button class="setrow" data-act="sounds"><span><b>Sounds &amp; walk-up songs</b><small>Game sounds, situation sounds, between-innings music and walk-ups.</small></span><span class="chev" aria-hidden="true">›</span></button>
         <button class="setrow" data-act="opensettings"><span><b>All settings</b><small>Team, colors, new game defaults, backup and the welcome setup.</small></span><span class="chev" aria-hidden="true">›</span></button></div>
       <p style="font-size:13px">Changes apply right away. Screen layout: ${LAYOUT_NAMES[document.documentElement.dataset.layout] || "Phone"}, picked automatically from this screen's size and turned with the device.</p>
       <div class="acts" style="justify-content:space-between">
         <button class="tbtn ${ui.confirm === "discard" ? "danger" : ""}" data-act="discard">${ui.confirm === "discard" ? "Tap again to delete this game" : "Delete game"}</button>
-        <span style="display:flex;gap:8px;flex-wrap:wrap"><button class="tbtn" data-act="endgame">End game now (time limit)</button><button class="tbtn primary" data-act="close">Done</button></span>
+        <span style="display:flex;gap:8px;flex-wrap:wrap"><button class="tbtn" data-act="endgame">End game now</button><button class="tbtn primary" data-act="close">Done</button></span>
       </div>`;
   } else if (sh.type === "sounds") {
     wide = true;
@@ -2248,7 +2407,7 @@ function renderSheet() {
   } else if (sh.type === "fc") {
     const opts = [2, 1, 0].filter(b => S.bases[b]).map(b => {
       const r = S.bases[b];
-      return `<button class="key out" data-act="fcout" data-v="${b}"><b>${esc(nameAt(S, r.team, r.slot).split(" ")[0])}</b><span>Runner from ${["1st", "2nd", "3rd"][b]} out at ${["2nd", "3rd", "home"][b]}</span></button>`;
+      return `<button class="key out" data-act="fcout" data-v="${b}"><b>${esc(runnerName(S, r).split(" ")[0])}</b><span>Runner from ${["1st", "2nd", "3rd"][b]} out at ${["2nd", "3rd", "home"][b]}</span></button>`;
     }).join("");
     body = `<h3>Fielder's choice</h3><p>${esc(nameAt(S, S.half, curSlot(S)))} is safe at first. Which runner was put out?</p>
       <div class="keys" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">${opts}
@@ -2293,9 +2452,9 @@ function renderSheet() {
       <div class="setlist">
         ${psw("dugout", "Dugout mode", "Score your batters one at a time; their half-innings with quick run and out buttons. Off: score every batter on both teams.", pf.mode === "dugout")}
         ${psw("askHits", "Hit location", "Ask which fielder made the play and where hits went, for spray charts and fielding stats.", pf.askHits !== false)}
-        ${psw("ties", "Games can end in a tie", "A tie after the last inning stands, with no extra innings.", !!pf.ties)}
         <div class="setrow"><span><b>Innings</b><small>The usual length of a game. You can still change it for any game.</small></span>
-          <span class="stepper"><button data-act="prefinn" data-v="-1" aria-label="One fewer inning">−</button><b>${pf.innings}</b><button data-act="prefinn" data-v="1" aria-label="One more inning">+</button></span></div>
+          <span class="stepper"><button data-act="prefinn" data-v="-1" aria-label="One fewer inning">−</button><b>${prefRules().innings}</b><button data-act="prefinn" data-v="1" aria-label="One more inning">+</button></span></div>
+        ${rulesRows(prefRules(), "p-", "prefrule")}
       </div>
       <div class="setlist">
         ${link("sounds", "Sounds &amp; walk-up songs", "Game sounds, situation sounds, between-innings music and walk-ups.")}
@@ -2334,6 +2493,7 @@ function push(e) {
   const prev = S;
   cancelQueue();
   if (nowPlaying && /^(walkup|inning):/.test(nowPlaying.slot)) stopClip(true);   // music fades when the next play is scored
+  if (!g.clock && e.t !== "sub") g.clock = { start: Date.now() };   // the time limit runs from the first play
   g.events.push(e);
   save(); ui.bookTeam = null; ui.sheet = null; ui.bb = null;
   render();
@@ -2358,7 +2518,8 @@ function defaultRows() {
 }
 function openNewGame() {
   ui.draft = { opponent: "", oppAbbr: "", date: today(), ourSide: 0, innings: (store.prefs && store.prefs.innings) || 7, startCount: false, foulOut: false, askHits: !(store.prefs && store.prefs.askHits === false),
-    mode: (store.prefs && store.prefs.mode) || "dugout", trackCount: !(store.prefs && store.prefs.trackCount === false), ties: !!(store.prefs && store.prefs.ties), rows: defaultRows(), opp: "" };
+    mode: (store.prefs && store.prefs.mode) || "dugout", trackCount: !(store.prefs && store.prefs.trackCount === false), rows: defaultRows(), opp: "" };
+  Object.assign(ui.draft, prefRules());
   ui.msg = ""; ui.sheet = { type: "newgame" }; renderSheet();
 }
 function startGame() {
@@ -2371,11 +2532,12 @@ function startGame() {
   const theirs = d.opp.split("\n").map(x => x.trim()).filter(Boolean).map(name => ({ pid: null, name, pos: "" }));
   const lineups = d.ourSide === 0 ? [ours, theirs] : [theirs, ours];
   const g = { id: uid(), seasonId: store.currentSeasonId, date: d.date || today(), opponent: d.opponent.trim(), opponentAbbr: d.oppAbbr || "", ourSide: d.ourSide,
-              settings: { innings: d.innings, startCount: d.startCount, foulOut: d.foulOut, askHits: d.askHits, mode: d.mode, trackCount: d.trackCount, ties: d.ties }, lineups, events: [], done: false };
-  store.prefs = Object.assign({}, store.prefs, { askHits: d.askHits, mode: d.mode, trackCount: d.trackCount, ties: d.ties });
+              settings: Object.assign({ innings: d.innings, startCount: d.startCount, foulOut: d.foulOut, askHits: d.askHits, mode: d.mode, trackCount: d.trackCount }, ruleSettings(d)), lineups, events: [], done: false };
+  store.prefs = Object.assign({}, store.prefs, { askHits: d.askHits, mode: d.mode, trackCount: d.trackCount }, ruleSettings(d));
   store.games.push(g); store.currentId = g.id;
   save(); ui.sheet = null; ui.draft = null; ui.view = "game"; ui.peekId = null; render();
 }
+const ruleSettings = d => { const r = rulesOf(d); return { innings: r.innings, extras: r.extras, timeLimit: r.timeLimit, runRule: d.runRule ? d.runRule.slice() : r.runRule, hrRule: r.hrRule }; };
 function openLineups() {
   const t = G.ourSide;
   ui.draft = { rows: S.lu[t].map(x => ({ pid: x.pid, pos: x.pos })), opp: S.lu[1 - t].map(x => x.name).join("\n") };
@@ -2398,7 +2560,7 @@ function saveLineups() {
 }
 function openGameMenu() {
   const s = G.settings;
-  ui.draft = { opponent: G.opponent, oppAbbr: G.opponentAbbr || "", innings: s.innings, startCount: s.startCount, foulOut: s.foulOut, askHits: s.askHits !== false, mode: modeOf(G), trackCount: countOn(G), ties: !!s.ties };
+  ui.draft = Object.assign({ opponent: G.opponent, oppAbbr: G.opponentAbbr || "", startCount: s.startCount, foulOut: s.foulOut, askHits: s.askHits !== false, mode: modeOf(G), trackCount: countOn(G) }, ruleSettings(s));
   ui.confirm = null; ui.sheet = { type: "gamemenu" }; renderSheet();
 }
 function saveGameMenu() { applyGameMenu(); closeSheet(); }
@@ -2407,8 +2569,8 @@ function applyGameMenu() {
   const g = curGame(), d = ui.draft; if (!g || !d) return;
   g.opponent = d.opponent.trim() || g.opponent;
   g.opponentAbbr = d.oppAbbr || "";
-  Object.assign(g.settings, { innings: d.innings, startCount: d.startCount, foulOut: d.foulOut, askHits: d.askHits, mode: d.mode, trackCount: d.trackCount, ties: d.ties });
-  store.prefs = Object.assign({}, store.prefs, { askHits: d.askHits, mode: d.mode, trackCount: d.trackCount, ties: d.ties });
+  Object.assign(g.settings, { startCount: d.startCount, foulOut: d.foulOut, askHits: d.askHits, mode: d.mode, trackCount: d.trackCount }, ruleSettings(d));
+  store.prefs = Object.assign({}, store.prefs, { askHits: d.askHits, mode: d.mode, trackCount: d.trackCount }, ruleSettings(d));
   ui.bookTeam = null; save(); render();
 }
 function endGame() {
@@ -2470,7 +2632,11 @@ document.addEventListener("click", ev => {
     case "hitskip": { const e = { t: "pa", r: ui.sheet.r }; if (ui.bb) e.bb = ui.bb; push(e); break; }
     case "base": { const b = +el.dataset.b; if (!ui.peekId && S.bases[b] && !S.final) { ui.sheet = { type: "runner", b }; renderSheet(); } break; }
     case "run": push(Object.assign({ t: "run", b: ui.sheet.b, a: v }, el.dataset.rbi ? { rbi: true } : {})); break;
-    case "undo": { const g = curGame(); if (g && g.events.length) { g.events.pop(); save(); render(); } break; }
+    case "crpick": ui.sheet = { type: "cr", b: ui.sheet.b }; renderSheet(); break;
+    case "cr": { const x = ui.sheet.list[+v]; if (x) push({ t: "cr", b: ui.sheet.b, pid: x.pid, name: x.name }); break; }
+    case "undo": { const g = curGame(); if (g && g.events.length) { g.events.pop(); if (!g.events.some(e => e.t !== "sub")) { delete g.clock; delete g.timeUp; } save(); render(); } break; }
+    case "timecall": { const g = curGame(); if (g) { callTime(g); save(); render(); } break; }
+    case "timecancel": { const g = curGame(); if (g) { g.timeUp = null; if (g.clock) g.clock.manual = true; save(); render(); } break; }
     case "tab": ui.bookTeam = +v; renderBook(); break;
     case "sound":
       ui.sound = !ui.sound; syncSoundBtn();
@@ -2519,9 +2685,11 @@ document.addEventListener("click", ev => {
     }
     case "quick": push({ t: "quick", k: v }); break;
     case "addinning": {
-      // One more inning than the game is set for (or than it has reached in extras).
+      // One more inning: another tie-breaker after a tie, otherwise one more than the game is set for (or than time allows).
       const g = curGame(); if (!g) break;
-      g.settings.innings = Math.min(15, Math.max(g.settings.innings, S.inning) + 1);
+      if (S.final && total(S, 0) === total(S, 1)) g.bonus = (g.bonus || 0) + 1;
+      else if (g.timeUp) g.timeUp = Math.max(g.timeUp, S.inning) + 1;
+      else g.settings.innings = Math.min(15, Math.max(g.settings.innings, S.inning) + 1);
       save(); render(); break;
     }
     case "toggleloc": {
@@ -2606,7 +2774,7 @@ document.addEventListener("click", ev => {
       startOnboarding("team"); break;
     case "prefinn": {
       store.prefs = Object.assign({}, store.prefs);
-      store.prefs.innings = Math.min(15, Math.max(3, (store.prefs.innings || 7) + +v));
+      store.prefs.innings = Math.min(15, Math.max(3, prefRules().innings + +v));
       save(); render(); break;
     }
     case "onb-start": startOnboarding("team"); break;
@@ -2669,6 +2837,13 @@ document.addEventListener("change", ev => {
     if (el.dataset.k === "dugout") store.prefs.mode = el.checked ? "dugout" : "scorekeeper"; else store.prefs[el.dataset.k] = el.checked;
     save();
   }
+  else if (ch === "rr") {   // run rule boxes save without redrawing, so the next box keeps focus
+    const mode = el.dataset.mode;
+    if (mode === "prefrule") store.prefs = Object.assign({}, store.prefs, readRules("p-"));
+    else { readDraftRows(); const g = mode === "setting" && curGame(); if (g) Object.assign(g.settings, ruleSettings(ui.draft)); }
+    save();
+  }
+  else if (ch === "prefrule") { store.prefs = Object.assign({}, store.prefs, readRules("p-")); save(); render(); }
   else if (ch === "incCur") { ui.incCur = el.checked; render(); }
   else if (ch === "lu") {
     const i = +el.dataset.i, before = ui.draft.rows[i] && ui.draft.rows[i].pid;
@@ -2679,6 +2854,11 @@ document.addEventListener("change", ev => {
   }
   else if (ch === "draftMode") { if (ui.sheet && ui.sheet.type === "gamemenu") applyGameMenu(); else { readDraftRows(); renderSheet(); } }
   else if (ch === "setting") applyGameMenu();
+  else if (ch === "clockstart") {
+    const g = curGame(), m = /^(\d\d):(\d\d)$/.exec(el.value); if (!g || !m) return;
+    const d = new Date(); d.setHours(+m[1], +m[2], 0, 0);
+    g.clock = { start: d.getTime() }; g.timeUp = null; save(); render();
+  }
   else if (ch === "autoWalkup" || ch === "bothTeams" || ch === "situational") { store.audio = Object.assign({}, store.audio, { [ch]: el.checked }); save(); }
   else if (ch === "clip-start" || ch === "clip-dur" || ch === "clip-vol") {
     const c = clips[el.dataset.slot]; if (!c) return;
