@@ -23,6 +23,8 @@ ScoreKept picks a layout for the screen it's on, and switches when you rotate th
 
 To see every layout at once, open the **screen preview**: https://crossfirebull.github.io/dugout-scorebook/preview.html. It shows ScoreKept on an iPhone, an iPhone on its side, a Raspberry Pi 7" screen, an iPad mini, an iPad, an iPad on its side and a laptop. The preview uses its own practice data, so it never touches your real games.
 
+**Help** (in Settings and Game settings) explains every button, moving runners, league rules, stats and backups.
+
 The speaker button at the top mutes and unmutes. The gear opens **Settings** (team, colors, new-game defaults, sounds, backup, and the welcome setup again). During a game it opens that game's settings, with a link to all settings.
 
 ## First launch
@@ -48,7 +50,23 @@ Tap what the batter did. The app moves the runners the usual way, and you can fi
 - **Batter out:** K swinging, backwards K looking, GO, F, L, P, SF (sac fly), DP, **HR out** (for leagues with a home run limit) and **FBO** (foul ball out).
 - **Where it went:** with **Hit location** on, the app asks which fielder made the play or where the hit landed, for spray charts and fielding stats. Every question has **Skip**.
 - **Moving runners:** tap a runner's base to advance, steal, score or put them out. Right after a play, scoring a runner offers **Scored on the play** (RBI to the batter) or **Scored, no RBI** (error, overthrow, passed ball). A steal of home is never an RBI.
+- **Courtesy runner:** also on the runner menu. Once per inning for each team; runs and steals from then on count for the courtesy runner.
+- **Walk-offs:** the game ends the moment the home team takes the lead in the last inning. Only the winning run counts, unless it's a home run.
 - **Undo** takes back the last tap, as many times as you need.
+
+## League rules
+
+Set them for one game in **Game settings**, or as the default for new games in **Settings**. The defaults match our league:
+
+| Rule | Default | What ScoreKept does |
+| --- | --- | --- |
+| Innings | 7 | |
+| Extra innings when tied | 1 | Tied after that, the game is a tie. **Play another inning** adds one anyway. |
+| Time limit | 55 min | The clock starts with the first play and counts down under the inning. When time's up it shows **LAST**: the inning being played is the last one. Match the start time to the umpire's watch, or call time by hand, in Game settings. |
+| Run rule | 20 after 3, 15 after 4, 10 after 5 | Ends the game after an inning, or the moment the home team gets that far ahead while batting. |
+| Home run limit | +2 rule | Over the limit, HR is ruled an out automatically and the HR button warns you first. Also: +1, +3, or 1, 2 or 3 per team (B league: 1 per team). In Dugout mode, tap **+ Their HR** to keep their count. |
+
+Everyone can bat: pick **EH · bats only** in the lineup for anyone who isn't in the field.
 
 ## Keeping your data safe
 
@@ -117,12 +135,13 @@ Edit `index.html`, then commit and push. GitHub Pages republishes the site in ab
 
 To run the automated checks on your own computer: `npm install`, then `npm test`. GitHub runs them after every push too.
 
+The checks include simulated seasons: `tests/season-sim.js` plays random five-game seasons and keeps its own stat sheet the way you would on paper, written separately from the app. The test loads those games into ScoreKept and compares every number in the Standard and Advanced batting tables.
+
 ## On the list
 
 **Next up**
-- Check the stats math against a hand-scored game, and add tests for seasons, substitutions, scouting and restoring older backups.
-- League rules: a run limit per inning, a mercy (run-ahead) rule, the automatic home run limit (+2), and courtesy runners.
-- A help screen covering how to score each play.
+- Tests for seasons, substitutions, scouting and restoring older backups.
+- Refine the Help screen as questions come up at games.
 
 **Planned**
 - Polish each screen on its own display: phone, phone on its side, Raspberry Pi, iPad mini, iPad, iPad on its side and laptop.

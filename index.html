@@ -225,6 +225,19 @@ input.switch:checked::after, .check input[type=checkbox]:checked::after { transf
 .setrow small { display: block; color: var(--muted); font-size: 13px; line-height: 1.35; margin-top: 2px; }
 .setrow select { font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); flex: none; max-width: 50%; }
 .setrow > span:first-child { flex: 1; min-width: 0; }
+.help { display: grid; gap: 8px; }
+.help details { border: 1px solid var(--rule); border-radius: 12px; background: var(--paper); }
+.help summary { cursor: pointer; padding: 12px 14px; font-weight: 700; font-size: 17px; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+.help summary::-webkit-details-marker { display: none; }
+.help summary::after { content: "+"; font-size: 22px; color: var(--muted); font-weight: 400; }
+.help details[open] summary::after { content: "−"; }
+.help .hbody { padding: 0 14px 12px; font-size: 15px; line-height: 1.5; }
+.help .hbody p { margin: 0 0 8px; color: var(--ink); }
+.help .hbody ul { margin: 0 0 8px; padding-left: 20px; display: grid; gap: 6px; }
+.help dl.hkeys { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 12px; margin: 0 0 10px; }
+.help dl.hkeys dt { font-family: var(--f-display); font-weight: 800; font-size: 17px; color: var(--ink-blue); }
+.help dl.hkeys dd { margin: 0; }
+.help .kcx { display: inline-block; transform: scaleX(-1); }
 .setrow.col { flex-direction: column; align-items: stretch; gap: 8px; cursor: default; }
 .rrgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 120px)); gap: 6px 12px; }
 .rrgrid span { font-family: var(--f-label); font-weight: 700; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
@@ -2165,6 +2178,68 @@ function pregameChecklist(d) {
   </ul>`;
 }
 
+/* ---------- Help: how to use ScoreKept, one topic per fold ---------- */
+const HELP = [
+  ["Start a game", `
+    <p>Tap <b>New Game</b> (Game tab or Stats → Overview). The pregame checklist covers the opponent, your lineup, the game settings, sound, walk-up songs and your last backup.</p>
+    <ul><li><b>Lineup:</b> each player's own positions come first, and a position that's taken is locked for everyone else. Pick <b>EH · bats only</b> for anyone who bats but doesn't field. Everyone can bat.</li>
+    <li><b>Dugout mode</b> scores your batters one at a time. When the other team bats you just tap <b>+1 Run</b> and <b>+1 Out</b>.</li>
+    <li><b>Scorekeeper mode</b> scores every batter on both teams and builds scouting reports.</li></ul>`],
+  ["Scoring a play", `
+    <p>Tap what the batter did. Runners move the usual way, and you can fix anything by tapping a base.</p>
+    <dl class="hkeys">
+      <dt>1B 2B 3B</dt><dd>Single, double, triple. Runners move up that many bases.</dd>
+      <dt>HR</dt><dd>Home run. Everyone scores. Over your league's HR limit it's ruled an out automatically.</dd>
+      <dt>BB</dt><dd>Walk. Only forced runners move.</dd>
+      <dt>E</dt><dd>Reached on an error. Not a hit, no RBI.</dd>
+      <dt>FC</dt><dd>Fielder's choice: a runner is put out and the batter is safe. It asks which runner, or whether everyone was safe.</dd>
+      <dt>K <span class="kcx">K</span></dt><dd>Strikeout swinging / looking.</dd>
+      <dt>GO F L P</dt><dd>Ground out, fly out, line out, pop out. Runners stay put; tap a base if someone moved up.</dd>
+      <dt>SF</dt><dd>Sacrifice fly. The runner on third scores and the batter gets the RBI, not an at-bat.</dd>
+      <dt>DP</dt><dd>Double play: the lead runner and the batter are out. No RBI.</dd>
+      <dt>HR out</dt><dd>A home run ruled an out under the HR limit. ScoreKept does this for you when the limit is set.</dd>
+      <dt>FBO</dt><dd>Foul ball out (out on a foul with two strikes). An at-bat, not a strikeout.</dd>
+    </dl>
+    <p>With <b>Hit location</b> on, it asks who fielded the ball or where a hit went. That feeds the spray charts and fielding stats. Every question has <b>Skip</b>.</p>`],
+  ["Moving runners", `
+    <p>Tap a lit base on the score bug (or the diamond) to open that runner:</p>
+    <ul><li><b>Advance</b> one base, or <b>Steal</b> (counts a stolen base).</li>
+    <li><b>Scored on the play</b> gives the batter who just hit the RBI. Use <b>Scored, no RBI</b> for an error, overthrow or passed ball. A steal of home is never an RBI.</li>
+    <li><b>Out</b> for a pickoff or a runner thrown out.</li>
+    <li><b>Courtesy runner</b>: pick who runs instead. Once per inning for each team. Runs and steals from then on count for the courtesy runner.</li></ul>`],
+  ["Fixing mistakes", `
+    <ul><li><b>Undo</b> takes back the last tap, as many times as you need.</li>
+    <li><b>Lineups</b> changes the batting order or positions. Mid-game, each change is saved as a substitution.</li>
+    <li>A saved game can be reopened from <b>Stats → Overview → View → Reopen to edit</b>.</li></ul>`],
+  ["League rules", `
+    <p>Set them in <b>Game settings</b> for one game, or in <b>Settings</b> as the default for new games.</p>
+    <ul><li><b>Time limit:</b> the clock starts with the first play and counts down under the inning number. When time's up it shows <b>LAST</b>: the inning being played is the last one. If the next inning hadn't started, the game ends with the inning before. Match the start time to the umpire's watch, or call time by hand, in Game settings.</li>
+    <li><b>Extra innings when tied:</b> how many extra innings before a tie stands. <b>Play another inning</b> on the final screen adds one anyway.</li>
+    <li><b>Run rule:</b> for example 20 after 3, 15 after 4, 10 after 5. The game ends after an inning when a team is that far ahead, or right away when the home team gets there while batting.</li>
+    <li><b>Home run limit:</b> the <b>+2 rule</b> means a team can hit 2 more homers than the other team; <b>1 per team</b> means one a game. Past the limit, HR becomes an out and the HR button says so. In Dugout mode, tap <b>+ Their HR</b> when they hit one so the count stays right.</li>
+    <li><b>Walk-offs:</b> the game ends the moment the home team takes the lead in the last inning. Only the winning run counts, unless it's a home run.</li></ul>`],
+  ["Ending a game and seasons", `
+    <ul><li>When the game is over, tap <b>Save to season</b> to add it to everyone's stats. <b>End game now</b> in Game settings ends it early.</li>
+    <li>Start a new season (Spring, Summer or Fall) with <b>New Season</b> on the Stats tab. Your roster carries over and old seasons stay saved. The season menu switches between them or shows all seasons together.</li></ul>`],
+  ["Stats, spray charts and scouting", `
+    <ul><li><b>Stats → Batting</b> has Standard, Advanced, Batted ball and Fielding tables. Tap a column to sort. Each table explains its stats underneath.</li>
+    <li><b>Spray charts</b> show where your team and each player hit the ball, with All / Hits / Outs filters.</li>
+    <li><b>Scout</b> shows every team you've played, where their hitters hit it, and where to shade your defense. It needs their half scored in Scorekeeper mode.</li></ul>`],
+  ["Sounds and walk-up songs", `
+    <ul><li>The speaker button turns sound on and off. Built-in ballpark organ sounds play for hits, runs, strikeouts and big moments.</li>
+    <li>To use your own: save the file to the Files app, then pick it in <b>Settings → Sounds &amp; walk-up songs</b> or on a player's page. Set <b>Start at</b> and <b>Play for</b> to use just the best part.</li>
+    <li>Keep game sounds to 2–4 seconds and walk-ups to 8–12 seconds so the game keeps moving.</li></ul>`],
+  ["Keeping your data safe", `
+    <ul><li>Every tap is saved on this device right away, and ScoreKept works with no signal after the first visit.</li>
+    <li>Add it to your Home Screen (Share → Add to Home Screen) so it opens like an app and the device keeps its data.</li>
+    <li>Back up now and then: <b>Stats → Overview → Export &amp; backup</b>. Save the file to Files or iCloud Drive, or email it to yourself. <b>Restore</b> brings everything back on any device. Sound files aren't in the backup.</li></ul>`]
+];
+function helpBody() {
+  return `<h3>Help</h3>
+    <div class="help">${HELP.map(([t, h], i) => `<details ${i === 0 && !ui.helpOpen ? "open" : ""} ${ui.helpOpen === t ? "open" : ""}><summary>${t}</summary><div class="hbody">${h}</div></details>`).join("")}</div>
+    <div class="acts"><button class="tbtn primary" data-act="close">Done</button></div>`;
+}
+
 /* ---------- First-launch setup ---------- */
 const ONB_STEPS = ["team", "colors", "style", "rules", "roster", "done"];
 function bugPreview() {
@@ -2348,7 +2423,8 @@ function renderSheet() {
       <div class="field" style="max-width:120px"><label for="d-oppAbbr">Short name</label><input id="d-oppAbbr" data-ch="setting" maxlength="5" value="${esc(d.oppAbbr || "")}" placeholder="${esc(abbrOf(d.opponent))}" autocomplete="off" style="text-transform:uppercase"></div></div>
       ${rulesFields(d, true)}
       ${clockRows(curGame())}
-      <div class="setlist"><button class="setrow" data-act="sounds"><span><b>Sounds &amp; walk-up songs</b><small>Game sounds, situation sounds, between-innings music and walk-ups.</small></span><span class="chev" aria-hidden="true">›</span></button>
+      <div class="setlist"><button class="setrow" data-act="help"><span><b>Help &amp; how to score</b><small>Every button, moving runners, league rules and more.</small></span><span class="chev" aria-hidden="true">›</span></button>
+        <button class="setrow" data-act="sounds"><span><b>Sounds &amp; walk-up songs</b><small>Game sounds, situation sounds, between-innings music and walk-ups.</small></span><span class="chev" aria-hidden="true">›</span></button>
         <button class="setrow" data-act="opensettings"><span><b>All settings</b><small>Team, colors, new game defaults, backup and the welcome setup.</small></span><span class="chev" aria-hidden="true">›</span></button></div>
       <p style="font-size:13px">Changes apply right away. Screen layout: ${LAYOUT_NAMES[document.documentElement.dataset.layout] || "Phone"}, picked automatically from this screen's size and turned with the device.</p>
       <div class="acts" style="justify-content:space-between">
@@ -2440,12 +2516,15 @@ function renderSheet() {
       </div>
       ${colorPicker()}
       <div class="acts"><button class="tbtn primary" data-act="close">Done</button></div>`;
+  } else if (sh.type === "help") {
+    wide = true; body = helpBody();
   } else if (sh.type === "settings") {
     const pf = Object.assign({ mode: "dugout", askHits: true, ties: false, innings: 7 }, store.prefs);
     const psw = (k, title, desc, on) => `<label class="setrow" for="p-${k}"><span><b>${title}</b><small>${desc}</small></span><input type="checkbox" class="switch" id="p-${k}" data-ch="pref" data-k="${k}" ${on ? "checked" : ""}></label>`;
     const link = (act, title, desc) => `<button class="setrow" data-act="${act}"><span><b>${title}</b><small>${desc}</small></span><span class="chev" aria-hidden="true">›</span></button>`;
     const c = teamColors();
     body = `<h3>Settings</h3>
+      <div class="setlist">${link("help", "Help &amp; how to score", "Every button, moving runners, league rules, stats and backups.")}</div>
       <h4 style="margin:0">Team</h4>
       <div class="setlist">${link("teamedit", esc(store.team.name), `Short name ${esc(store.team.abbr || abbrOf(store.team.name))} · ${esc(colorName(c.primary))} &amp; ${esc(colorName(c.secondary))}`)}</div>
       <h4 style="margin:0">New game defaults</h4>
@@ -2642,6 +2721,10 @@ document.addEventListener("click", ev => {
       ui.sound = !ui.sound; syncSoundBtn();
       if (ui.sound) { audio(); SFX.hit(); }
       break;
+    case "help":
+      if (ui.sheet && (ui.sheet.type === "newgame" || ui.sheet.type === "gamemenu")) { readDraftRows(); ui.returnTo = ui.sheet.type; }
+      else ui.returnTo = ui.sheet && ui.sheet.type === "settings" ? "settings" : null;
+      ui.sheet = { type: "help" }; renderSheet(); break;
     case "sounds":
       // Coming from New Game, Game Settings or Settings, Done brings you back there.
       if (ui.sheet && (ui.sheet.type === "newgame" || ui.sheet.type === "gamemenu")) { readDraftRows(); ui.returnTo = ui.sheet.type; }
@@ -2702,7 +2785,7 @@ document.addEventListener("click", ev => {
     case "close": {
       const t = ui.sheet && ui.sheet.type;
       if (t === "sounds") stopClip(true);
-      if ((t === "sounds" || t === "teamedit") && ui.returnTo && (ui.returnTo === "settings" || ui.draft)) { ui.sheet = { type: ui.returnTo }; ui.returnTo = null; render(); break; }
+      if ((t === "sounds" || t === "teamedit" || t === "help") && ui.returnTo && (ui.returnTo === "settings" || ui.draft)) { ui.sheet = { type: ui.returnTo }; ui.returnTo = null; render(); break; }
       closeSheet(); break;
     }
     case "newgame": openNewGame(); break;
@@ -2826,6 +2909,7 @@ document.addEventListener("input", ev => {
   const pv = $("onbPreview"); if (pv) pv.innerHTML = bugPreview();
   const ab = $("onbAbbr"); if (ab && k === "name") ab.placeholder = abbrOf(store.team.name);
 });
+document.addEventListener("toggle", ev => { if (ev.target.matches && ev.target.matches(".help details") && ev.target.open) ui.helpOpen = ev.target.querySelector("summary").textContent; }, true);
 document.addEventListener("change", ev => {
   const el = ev.target, ch = el.dataset && el.dataset.ch; if (!ch) return;
   const p = el.dataset.id ? player(el.dataset.id) : null;

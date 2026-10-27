@@ -563,3 +563,22 @@ test("league rules are in Game settings and Settings, and lineups take bat-only 
   assert.deepEqual(errors, []);
   await context.close();
 });
+
+test("Help opens from Settings and Game settings, and Done goes back", async () => {
+  const { page, context, errors } = await open(390, 844);
+  await gameSettings(page);
+  await page.click("[data-act=help]");
+  assert.match(await text(page, ".sheet h3"), /Help/);
+  const topics = await page.$$eval(".help summary", s => s.map(x => x.textContent));
+  for (const t of ["Scoring a play", "Moving runners", "League rules", "Keeping your data safe"]) assert.ok(topics.includes(t), t);
+  await page.click(".help summary >> text=League rules");
+  assert.match(await text(page, ".help details[open]:has(summary:text('League rules'))"), /Run rule/);
+  await page.click(".sheet [data-act=close]");
+  assert.match(await text(page, ".sheet h3"), /Game Settings/, "back to Game settings");
+  await page.click("[data-act=opensettings]");
+  await page.click("[data-act=help]");
+  await page.click(".sheet [data-act=close]");
+  assert.match(await text(page, ".sheet h3"), /Settings/, "back to Settings");
+  assert.deepEqual(errors, []);
+  await context.close();
+});
