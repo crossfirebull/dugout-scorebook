@@ -287,3 +287,23 @@ test("the FC button is off when nobody is on base", async () => {
   if (await page.$$eval("#bug .bbase.on", x => x.length) === 0) assert.ok(await page.$eval("[data-act=pa][data-v=FC]", b => b.disabled));
   await context.close();
 });
+
+test("a runner who scores on the batter's play earns that batter an RBI", async () => {
+  const { page, context } = await open();
+  await tapResult(page, "3B");                                     // runner on third
+  const batter = (await text(page, "#atbat .now")).replace(/^#\d+\s*/, "");
+  await tapResult(page, "GO");                                     // ground out; runner breaks for home
+  await page.click("#bug .bbase.on");
+  assert.match(await text(page, ".sheet"), new RegExp("RBI to " + batter.split(" ")[0]));
+  await page.click(".sheet [data-act=run][data-rbi]");
+  await page.click(".tabbar [data-v=book]");
+  assert.match(await text(page, "#pbp li:first-child"), new RegExp("RBI: " + batter));
+  // and "Scored, no RBI" gives none
+  await page.click(".tabbar [data-v=game]");
+  await tapResult(page, "3B"); await tapResult(page, "FO");
+  await page.click("#bug .bbase.on");
+  await page.click(".sheet [data-act=run][data-v=score]:not([data-rbi])");
+  await page.click(".tabbar [data-v=book]");
+  assert.doesNotMatch(await text(page, "#pbp li:first-child"), /RBI/);
+  await context.close();
+});

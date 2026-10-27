@@ -820,7 +820,7 @@ function outRunner(s, r) { s.outs++; cellOf(s, r).out = s.outs; s.fx.out = true;
 function move(s, from, to) { s.bases[to] = s.bases[from]; s.bases[from] = null; cellOf(s, s.bases[to]).base = to + 1; }
 
 function endHalf(s, g) {
-  s.fx.side = true;
+  s.fx.side = true; s.lastPA = null;
   s.bases = [null, null, null]; s.outs = 0; resetCount(s, g);
   const N = g.settings.innings, a = total(s, 0), h = total(s, 1);
   if (s.half === 0) {
@@ -929,6 +929,7 @@ function plateAppearance(s, g, r, p, bb, foulK, fcOut) {
   }
   if (!["E", "DP"].includes(r)) st.RBI += runs;
   log(s, esc(entryName(who)) + " " + verbFor(r, p) + (fcNote ? (fcNote[0] === "," ? fcNote : ";" + fcNote) : "") + (foulK ? " (foul with two strikes)" : "") + "." + (runs ? ` <span class="run">${runs} run${runs > 1 ? "s" : ""} score${runs > 1 ? "" : "s"}.</span>` : ""));
+  s.lastPA = RBI_PLAYS.has(r) ? { team: bt, key, name: entryName(who) } : null;
   s.order[bt]++;
   resetCount(s, g);
   if (s.outs >= 3 && !s.final) endHalf(s, g);
@@ -940,7 +941,9 @@ function pitch(s, g, k) {
   else { s.strikes++; if (s.strikes >= 3) plateAppearance(s, g, k === "CS" ? "KC" : "K"); }
 }
 
-function runnerMove(s, g, b, a) {
+// Plays where a run that scores can be credited to the batter as an RBI (not errors, double plays or strikeouts)
+const RBI_PLAYS = new Set(["1B", "2B", "3B", "BB", "HBP", "GO", "FO", "LO", "PO", "SF", "FC"]);
+function runnerMove(s, g, b, a, rbi) {
   const x = s.bases[b]; if (!x) return;
   const who = esc(nameAt(s, x.team, x.slot));
   if (a === "out") {
@@ -951,7 +954,10 @@ function runnerMove(s, g, b, a) {
   if (a === "sb") { stat(s, x.team, x.key).SB++; cellOf(s, x).notes.push("SB"); }
   if (a === "score" || b === 2) {
     s.bases[b] = null; scoreRunner(s, g, x);
-    log(s, who + (a === "sb" ? " steals home." : " scores.") + ' <span class="run">1 run scores.</span>');
+    // Scored on the batter's play (ground out, fly ball, fielder's choice, hit): the batter gets the RBI
+    const credit = rbi && a !== "sb" && s.lastPA && s.lastPA.team === x.team ? s.lastPA : null;
+    if (credit) stat(s, credit.team, credit.key).RBI++;
+    log(s, who + (a === "sb" ? " steals home." : " scores.") + ' <span class="run">1 run scores.</span>' + (credit ? ` RBI: ${esc(credit.name)}.` : ""));
   } else if (!s.bases[b + 1]) {
     move(s, b, b + 1);
     log(s, who + (a === "sb" ? " steals " : " advances to ") + ["", "second", "third"][b + 1] + ".");
@@ -987,7 +993,7 @@ function derive(g) {
     s.fx = { bat: s.half };
     if (e.t === "pitch") pitch(s, g, e.k);
     else if (e.t === "pa") plateAppearance(s, g, e.r, e.p, e.bb, false, e.out);
-    else if (e.t === "run") runnerMove(s, g, e.b, e.a);
+    else if (e.t === "run") runnerMove(s, g, e.b, e.a, e.rbi);
     else if (e.t === "quick") quickEvent(s, g, e.k);
   }
   return s;
@@ -2056,11 +2062,14 @@ function renderSheet() {
       <div class="acts"><button class="tbtn" data-act="close">Cancel</button><button class="tbtn primary" data-act="hitskip">Skip, just record the ${sh.r}</button></div>`;
   } else if (sh.type === "runner") {
     const r = S.bases[sh.b], who = esc(nameAt(S, r.team, r.slot)), b = sh.b, nextTaken = b < 2 && S.bases[b + 1], nextName = ["second", "third", "home"][b];
+    const rbiTo = S.lastPA && S.lastPA.team === r.team ? S.lastPA.name : "";   // the batter whose play can earn the RBI
     body = `<h3>${who}</h3><p>On ${["first", "second", "third"][b]} base. What happened?</p>
       <div class="keys" style="grid-template-columns:repeat(2,minmax(0,1fr))">
-        <button class="key on" data-act="run" data-v="adv" ${nextTaken ? "disabled" : ""}><b>Advance</b><span>${b === 2 ? "Scores" : "To " + nextName}${nextTaken ? " (occupied)" : ""}</span></button>
-        <button class="key on" data-act="run" data-v="sb" ${nextTaken ? "disabled" : ""}><b>Steal</b><span>Steals ${nextName}</span></button>
-        <button class="key on" data-act="run" data-v="score"><b>Score</b><span>Comes home</span></button>
+        ${b < 2 ? `<button class="key on" data-act="run" data-v="adv" ${nextTaken ? "disabled" : ""}><b>Advance</b><span>To ${nextName}${nextTaken ? " (occupied)" : ""}</span></button>` : ""}
+        <button class="key on" data-act="run" data-v="sb" ${nextTaken ? "disabled" : ""}><b>Steal</b><span>Steals ${nextName}, no RBI</span></button>
+        ${rbiTo ? `<button class="key on" data-act="run" data-v="score" data-rbi="1"><b>Scored on the play</b><span>RBI to ${esc(rbiTo.split(" ")[0])}</span></button>
+        <button class="key on" data-act="run" data-v="score"><b>Scored, no RBI</b><span>Error, overthrow, passed ball</span></button>`
+          : `<button class="key on" data-act="run" data-v="score"><b>Score</b><span>Comes home</span></button>`}
         <button class="key out" data-act="run" data-v="out"><b>Out</b><span>Picked off, thrown out</span></button>
       </div>
       <div class="acts"><button class="tbtn" data-act="close">Cancel</button></div>`;
@@ -2379,7 +2388,7 @@ document.addEventListener("click", ev => {
     case "hitpos": { const e = { t: "pa", r: ui.sheet.r, p: +v }; if (ui.bb) e.bb = ui.bb; push(e); break; }
     case "hitskip": { const e = { t: "pa", r: ui.sheet.r }; if (ui.bb) e.bb = ui.bb; push(e); break; }
     case "base": { const b = +el.dataset.b; if (!ui.peekId && S.bases[b] && !S.final) { ui.sheet = { type: "runner", b }; renderSheet(); } break; }
-    case "run": push({ t: "run", b: ui.sheet.b, a: v }); break;
+    case "run": push(Object.assign({ t: "run", b: ui.sheet.b, a: v }, el.dataset.rbi ? { rbi: true } : {})); break;
     case "undo": { const g = curGame(); if (g && g.events.length) { g.events.pop(); save(); render(); } break; }
     case "tab": ui.bookTeam = +v; renderBook(); break;
     case "sound":
