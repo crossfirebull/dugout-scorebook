@@ -32,12 +32,23 @@ The first time ScoreKeep opens, a short setup walks you through it like the open
 ## Using it at the field
 
 1. Turn on your phone's hotspot and connect the iPad.
-2. On the **Team** tab, set your team colors first, then open the link in Safari and tap **Share → Add to Home Screen**. The icon (a scorebook with a lit R·H·E box score) is drawn in your team colors at that moment.
-3. On the **Roster** tab, add your players with their number, up to three positions (main one first) and which side they bat from.
+2. On the **Team** tab, tap **Edit team** and set your team colors first, then open the link in Safari and tap **Share → Add to Home Screen**. The icon (a scorebook with a lit R·H·E box score) is drawn in your team colors at that moment.
+3. On the **Team** tab, add your players with their number, up to three positions (main one first) and which side they bat from.
 4. On game day, tap **New Game**. A pregame checklist covers the opponent, lineup, game settings, sound, walk-up songs and your last backup, each with a check mark when it's ready. Set the batting order and positions. Each player's own positions are offered first, a position that's taken is locked for everyone else, and bench players are one tap away. Pick a mode in **Game settings**:
    - **Dugout mode** scores your batters one at a time. The other team's half-inning gets quick **+1 Run** and **+1 Out** buttons, so you can coach and score at the same time.
    - **Scorekeeper mode** scores every batter on both teams.
-5. When the game ends, tap **Save to season**. Start a fresh season any time with **Season → New Season**; past seasons stay saved and you can switch between them (or see all seasons together) from the season menu. The **Season** tab adds it to everyone's stats, and **Season → Lineups** shows who batted where and played which position in every game.
+5. After the last inning, tap **Save to season** (or **Play another inning** for extras; the **+** next to the line score adds one any time). A game cut short by a time limit can be ended from Game settings with **End game now**. If your league allows ties, a tie counts as a tie in the record.
+6. Saved games add to everyone's stats on the **Stats** tab. Start a fresh season (Spring, Summer or Fall) with **New Season** on the Stats tab; past seasons stay saved, and the season menu switches between them or shows all seasons together. **Stats → Lineups** shows who batted where and played which position in every game.
+
+## Scoring a play
+
+Tap what the batter did. The app moves the runners the usual way, and you can fix anything by tapping a base.
+
+- **Batter reaches:** 1B, 2B, 3B, HR, BB (walk), E (error), and **FC** (fielder's choice: a runner is out, the batter is safe). FC asks which runner was out, or whether everyone was safe, and is grayed out with nobody on base.
+- **Batter out:** K swinging, backwards K looking, GO, F, L, P, SF (sac fly), DP, **HR out** (for leagues with a home run limit) and **FBO** (foul ball out).
+- **Where it went:** with **Hit location** on, the app asks which fielder made the play or where the hit landed, for spray charts and fielding stats. Every question has **Skip**.
+- **Moving runners:** tap a runner's base to advance, steal, score or put them out. Right after a play, scoring a runner offers **Scored on the play** (RBI to the batter) or **Scored, no RBI** (error, overthrow, passed ball). A steal of home is never an RBI.
+- **Undo** takes back the last tap, as many times as you need.
 
 ## Keeping your data safe
 
@@ -49,7 +60,7 @@ The first time ScoreKeep opens, a short setup walks you through it like the open
 
 ## Sounds and walk-up songs
 
-Open **Game Settings → Sounds & walk-up songs** (or **Roster → Walk-up songs & sounds**) to pick your own audio files from the iPad (MP3, M4A or WAV; the Files app is the easiest place to keep them). You can set a sound for home runs, runs scoring, hits, walks, strikeouts, other outs and the end of an inning, plus a walk-up song for each player. Each clip has its own start time, length and volume, so one full song can supply a 15-second snippet.
+Open **Settings → Sounds** (the gear), the **Sounds** row in Game settings, or **Team → Walk-up songs** to pick your own audio files from the iPad (MP3, M4A or WAV; the Files app is the easiest place to keep them). You can set a sound for home runs, runs scoring, hits, walks, strikeouts, other outs and the end of an inning, plus a walk-up song for each player. Each clip has its own start time, length and volume, so one full song can supply a 15-second snippet.
 
 Sounds play in order, so the next batter's walk-up starts when the previous play's sound ends. The app knows which team is yours and what the score is. Hits and runs play when you bat, strikeouts and outs when you're in the field. Situation sounds cover taking the lead, tying it, a rally when you're tied or behind with a runner in scoring position, a big defensive out, and the win. Add a few **between-innings** songs and one plays after every third out.
 
@@ -76,4 +87,16 @@ Stats are recalculated from the play-by-play every time, so new stats added late
 
 ## Making changes
 
-Edit `index.html`, then commit and push. GitHub Pages republishes the site in about a minute. Refresh Safari on the iPad to get the new version.
+Edit `index.html`, then commit and push. GitHub Pages republishes the site in about a minute. Close and reopen the app on the iPad to get the new version.
+
+To run the automated checks on your own computer: `npm install`, then `npm test`. GitHub runs them after every push too.
+
+## On the list
+
+- **A new name.** ScoreKeep is taken (scorekeep.net), so the app will be renamed. Saved games won't be affected.
+- **Polish each screen on its own display:** phone, phone on its side, Raspberry Pi, iPad mini, iPad, iPad on its side and laptop.
+- Automatic +2 home run limit rule and other league-specific rules.
+- A baseball / softball switch.
+- Share a game summary.
+- Sync between devices.
+- Better built-in sounds, or a free sound library.

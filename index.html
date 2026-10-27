@@ -1080,7 +1080,7 @@ const TABLES = {
 const GLOSS = {
   std: [["AVG", "Hits per at-bat."], ["OBP", "How often a batter reaches base on a hit or walk."], ["SLG", "Total bases per at-bat. A double counts 2, a homer 4."], ["OPS", "OBP + SLG. The quickest single number for a hitter."]],
   adv: [["wOBA", "Weights each way of reaching base by how many runs it's worth. Scaled like OBP. Uses MLB weights, so compare players with each other, not with MLB."], ["ISO", "Raw power: SLG minus AVG."], ["BABIP", "Average on balls in play. Very high or low values are often luck and drift back."], ["K% / BB%", "Strikeouts and walks per plate appearance."], ["RISP AVG", "Average with runners on 2nd or 3rd."], ["RC", "Runs created, Bill James' basic formula."], ["ROE", "Times reached on an error. Not counted as a hit."], ["HR out", "Home runs ruled an out under a league HR limit. They count as an at-bat and an out, not a hit."], ["FBO", "Foul ball outs. They count as an at-bat and an out, but not a strikeout."]],
-  bb: [["GB / LD / FB / IFFB", "Share of balls in play that were grounders, line drives, fly balls or infield pop-ups. Line drives turn into hits most often."], ["Pull / Cent / Oppo", "Where balls in play went, relative to which side the batter hits from. Set bats R/L on the Roster tab."], ["BIP", "Balls put in play."]],
+  bb: [["GB / LD / FB / IFFB", "Share of balls in play that were grounders, line drives, fly balls or infield pop-ups. Line drives turn into hits most often."], ["Pull / Cent / Oppo", "Where balls in play went, relative to which side the batter hits from. Set bats R/L on the Team tab."], ["BIP", "Balls put in play."]],
   fld: [["Plays", "Outs made where this player fielded the ball (credited by the position number you tap)."], ["E", "Errors charged."], ["Fld%", "Plays ÷ (plays + errors). A simplified fielding percentage."], ["Positions", "Positions played, with game counts."]]
 };
 
@@ -2181,12 +2181,12 @@ function renderSheet() {
       <div><button class="tbtn" data-act="inning-add">Add a song</button></div>
       <h4>Walk-up songs</h4>
       <label class="check"><input type="checkbox" data-ch="autoWalkup" ${audioPrefs().autoWalkup ? "checked" : ""}><span>Play a batter's walk-up song automatically, right after the previous play's sound finishes. Otherwise there's a button under the batter's name. The song fades out when you score the first pitch.</span></label>
-      <div>${ps.length ? ps.map(p => row("walkup:" + p.id, (p.num ? "#" + p.num + " " : "") + (p.name || "Unnamed player"), null)).join("") : `<p>Add players on the Roster tab to give them walk-up songs.</p>`}</div>
+      <div>${ps.length ? ps.map(p => row("walkup:" + p.id, (p.num ? "#" + p.num + " " : "") + (p.name || "Unnamed player"), null)).join("") : `<p>Add players on the Team tab to give them walk-up songs.</p>`}</div>
       <div class="acts"><button class="tbtn primary" data-act="close">Done</button></div>`;
   } else if (sh.type === "newseason") {
     const cur = store.seasons.find(x => x.id === store.currentSeasonId);
     body = `<h3>New Season</h3>
-      <p>${esc(cur ? cur.name : "This season")} and its games stay saved. Pick any season from the menu on the Season tab to look back at it, or “All seasons” for career totals.</p>
+      <p>${esc(cur ? cur.name : "This season")} and its games stay saved. Pick any season from the menu on the Stats tab to look back at it, or “All seasons” for career totals.</p>
       ${(() => { const [t, y] = suggestSeasonName().split(" "); return `<div class="two">
         <div class="field"><label for="ns-type">Season</label><select id="ns-type">${SEASON_TYPES.map(x => `<option ${x === t ? "selected" : ""}>${x}</option>`).join("")}</select></div>
         <div class="field"><label for="ns-year">Year</label><input id="ns-year" type="number" inputmode="numeric" value="${y}"></div></div>`; })()}
@@ -2438,7 +2438,7 @@ document.addEventListener("click", ev => {
     case "startseason": {
       if (store.currentId) { ui.msg = "Finish or save the game in progress first."; renderSheet(); break; }
       const name = $("ns-type").value + " " + (parseInt($("ns-year").value, 10) || new Date().getFullYear());
-      if (store.seasons.some(x => x.name === name)) { ui.msg = `${name} already exists. Pick it from the season menu on the Season tab.`; renderSheet(); break; }
+      if (store.seasons.some(x => x.name === name)) { ui.msg = `${name} already exists. Pick it from the season menu on the Stats tab.`; renderSheet(); break; }
       const ns = { id: "s" + uid(), name, start: today() };
       store.seasons.push(ns); store.currentSeasonId = ns.id; ui.seasonView = null;
       save(); ui.sheet = null; ui.view = "roster";
