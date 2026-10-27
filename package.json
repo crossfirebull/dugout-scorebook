@@ -1,7 +1,7 @@
 {
-  "name": "scorekeep",
+  "name": "scorekept",
   "private": true,
-  "description": "ScoreKeep softball scorebook. The app itself is index.html; this file only sets up the automated tests.",
+  "description": "ScoreKept softball scorebook. The app itself is index.html; this file only sets up the automated tests.",
   "scripts": {
     "test": "node --test tests/app.test.js"
   },

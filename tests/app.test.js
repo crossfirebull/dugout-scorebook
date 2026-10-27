@@ -1,4 +1,4 @@
-// Automated checks for ScoreKeep. Each test opens the real app in a headless browser and
+// Automated checks for ScoreKept. Each test opens the real app in a headless browser and
 // plays it like a person would. Run with: npm test
 const { test, before, after } = require("node:test");
 const assert = require("node:assert/strict");
@@ -51,7 +51,7 @@ async function closeSheet(page) { await page.click(".sheet [data-act=close]"); }
 
 test("opens with the sample season, five tabs and no errors", async () => {
   const { page, context, errors } = await open();
-  assert.equal(await page.title(), "ScoreKeep");
+  assert.equal(await page.title(), "ScoreKept");
   assert.deepEqual(await page.$$eval(".tabbar button", b => b.map(x => x.textContent.trim())), ["Game", "Book", "Stats", "Scout", "Team"]);
   for (const tab of ["book", "stats", "scout", "roster", "game"]) await page.click(`.tabbar [data-v=${tab}]`);
   assert.deepEqual(errors, []);
@@ -197,7 +197,7 @@ test("works offline after the first visit", async () => {
   await page.reload(); await page.waitForSelector(".tabbar button");
   await context.setOffline(true);
   await page.reload(); await page.waitForSelector(".tabbar button");
-  assert.equal(await page.title(), "ScoreKeep");
+  assert.equal(await page.title(), "ScoreKept");
   assert.match(await text(page, "#alertBox"), /Offline/);
   await context.close();
 });

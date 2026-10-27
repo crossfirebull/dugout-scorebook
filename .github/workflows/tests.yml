@@ -1,4 +1,4 @@
-# Runs ScoreKeep's automated checks on every change pushed to GitHub.
+# Runs ScoreKept's automated checks on every change pushed to GitHub.
 name: Tests
 on:
   push:

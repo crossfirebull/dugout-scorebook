@@ -1,6 +1,6 @@
 {
-  "name": "ScoreKeep",
-  "short_name": "ScoreKeep",
+  "name": "ScoreKept",
+  "short_name": "ScoreKept",
   "description": "A softball scorebook for the dugout: live scoring, season stats, spray charts and walk-up songs.",
   "start_url": "./",
   "scope": "./",

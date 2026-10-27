@@ -1,8 +1,8 @@
-// ScoreKeep offline support. Keeps a copy of the app on the device so it opens with no signal.
+// ScoreKept offline support. Keeps a copy of the app on the device so it opens with no signal.
 // The app page comes from the network when there is one (so updates arrive right away) and from
 // the saved copy when there isn't. Icons and fonts come from the saved copy.
 // Bump VERSION when the list of files below changes.
-const VERSION = "scorekeep-v1";
+const VERSION = "scorekept-v2";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icons/apple-touch-icon.png", "icons/icon-192.png", "icons/icon-512.png"];
 const NETWORK_WAIT = 4000;   // on a weak signal, fall back to the saved copy after this many ms
 

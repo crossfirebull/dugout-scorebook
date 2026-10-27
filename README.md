@@ -1,4 +1,4 @@
-# ScoreKeep
+# ScoreKept
 
 A softball scorebook for an iPad or Raspberry Pi sitting in the dugout. Tap what happened and it keeps the score, the base runners, a classic scorebook grid and season-long stats.
 
@@ -14,20 +14,20 @@ A tab bar along the bottom has five pages, so there's little scrolling:
 - **Scout**: every team you've played, with a spray chart for the team and each of its hitters, and where to shade your defense.
 - **Team**: your team name and colors up top (**Edit team** changes them), then the roster. Tap a player to edit their number, up to three positions, batting side and walk-up song. **+ Add player** sits right under the list.
 
-ScoreKeep picks a layout for the screen it's on, and switches when you rotate the device:
+ScoreKept picks a layout for the screen it's on, and switches when you rotate the device:
 
 - **Phone, upright:** everything stacked on one screen, tabs along the bottom.
 - **Phone on its side, or a small landscape screen like a Raspberry Pi touchscreen:** score bug and batter on the left, buttons on the right, tabs in a slim rail on the left edge.
 - **Tablet, upright:** bigger buttons and score bug, plus who's on deck and the last few plays.
 - **Tablet on its side, or a computer:** two columns, with the score bug, batter, on deck and last plays on the left, large buttons on the right, and tabs in a side rail.
 
-To see every layout at once, open the **screen preview**: https://crossfirebull.github.io/dugout-scorebook/preview.html. It shows ScoreKeep on an iPhone, an iPhone on its side, a Raspberry Pi 7" screen, an iPad mini, an iPad, an iPad on its side and a laptop. The preview uses its own practice data, so it never touches your real games.
+To see every layout at once, open the **screen preview**: https://crossfirebull.github.io/dugout-scorebook/preview.html. It shows ScoreKept on an iPhone, an iPhone on its side, a Raspberry Pi 7" screen, an iPad mini, an iPad, an iPad on its side and a laptop. The preview uses its own practice data, so it never touches your real games.
 
 The speaker button at the top mutes and unmutes. The gear opens **Settings** (team, colors, new-game defaults, sounds, backup, and the welcome setup again). During a game it opens that game's settings, with a link to all settings.
 
 ## First launch
 
-The first time ScoreKeep opens, a short setup walks you through it like the opening screens of a video game: name your team, pick your colors (with a live preview of the score bug and Home Screen icon), choose Dugout or Scorekeeper mode, set your league's innings and tie rule, and add your players. Or tap **Look around with sample data first** to explore a made-up season. Everything you choose can be changed later in **Settings**, and **Run the welcome setup again** is there too.
+The first time ScoreKept opens, a short setup walks you through it like the opening screens of a video game: name your team, pick your colors (with a live preview of the score bug and Home Screen icon), choose Dugout or Scorekeeper mode, set your league's innings and tie rule, and add your players. Or tap **Look around with sample data first** to explore a made-up season. Everything you choose can be changed later in **Settings**, and **Run the welcome setup again** is there too.
 
 ## Using it at the field
 
@@ -52,28 +52,28 @@ Tap what the batter did. The app moves the runners the usual way, and you can fi
 
 ## Keeping your data safe
 
-- **Works with no signal.** After you open ScoreKeep once with a connection, it keeps a copy of itself on the device and opens and scores with no signal at all. Updates arrive the next time it's online.
+- **Works with no signal.** After you open ScoreKept once with a connection, it keeps a copy of itself on the device and opens and scores with no signal at all. Updates arrive the next time it's online.
 - **Saves every tap** on the device as you go, so closing the app, a dead battery or losing signal mid-inning doesn't lose anything. Tap the wrong thing? **Undo**.
-- **Protected storage.** ScoreKeep asks the device to keep its data out of the browser's automatic cleanup. Using it from the Home Screen icon helps too.
-- **Never overwrites a problem.** If saved data ever can't be read, ScoreKeep sets it aside and tells you rather than starting over on top of it. If a save ever fails (for example in Private Browsing), a red warning appears.
+- **Protected storage.** ScoreKept asks the device to keep its data out of the browser's automatic cleanup. Using it from the Home Screen icon helps too.
+- **Never overwrites a problem.** If saved data ever can't be read, ScoreKept sets it aside and tells you rather than starting over on top of it. If a save ever fails (for example in Private Browsing), a red warning appears.
 - **Backups in one tap.** **Stats → Overview → Export & backup → Save backup** opens the share sheet on iPhone and iPad: save to Files or iCloud Drive, or email it to yourself. A reminder appears when it's been more than a week. **Restore from backup** brings everything back on any device.
 
 ## Sounds and walk-up songs
 
-ScoreKeep comes with a set of **built-in ballpark organ sounds**: a "Charge!" for home runs, short stings for hits, walks and runs, a strikeout taunt, "shave and a haircut" when the side is retired, a clap-along rally riff, and fanfares for taking the lead, tying it and winning. Each is 1 to 4 seconds long. Any one of them can be swapped for your own clip, and the rest keep working.
+ScoreKept comes with a set of **built-in ballpark organ sounds**: a "Charge!" for home runs, short stings for hits, walks and runs, a strikeout taunt, "shave and a haircut" when the side is retired, a clap-along rally riff, and fanfares for taking the lead, tying it and winning. Each is 1 to 4 seconds long. Any one of them can be swapped for your own clip, and the rest keep working.
 
 ### Adding your own sound or walk-up song (3 steps)
 
 1. **Get the file onto the iPad.** Save it to the **Files** app: download it in Safari (it lands in *Downloads*), AirDrop it from a computer or phone, or put it in iCloud Drive. MP3, M4A and WAV all work.
-2. **Pick it in ScoreKeep.** For a walk-up song, open the **Team** tab, tap the player, and tap **Choose file** next to Walk-up song. For a game sound, tap the gear, open **Sounds & walk-up songs**, and tap **Choose file** next to that sound.
+2. **Pick it in ScoreKept.** For a walk-up song, open the **Team** tab, tap the player, and tap **Choose file** next to Walk-up song. For a game sound, tap the gear, open **Sounds & walk-up songs**, and tap **Choose file** next to that sound.
 3. **Trim it.** Set **Start at** to the part you want (the chorus, say) and **Play for** to how many seconds. Tap **▶** to hear it. A whole song can supply a 10-second walk-up without editing the file.
 
 The files stay on the iPad. They aren't uploaded anywhere and aren't in the backup file, so after restoring a backup on a new iPad, pick them again.
 
 ### Where to get clips
 
-- **Walk-up songs:** you need a song *file*. Songs streamed from Apple Music or Spotify are locked to those apps, so ScoreKeep can't play them. Buy the song as a download from a store that gives you an MP3 (Amazon Music's digital store or Bandcamp, for example) and save it to Files.
-- **Organ and crowd sounds:** **GarageBand** on the iPad has a ballpark-style organ and loops you're free to use. Play a riff, export it to Files, and pick it in ScoreKeep. Free sound sites work too: **Pixabay** sound effects (no credit needed) and **Freesound** (filter to the *CC0* license).
+- **Walk-up songs:** you need a song *file*. Songs streamed from Apple Music or Spotify are locked to those apps, so ScoreKept can't play them. Buy the song as a download from a store that gives you an MP3 (Amazon Music's digital store or Bandcamp, for example) and save it to Files.
+- **Organ and crowd sounds:** **GarageBand** on the iPad has a ballpark-style organ and loops you're free to use. Play a riff, export it to Files, and pick it in ScoreKept. Free sound sites work too: **Pixabay** sound effects (no credit needed) and **Freesound** (filter to the *CC0* license).
 
 ### How long each clip should be
 
@@ -119,7 +119,6 @@ To run the automated checks on your own computer: `npm install`, then `npm test`
 
 ## On the list
 
-- **A new name.** ScoreKeep is taken (scorekeep.net), so the app will be renamed. Saved games won't be affected.
 - **Polish each screen on its own display:** phone, phone on its side, Raspberry Pi, iPad mini, iPad, iPad on its side and laptop.
 - Automatic +2 home run limit rule and other league-specific rules.
 - A baseball / softball switch.
@@ -129,4 +128,4 @@ To run the automated checks on your own computer: `npm install`, then `npm test`
 
 ### About Apple Music
 
-Apple has a web toolkit (MusicKit) that would let ScoreKeep play songs straight from your Apple Music library, with a start time for each walk-up. It's possible later, with some catches. It needs a paid Apple developer account ($99 a year) to switch on, and it needs a signal at the field because the songs stream. Apple Music's terms also cover personal listening, not playing over a speaker at a public game. Song files you own (above) avoid all three.
+Apple has a web toolkit (MusicKit) that would let ScoreKept play songs straight from your Apple Music library, with a start time for each walk-up. It's possible later, with some catches. It needs a paid Apple developer account ($99 a year) to switch on, and it needs a signal at the field because the songs stream. Apple Music's terms also cover personal listening, not playing over a speaker at a public game. Song files you own (above) avoid all three.

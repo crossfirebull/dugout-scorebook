@@ -5,10 +5,10 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <meta name="theme-color" content="#14284b">
 </head><body>
-<title>ScoreKeep</title>
+<title>ScoreKept</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="ScoreKeep">
+<meta name="apple-mobile-web-app-title" content="ScoreKept">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Tourney:ital,wght@1,800&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap">
 <style>
@@ -564,7 +564,7 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 
 <div class="wrap">
   <header class="topbar">
-    <h1 class="brand">ScoreKeep</h1>
+    <h1 class="brand">ScoreKept</h1>
     <span class="spacer"></span>
     <button class="iconbtn" id="soundBtn" data-act="sound" aria-pressed="false" aria-label="Sound is off. Tap to turn on."></button>
     <button class="iconbtn" data-act="settings" aria-label="Settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
@@ -654,7 +654,7 @@ function save() {
     if (!safety.saveFailed) { safety.saveFailed = true; renderAlert(); }
   }
 }
-// Ask the browser to keep ScoreKeep's storage out of its automatic cleanup.
+// Ask the browser to keep ScoreKept's storage out of its automatic cleanup.
 async function protectStorage() {
   try {
     if (!navigator.storage || !navigator.storage.persist) return;
@@ -665,8 +665,8 @@ const daysSinceBackup = () => store.lastBackup ? Math.floor((Date.now() - store.
 function renderAlert() {
   const box = $("alertBox"); if (!box) return;
   const items = [];
-  if (safety.saveFailed || safety.blocked) items.push(["bad", `<b>ScoreKeep can't save on this device right now.</b> Storage may be full or blocked (Private Browsing does this). Save a backup now so nothing is lost.`, true]);
-  if (safety.unreadable) items.push(["bad", `<b>Your saved data couldn't be read</b>, so ScoreKeep set a copy aside instead of overwriting it. Restore your latest backup from Stats → Overview → Export &amp; backup.`, false]);
+  if (safety.saveFailed || safety.blocked) items.push(["bad", `<b>ScoreKept can't save on this device right now.</b> Storage may be full or blocked (Private Browsing does this). Save a backup now so nothing is lost.`, true]);
+  if (safety.unreadable) items.push(["bad", `<b>Your saved data couldn't be read</b>, so ScoreKept set a copy aside instead of overwriting it. Restore your latest backup from Stats → Overview → Export &amp; backup.`, false]);
   if (!navigator.onLine) items.push(["info", `<b>Offline.</b> Everything keeps working and saves on this device.`, false]);
   const days = daysSinceBackup(), played = store.games.some(g => g.done);
   if (!items.length && !store.sample && played && (days === null || days >= 7) && ui.view !== "game")
@@ -1182,7 +1182,7 @@ function organOut() {
 const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
 function organ(notes, at, dur, vol) {
   const bus = organOut(); if (!bus) return;
-  const a = bus.ctx, t0 = a.currentTime + .03 + at, t1 = t0 + dur, lvl = .045 * (vol || 1) / Math.sqrt(notes.length);
+  const a = bus.ctx, t0 = a.currentTime + .03 + at, t1 = t0 + dur, lvl = .09 * (vol || 1) / Math.sqrt(notes.length);
   const g = a.createGain(); g.connect(bus.input);
   g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(lvl, t0 + .006); g.gain.setValueAtTime(lvl, t1); g.gain.linearRampToValueAtTime(0, t1 + .07);
   notes.forEach(m => DRAWBARS.forEach(([h, l]) => {
@@ -2038,7 +2038,7 @@ function onboardHTML(sh) {
   if (step === "welcome") {
     inner = `<div class="inner welcome">
       <img src="${iconPreview()}" alt="">
-      <h1 class="brand">ScoreKeep</h1>
+      <h1 class="brand">ScoreKept</h1>
       <p class="lead">Your softball scorebook for the dugout. Live scoring, season stats, spray charts and walk-up songs, all on this device.</p>
       <button class="obtn go" data-act="onb-start">Set up my team</button>
       <button class="obtn" data-act="onb-sample">Look around with sample data first</button>
@@ -2100,10 +2100,10 @@ function onboardHTML(sh) {
         <div><span>Games</span><b>${pf.innings} innings${pf.ties ? " · ties allowed" : ""}</b></div>
         <div><span>Roster</span><b>${store.team.players.length} player${store.team.players.length === 1 ? "" : "s"}</b></div>
       </div>
-      <p class="lead" style="font-size:15px">Tip: add ScoreKeep to your Home Screen (Share → Add to Home Screen) so the icon has your colors, and save a backup after each game day. Everything here is under the gear if you want to change it.</p></div>`;
+      <p class="lead" style="font-size:15px">Tip: add ScoreKept to your Home Screen (Share → Add to Home Screen) so the icon has your colors, and save a backup after each game day. Everything here is under the gear if you want to change it.</p></div>`;
     foot = `<button class="obtn" data-act="onb-finish" data-v="team">Go to my team</button><button class="obtn go" data-act="onb-finish" data-v="game" ${store.team.players.length ? "" : "disabled"}>Start a game</button>`;
   }
-  return `<div class="onb" role="dialog" aria-modal="true" aria-label="ScoreKeep setup">
+  return `<div class="onb" role="dialog" aria-modal="true" aria-label="ScoreKept setup">
     <div class="top">${top}</div>
     <div class="body">${inner}</div>
     <div class="foot">${foot}</div></div>`;
@@ -2305,8 +2305,8 @@ function renderSheet() {
       <p>Your games live on this device. A backup is one small file with everything: roster, games, stats and settings. Save one after each game day, ideally somewhere off the device like iCloud Drive or email. If the device is lost or reset, Restore brings it all back.</p>
       <ul class="checklist">
         <li class="ck ${daysSinceBackup() !== null && daysSinceBackup() < 7 ? "ok" : "info"}"><span class="mark" aria-hidden="true">${daysSinceBackup() !== null && daysSinceBackup() < 7 ? "✓" : "•"}</span><span class="ckt"><b>Last backup</b><small>${daysSinceBackup() === null ? "None yet from this device." : daysSinceBackup() === 0 ? "Today." : daysSinceBackup() + " day" + (daysSinceBackup() === 1 ? "" : "s") + " ago."}</small></span></li>
-        <li class="ck ${safety.protected ? "ok" : "info"}"><span class="mark" aria-hidden="true">${safety.protected ? "✓" : "•"}</span><span class="ckt"><b>Storage on this device</b><small>${safety.protected ? "Protected from the browser's automatic cleanup." : "Not marked as protected. Using ScoreKeep from the Home Screen icon and saving backups keeps it safe."}</small></span></li>
-        <li class="ck ${navigator.serviceWorker && navigator.serviceWorker.controller ? "ok" : "info"}"><span class="mark" aria-hidden="true">${navigator.serviceWorker && navigator.serviceWorker.controller ? "✓" : "•"}</span><span class="ckt"><b>Works offline</b><small>${navigator.serviceWorker && navigator.serviceWorker.controller ? "Saved on this device; opens with no signal." : "Open ScoreKeep once with a connection to make it work offline."}</small></span></li>
+        <li class="ck ${safety.protected ? "ok" : "info"}"><span class="mark" aria-hidden="true">${safety.protected ? "✓" : "•"}</span><span class="ckt"><b>Storage on this device</b><small>${safety.protected ? "Protected from the browser's automatic cleanup." : "Not marked as protected. Using ScoreKept from the Home Screen icon and saving backups keeps it safe."}</small></span></li>
+        <li class="ck ${navigator.serviceWorker && navigator.serviceWorker.controller ? "ok" : "info"}"><span class="mark" aria-hidden="true">${navigator.serviceWorker && navigator.serviceWorker.controller ? "✓" : "•"}</span><span class="ckt"><b>Works offline</b><small>${navigator.serviceWorker && navigator.serviceWorker.controller ? "Saved on this device; opens with no signal." : "Open ScoreKept once with a connection to make it work offline."}</small></span></li>
       </ul>
       <div class="acts" style="justify-content:flex-start">
         <button class="tbtn primary" data-act="dl-backup">Save backup</button>
@@ -2625,7 +2625,7 @@ document.addEventListener("click", ev => {
     case "backup": ui.msg = ""; ui.sheet = { type: "backup" }; renderSheet(); break;
     case "dl-backup":
       readDraftRows();
-      saveFile(`scorekeep-backup-${today()}.json`, JSON.stringify(store), "application/json").then(r => {
+      saveFile(`scorekept-backup-${today()}.json`, JSON.stringify(store), "application/json").then(r => {
         if (r === "shared" || r === "downloaded") { store.lastBackup = Date.now(); save(); }
         ui.msg = r === "shared" ? "Backup saved. Keep it somewhere off this device, like iCloud Drive or email, to be safe."
           : r === "downloaded" ? "Backup downloaded. On iPhone or iPad it's in the Files app under Downloads."
@@ -2725,7 +2725,7 @@ $("restoreFile").addEventListener("change", ev => {
       store = ensureSeasons(d); ui.seasonView = null; save(); ui.peekId = null;
       ui.msg = `Restored ${d.games.length} game${d.games.length === 1 ? "" : "s"} and ${d.team.players.length} players.`;
       render();
-    } catch (e) { ui.msg = "That file isn't a ScoreKeep backup."; renderSheet(); }
+    } catch (e) { ui.msg = "That file isn't a ScoreKept backup."; renderSheet(); }
     ev.target.value = "";
   };
   reader.readAsText(f);
