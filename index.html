@@ -199,6 +199,9 @@ table.book tfoot td { font-family: var(--f-label); font-weight: 700; font-size: 
 .scrim { position: fixed; inset: 0; background: rgba(8, 14, 18, .5); z-index: 50; display: grid; place-items: end center; padding: 16px; padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
 @media (min-width: 700px) { .scrim { place-items: center; } }
 .sheet { background: var(--surface); color: var(--ink); border-radius: 14px; width: 100%; max-width: 520px; max-height: calc(100% - 20px); overflow-y: auto; padding: 18px; display: grid; gap: 14px; box-shadow: 0 10px 40px rgba(0,0,0,.3); }
+.xclose { position: relative; z-index: 3; justify-self: end; margin: -6px -6px -50px 0; width: 44px; height: 44px; border-radius: 50%; border: 0;
+  background: var(--stitch); color: #ffffff; font-size: 20px; font-weight: 700; line-height: 1; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0, 0, 0, .25); cursor: pointer; }
+.sheet > h3 { padding-right: 52px; }
 .sheet h3 { margin: 0; font-family: var(--f-display); font-weight: 800; font-size: 26px; text-transform: uppercase; }
 .sheet p { margin: 0; color: var(--muted); }
 .posgrid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
@@ -2906,7 +2909,7 @@ function renderSheet() {
   if (sh.type === "onboard") { o.innerHTML = onboardHTML(sh); return; }
   if (sh.type === "field") { o.innerHTML = fieldHTML(sh); o.dataset.sheet = "field"; return; }
   const key = sh.type + ":" + (sh.step || ""), old = o.querySelector(".sheet"), top = old && o.dataset.sheet === key ? old.scrollTop : 0;
-  o.innerHTML = `<div class="scrim" data-act="scrim"><div class="sheet ${wide === "xwide" ? "wide xwide" : wide ? "wide" : ""}" role="dialog" aria-modal="true">${body}</div></div>`;
+  o.innerHTML = `<div class="scrim" data-act="scrim"><div class="sheet ${wide === "xwide" ? "wide xwide" : wide ? "wide" : ""}" role="dialog" aria-modal="true"><button class="xclose" data-act="close" aria-label="Close">✕</button>${body}</div></div>`;
   o.dataset.sheet = key;
   if (top) o.querySelector(".sheet").scrollTop = top;   // tapping a player or a setting doesn't jump back to the top
 }
@@ -3153,7 +3156,7 @@ document.addEventListener("click", ev => {
   keepAwake();
   const el = ev.target.closest("[data-act]"); if (!el) return;
   const act = el.dataset.act, v = el.dataset.v;
-  if (act === "scrim") { if (ev.target === el) closeSheet(); return; }
+  if (act === "scrim") return;   // tapping outside a panel never closes it: only the ✕ (or a button inside) does
   if (!["clearsample", "delgame", "rmplayer", "discard"].includes(act) && ui.confirm && !ui.sheet) { ui.confirm = null; }
   switch (act) {
     case "view": ui.view = v; ui.peekId = null; ui.confirm = null; render(); break;

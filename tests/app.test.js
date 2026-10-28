@@ -739,3 +739,18 @@ test("game recap: a picture and Discord-ready text for a finished game", async (
   assert.deepEqual(errors, []);
   await context.close();
 });
+
+test("panels only close with the red X (or their own buttons), never by tapping outside", async () => {
+  const { page, context, errors } = await open(393, 852);
+  await gameSettings(page); await page.click(".sheet [data-act=endgame]");
+  await page.click("[data-act=newgame]");
+  await (await page.$$(".pcard"))[0].click();
+  await page.mouse.click(5, 5);   // outside the panel
+  assert.ok(await page.$(".lubuild"), "still open");
+  assert.equal((await page.$$(".lurow")).length, 1, "lineup kept");
+  assert.ok(await page.isVisible(".sheet .xclose"));
+  await page.click(".sheet .xclose");
+  assert.equal(await page.$(".sheet"), null, "the X closes it");
+  assert.deepEqual(errors, []);
+  await context.close();
+});
