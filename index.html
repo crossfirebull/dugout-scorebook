@@ -3169,6 +3169,11 @@ document.addEventListener("input", ev => {
   const ab = $("onbAbbr"); if (ab && k === "name") ab.placeholder = abbrOf(store.team.name);
 });
 document.addEventListener("toggle", ev => { if (ev.target.matches && ev.target.matches(".help details") && ev.target.open) ui.helpOpen = ev.target.querySelector("summary").textContent; }, true);
+// iPhone/iPad: after the on-screen keyboard closes, iOS can leave the bottom tab bar stuck where the
+// keyboard's top edge was. A tiny scroll once the keyboard is gone makes it put fixed bars back.
+function settleViewport() { setTimeout(() => { if (!document.activeElement || !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)) window.scrollTo(window.scrollX, window.scrollY + 1), window.scrollTo(window.scrollX, window.scrollY - 1); }, 80); }
+document.addEventListener("focusout", settleViewport);
+if (window.visualViewport) { let vh = visualViewport.height; visualViewport.addEventListener("resize", () => { if (visualViewport.height > vh + 100) settleViewport(); vh = visualViewport.height; }); }
 const typedField = el => el.tagName === "TEXTAREA" || (el.tagName === "INPUT" && !/^(checkbox|radio|range|file)$/.test(el.type));
 document.addEventListener("change", ev => {
   const el = ev.target, ch = el.dataset && el.dataset.ch; if (!ch) return;
