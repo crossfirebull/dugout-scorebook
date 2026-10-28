@@ -55,6 +55,14 @@ Tap what the batter did. The app moves the runners the usual way, and you can fi
 - **Walk-offs:** the game ends the moment the home team takes the lead in the last inning. Only the winning run counts, unless it's a home run.
 - **Undo** takes back the last tap, as many times as you need.
 
+## Sharing a game recap
+
+When a game ends, tap **Share recap** on the final banner (or **Stats → Overview → View** on any saved game). It makes:
+- **a picture** in your team colors: the final score, win or loss, line score and top performers, sized for phones and Discord;
+- **text** formatted for Discord: bold final score, a line score that lines up, top performers and a box score.
+
+**Share picture** and **Share text** open the share sheet (pick Discord, Messages and so on). **Copy text** puts it on the clipboard to paste.
+
 ## League rules
 
 Set them for one game in **Game settings**, or as the default for new games in **Settings**. The defaults match our league:

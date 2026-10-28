@@ -225,6 +225,10 @@ input.switch:checked::after, .check input[type=checkbox]:checked::after { transf
 .setrow small { display: block; color: var(--muted); font-size: 13px; line-height: 1.35; margin-top: 2px; }
 .setrow select { font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); flex: none; max-width: 50%; }
 .setrow > span:first-child { flex: 1; min-width: 0; }
+.recapimg img { display: block; width: 100%; max-width: 420px; margin: 0 auto; border-radius: 12px; box-shadow: 0 8px 24px rgba(0, 0, 0, .3); }
+.recapacts { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.recaptext pre { white-space: pre-wrap; font-size: 12px; background: var(--paper); border: 1px solid var(--rule); border-radius: 8px; padding: 10px; overflow-x: auto; }
+.recaptext summary { cursor: pointer; color: var(--muted); font-weight: 600; }
 .help { display: grid; gap: 8px; }
 .help details { border: 1px solid var(--rule); border-radius: 12px; background: var(--paper); }
 .help summary { cursor: pointer; padding: 12px 14px; font-weight: 700; font-size: 17px; list-style: none; display: flex; justify-content: space-between; align-items: center; }
@@ -1711,7 +1715,7 @@ function renderGamebar() {
   const status = peek ? "Final" : S.final ? "Final" : (S.half ? "Bottom " : "Top ") + ordinal(S.inning);
   $("gamebar").innerHTML = `${ui.view === "book" || peek ? `<span class="chip ${peek || S.final ? "" : "live"}">${status}</span>` : ""}${peek ? "" : `<span class="chip">${modeOf(G) === "dugout" ? "Dugout mode" : "Scorekeeper"}</span>`}
     ${peek || ui.view !== "book" ? "" : clockChip(G, S)}<span class="matchup">${esc(names[0])} at ${esc(names[1])} · ${esc(G.date)}</span><span class="spacer"></span>
-    ${peek ? `<button class="tbtn" data-act="unpeek">Back to stats</button>
+    ${peek ? `<button class="tbtn" data-act="unpeek">Back to stats</button><button class="tbtn" data-act="recap" data-v="${G.id}">Share recap</button>
               <button class="tbtn" data-act="reopen" ${store.currentId ? "disabled title=\"Finish the game in progress first\"" : ""}>Reopen to edit</button>`
            : `<button class="tbtn" data-act="undo" ${G.events.length ? "" : "disabled"}>↶ Undo</button>
               <button class="tbtn" data-act="lineups">Lineups</button>
@@ -1742,7 +1746,7 @@ function renderBoard() {
     const a = total(S, 0), hm = total(S, 1), w = a > hm ? 0 : 1;
     const why = S.endWhy === "run rule" ? "Run rule. " : G.timeUp ? "Time limit. " : "";
     $("finalBox").innerHTML = `<div class="final"><b>Final</b><span>${why}${a === hm ? `Tie game, ${a}–${hm}.` : `${esc(names[w])} win ${Math.max(a, hm)}–${Math.min(a, hm)}.`}</span><span style="flex:1"></span>
-      ${S.endWhy === "run rule" ? "" : `<button class="tbtn" data-act="addinning">Play another inning</button>`}<button class="tbtn" data-act="endgame">Save to season</button></div>`;
+      ${S.endWhy === "run rule" ? "" : `<button class="tbtn" data-act="addinning">Play another inning</button>`}<button class="tbtn" data-act="recap" data-v="${G.id}">Share recap</button><button class="tbtn" data-act="endgame">Save to season</button></div>`;
   } else $("finalBox").innerHTML = "";
 }
 
@@ -2843,6 +2847,16 @@ function renderSheet() {
       </div>
       ${colorPicker()}
       <div class="acts"><button class="tbtn primary" data-act="close">Done</button></div>`;
+  } else if (sh.type === "recap") {
+    wide = true;
+    body = `<h3>Game recap</h3>
+      <p>Share the picture, the text, or both. In Discord the text keeps its bold and the line score lines up.</p>
+      <div class="recapimg">${sh.img ? `<img src="${sh.img}" alt="Game recap">` : `<div class="luempty">Making the recap…</div>`}</div>
+      <div class="recapacts"><button class="tbtn primary" data-act="recap-share" data-v="image" ${sh.img ? "" : "disabled"}>Share picture</button>
+        <button class="tbtn" data-act="recap-share" data-v="text">Share text</button><button class="tbtn" data-act="recap-copy">Copy text</button></div>
+      ${sh.msg ? `<p style="color:var(--safe)">${esc(sh.msg)}</p>` : ""}
+      <details class="recaptext"><summary>Text version</summary><pre>${esc(sh.text)}</pre></details>
+      <div class="acts"><button class="tbtn" data-act="close">Done</button></div>`;
   } else if (sh.type === "help") {
     wide = true; body = helpBody();
   } else if (sh.type === "settings") {
@@ -2990,6 +3004,119 @@ function endGame() {
   const g = curGame(); if (!g) return;
   g.done = true; store.currentId = null;
   save(); ui.sheet = null; ui.draft = null; ui.view = "stats"; render();
+}
+
+/* ---------- Game recap: a picture and Discord-ready text to share with the team ---------- */
+function recapData(g) {
+  const s = derive(g), names = teamNames(g), us = g.ourSide, them = 1 - us;
+  const abbr = t => t === us ? (store.team.abbr || abbrOf(store.team.name)) : (g.opponentAbbr || abbrOf(g.opponent));
+  const cols = Math.max(rulesOf(g.settings).innings, s.inning, s.runs[0].length, s.runs[1].length);
+  const line = t => Array.from({ length: cols }, (_, i) => { const v = s.runs[t][i]; return v === undefined ? (s.final && t === 1 && s.runs[0][i] !== undefined ? "X" : "") : String(v); });
+  // Our batters, best games first: total bases, RBIs, runs and walks
+  const batters = s.lu[us].map((x, slot) => { const st = s.stats[us][keyOf(x, us, slot)]; return st && st.PA ? { name: entryName(x), st } : null; }).filter(Boolean);
+  const lineOf = st => { const b = [`${st.H}-for-${st.AB}`]; ["2B", "3B", "HR"].forEach(k => { if (st[k]) b.push((st[k] > 1 ? st[k] + " " : "") + k); });
+    if (st.RBI) b.push(st.RBI + " RBI"); if (st.R) b.push(st.R + " R"); if (st.BB) b.push(st.BB + " BB"); return b.join(", "); };
+  const score = st => st.TB + st.RBI + .6 * st.R + .5 * st.BB + .4 * st.H;
+  const top = batters.slice().sort((a, b) => score(b.st) - score(a.st)).filter(b => score(b.st) > 0).slice(0, 4);
+  const R = [total(s, 0), total(s, 1)], res = R[us] > R[them] ? "W" : R[us] < R[them] ? "L" : "T";
+  const why = s.endWhy === "run rule" ? "Run rule" : g.timeUp ? "Time limit" : "";
+  return { s, names, abbr, cols, line, batters, top, lineOf, R, res, us, them, why, date: g.date, park: g.park || "", final: s.final || g.done };
+}
+const prettyDate = d => { try { return new Date(d + "T12:00:00").toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }); } catch (e) { return d; } };
+function recapText(g) {
+  const r = recapData(g), pad = (v, n) => String(v).padStart(n);
+  const head = r.final ? `**FINAL${r.why ? " (" + r.why.toLowerCase() + ")" : ""}: ${r.names[0]} ${r.R[0]}, ${r.names[1]} ${r.R[1]}**` : `**${r.names[0]} ${r.R[0]}, ${r.names[1]} ${r.R[1]}** (in progress)`;
+  const box = ["     " + Array.from({ length: r.cols }, (_, i) => pad(i + 1, 2)).join("") + "   R  H  E"]
+    .concat([0, 1].map(t => r.abbr(t).padEnd(5).slice(0, 5) + r.line(t).map(v => pad(v, 2)).join("") + " " + pad(r.R[t], 3) + pad(r.s.hits[t], 3) + pad(r.s.errors[t], 3)));
+  const out = [head, [prettyDate(r.date), r.park].filter(Boolean).join(" · "), "```", ...box, "```"];
+  if (r.top.length) out.push("**Top performers**", ...r.top.map(b => `• **${b.name}**: ${r.lineOf(b.st)}`));
+  if (r.batters.length) out.push("", "**Box score**", "```", ...r.batters.map(b => `${b.name.padEnd(14).slice(0, 14)} ${pad(b.st.H, 1)}-${b.st.AB}${b.st.RBI ? "  " + b.st.RBI + " RBI" : ""}${b.st.R ? "  " + b.st.R + " R" : ""}${b.st.HR ? "  " + b.st.HR + " HR" : ""}`), "```");
+  out.push("_Scored with ScoreKept_");
+  return out.join("\n");
+}
+async function recapCanvas(g) {
+  try { await document.fonts.ready; } catch (e) {}
+  const r = recapData(g), W = 1080, H = 1350, cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+  const c = cv.getContext("2d"), st = document.documentElement.style, v = k => st.getPropertyValue(k).trim();
+  const tc = teamColors(), P = COLOR[tc.primary] || "#14284b", Q = COLOR[tc.secondary] || "#c8102e";
+  const board = v("--team-board") || "#14284b", lamp = v("--team-lamp") || "#ffc93c", chip = v("--team-p") || Q;
+  const font = (w, size, fam) => `${w} ${size}px ${fam}`, DISP = '"Big Shoulders Display", Impact, sans-serif', LAB = '"Barlow Condensed", "Arial Narrow", sans-serif', BODY = '"Barlow", system-ui, sans-serif';
+  // background: scoreboard color with a two-color stripe
+  const bg = c.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, board); bg.addColorStop(1, "#0b1016");
+  c.fillStyle = bg; c.fillRect(0, 0, W, H);
+  c.fillStyle = P; c.fillRect(0, 0, W, 18); c.fillStyle = Q; c.fillRect(0, 18, W, 10);
+  c.textBaseline = "alphabetic";
+  c.fillStyle = "rgba(255,255,255,.75)"; c.font = font(700, 34, LAB); c.letterSpacing = "4px";
+  c.fillText((r.final ? "FINAL" + (r.why ? " · " + r.why.toUpperCase() : "") : "IN PROGRESS"), 70, 100);
+  c.textAlign = "right"; c.fillText(prettyDate(r.date).toUpperCase(), W - 70, 100); c.textAlign = "left"; c.letterSpacing = "0px";
+  if (r.park) { c.font = font(500, 30, BODY); c.fillStyle = "rgba(255,255,255,.6)"; c.fillText(r.park, 70, 145); }
+  // the two teams, biggest score lit
+  const rowY = [250, 420];
+  [0, 1].forEach((t, i) => {
+    const y = rowY[i], ours = t === r.us, win = r.R[t] > r.R[1 - t];
+    c.fillStyle = "rgba(255,255,255,.06)"; c.beginPath(); c.roundRect(60, y - 105, W - 120, 150, 22); c.fill();
+    c.fillStyle = ours ? chip : "rgba(255,255,255,.18)"; c.beginPath(); c.roundRect(85, y - 80, 190, 100, 14); c.fill();
+    c.fillStyle = ours ? (v("--team-p-ink") || "#fff") : "#fff"; c.font = font(800, 64, DISP); c.textAlign = "center"; c.fillText(r.abbr(t).slice(0, 4), 180, y - 8);
+    c.textAlign = "left"; c.fillStyle = "#fff"; c.font = font(700, 44, BODY);
+    let name = r.names[t]; while (c.measureText(name).width > 470 && name.length > 4) name = name.slice(0, -2) + "…";
+    c.fillText(name, 305, y - 12);
+    c.font = font(800, 120, DISP); c.textAlign = "right"; c.fillStyle = win ? lamp : "#ffffff"; c.fillText(String(r.R[t]), W - 95, y + 20); c.textAlign = "left";
+  });
+  // result banner
+  if (r.final) {
+    const txt = r.res === "W" ? "WIN" : r.res === "L" ? "LOSS" : "TIE";
+    c.font = font(800, 40, LAB); c.letterSpacing = "6px"; const w = c.measureText(txt).width + 60;
+    c.fillStyle = r.res === "W" ? lamp : "rgba(255,255,255,.16)"; c.beginPath(); c.roundRect(W / 2 - w / 2, 488, w, 62, 31); c.fill();
+    c.fillStyle = r.res === "W" ? "#1b1400" : "#fff"; c.textAlign = "center"; c.fillText(txt, W / 2 + 3, 532); c.textAlign = "left"; c.letterSpacing = "0px";
+  }
+  // line score
+  const top = 590, left = 70, nameW = 150, rest = W - 140 - nameW, cw = Math.min(64, rest / (r.cols + 3.4));
+  c.fillStyle = "rgba(0,0,0,.28)"; c.beginPath(); c.roundRect(55, top, W - 110, 230, 18); c.fill();
+  c.font = font(700, 30, LAB); c.fillStyle = "rgba(255,255,255,.55)"; c.textAlign = "center";
+  for (let i = 0; i < r.cols; i++) c.fillText(String(i + 1), left + nameW + cw * (i + .5), top + 55);
+  ["R", "H", "E"].forEach((k, j) => c.fillText(k, left + nameW + cw * (r.cols + .5 + j * 1.15) + 12, top + 55));
+  [0, 1].forEach(t => {
+    const y = top + 125 + t * 72;
+    c.textAlign = "left"; c.font = font(800, 40, DISP); c.fillStyle = "#fff"; c.fillText(r.abbr(t).slice(0, 4), left + 10, y);
+    c.textAlign = "center"; c.font = font(700, 40, DISP);
+    r.line(t).forEach((x, i) => { c.fillStyle = x === "" ? "rgba(255,255,255,.25)" : "#fff"; c.fillText(x === "" ? "·" : x, left + nameW + cw * (i + .5), y); });
+    [r.R[t], r.s.hits[t], r.s.errors[t]].forEach((x, j) => { c.fillStyle = j ? "rgba(255,255,255,.8)" : lamp; c.fillText(String(x), left + nameW + cw * (r.cols + .5 + j * 1.15) + 12, y); });
+  });
+  // top performers
+  let y = 900;
+  c.textAlign = "left"; c.font = font(700, 34, LAB); c.letterSpacing = "4px"; c.fillStyle = "rgba(255,255,255,.7)";
+  c.fillText(r.top.length ? "TOP PERFORMERS" : "", 70, y); c.letterSpacing = "0px";
+  r.top.forEach((b, i) => {
+    const yy = y + 70 + i * 82;
+    c.fillStyle = i ? "rgba(255,255,255,.18)" : lamp; c.beginPath(); c.arc(98, yy - 14, 24, 0, Math.PI * 2); c.fill();
+    c.fillStyle = i ? "#fff" : "#1b1400"; c.font = font(800, 30, DISP); c.textAlign = "center"; c.fillText(String(i + 1), 98, yy - 3); c.textAlign = "left";
+    c.fillStyle = "#fff"; c.font = font(700, 40, BODY); c.fillText(b.name, 140, yy);
+    const nw = c.measureText(b.name).width;
+    c.font = font(500, 32, BODY); c.fillStyle = "rgba(255,255,255,.75)";
+    let ln = r.lineOf(b.st); while (c.measureText(ln).width > W - 210 - nw && ln.length > 6) ln = ln.slice(0, ln.lastIndexOf(",")) || ln.slice(0, -2);
+    c.fillText(ln, 165 + nw, yy);
+  });
+  // footer
+  c.fillStyle = "rgba(255,255,255,.4)"; c.font = font(800, 30, '"Tourney", ' + DISP); c.textAlign = "center"; c.fillText("SCOREKEPT", W / 2, H - 50);
+  return cv;
+}
+async function openRecap(id) {
+  const g = store.games.find(x => x.id === id); if (!g) return;
+  ui.sheet = { type: "recap", id, img: "", text: recapText(g) }; renderSheet();
+  const cv = await recapCanvas(g);
+  if (ui.sheet && ui.sheet.type === "recap" && ui.sheet.id === id) { ui.sheet.img = cv.toDataURL("image/png"); ui.sheet.canvas = cv; renderSheet(); }
+}
+async function shareRecap(mode) {
+  const sh = ui.sheet; if (!sh || !sh.canvas) return;
+  const blob = await new Promise(res => sh.canvas.toBlob(res, "image/png"));
+  const file = new File([blob], `recap-${(store.games.find(x => x.id === sh.id) || {}).date || today()}.png`, { type: "image/png" });
+  try {
+    if (mode === "image" && navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file] }); sh.msg = ""; renderSheet(); return; }
+    if (mode === "text" && navigator.share) { await navigator.share({ text: sh.text }); return; }
+  } catch (e) { if (e && e.name === "AbortError") return; }
+  if (mode === "image") { download(file.name, blob, "image/png"); sh.msg = "Image saved."; }
+  else { try { await navigator.clipboard.writeText(sh.text); sh.msg = "Recap text copied. Paste it into Discord."; } catch (e) { sh.msg = "Couldn't copy. Select the text below and copy it."; } }
+  renderSheet();
 }
 
 // Save a file: on iPhone/iPad this opens the share sheet (Save to Files, iCloud Drive, Mail, AirDrop);
@@ -3150,6 +3277,9 @@ document.addEventListener("click", ev => {
       ui.msg = ""; renderSheet(); break;
     }
     case "lu-last": { const rows = lastLineup(); if (rows) ui.draft.rows = rows; ui.msg = ""; renderSheet(); break; }
+    case "recap": openRecap(v || (ui.peekId || store.currentId)); break;
+    case "recap-share": shareRecap(v); break;
+    case "recap-copy": (async () => { try { await navigator.clipboard.writeText(ui.sheet.text); ui.sheet.msg = "Recap text copied. Paste it into Discord."; } catch (e) { ui.sheet.msg = "Couldn't copy. Open Text version below and copy it."; } renderSheet(); })(); break;
     case "park-rm": store.parks.splice(+v, 1); save(); renderSheet(); break;
     case "lu-clear": ui.draft.rows = []; renderSheet(); break;
     case "ng-next": {

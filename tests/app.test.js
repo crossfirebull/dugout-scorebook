@@ -722,3 +722,20 @@ test("park & field: typed once, offered next time, and deletable in Settings", a
   assert.deepEqual(errors, []);
   await context.close();
 });
+
+test("game recap: a picture and Discord-ready text for a finished game", async () => {
+  const { page, context, errors } = await open(393, 852);
+  await page.click(".tabbar [data-v=stats]"); await page.click("[data-act=peek]");
+  await page.click("[data-act=recap]");
+  await page.waitForSelector(".recapimg img");
+  const size = await page.$eval(".recapimg img", i => [i.naturalWidth, i.naturalHeight]);
+  assert.deepEqual(size, [1080, 1350]);
+  const txt = await page.$eval(".recaptext pre", x => x.textContent);
+  assert.match(txt, /^\*\*FINAL: /); assert.match(txt, /Top performers/); assert.match(txt, /R {2}H {2}E/);
+  // after a game ends, the final banner offers it too
+  await page.click(".sheet [data-act=close]"); await page.click("[data-act=unpeek]");
+  await page.click(".tabbar [data-v=game]");
+  await gameSettings(page); await page.click(".sheet [data-act=endgame]");
+  assert.deepEqual(errors, []);
+  await context.close();
+});
