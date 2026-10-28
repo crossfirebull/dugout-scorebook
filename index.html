@@ -238,6 +238,8 @@ input.switch:checked::after, .check input[type=checkbox]:checked::after { transf
 .help dl.hkeys dt { font-family: var(--f-display); font-weight: 800; font-size: 17px; color: var(--ink-blue); }
 .help dl.hkeys dd { margin: 0; }
 .help .kcx { display: inline-block; transform: scaleX(-1); }
+.tunepick { display: flex; gap: 8px; align-items: center; }
+.tunepick select { flex: 1; max-width: none; min-height: 40px; }
 .setrow.col { flex-direction: column; align-items: stretch; gap: 8px; cursor: default; }
 .rrgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 120px)); gap: 6px 12px; }
 .rrgrid span { font-family: var(--f-label); font-weight: 700; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
@@ -670,6 +672,8 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 .srow .sx input[type=number] { width: 72px; font: inherit; padding: 6px; border-radius: 6px; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); }
 .sheet h4 { margin: 6px 0 0; font-family: var(--f-label); font-weight: 700; font-size: 14px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
 .walkup { margin-top: 6px; justify-self: start; }
+#atbat { position: relative; }
+html[data-layout="phone"] #atbat .walkup, html[data-layout="short"] #atbat .walkup { position: absolute; top: 8px; right: 8px; margin: 0; min-height: 34px; padding: 0 10px; font-size: 14px; }
 .copyout { width: 100%; min-height: 120px; font-family: ui-monospace, Menlo, monospace; font-size: 12px; padding: 8px; border-radius: 6px; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); }
 </style>
 </head>
@@ -1372,6 +1376,62 @@ const SFX = {   // each returns how long it lasts, so the next sound waits for i
   win() { return phrase(150, [[0, 60, .5], [.5, 64, .5], [1, 67, .5], [1.5, 72, 1], [2.5, FMAJ, .75], [3.25, FMAJ, .25], [3.5, GMAJ, 1],
     [4.5, [48, 60, 64, 67, 72, 76, 84], 3]]); }
 };
+
+/* ---------- Built-in walk-up tunes ----------
+   Original organ riffs over a kick and clap, 6 to 8 seconds each, so every batter has a walk-up
+   until you pick your own song file. Each player gets one by default; change it on their page. */
+function drum(kind, at) {
+  const bus = organOut(); if (!bus) return;
+  const a = bus.ctx, t = a.currentTime + .03 + at, g = a.createGain(); g.connect(bus.input);
+  if (kind === "k") {   // kick: a quick falling thump
+    const o = a.createOscillator(); o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(42, t + .14);
+    g.gain.setValueAtTime(.55, t); g.gain.exponentialRampToValueAtTime(.001, t + .22); o.connect(g); o.start(t); o.stop(t + .25);
+  } else {              // clap: three fast bursts of filtered noise
+    const len = Math.floor(a.sampleRate * .2), buf = a.createBuffer(1, len, a.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    const n = a.createBufferSource(), f = a.createBiquadFilter(); n.buffer = buf; f.type = "bandpass"; f.frequency.value = 1400; f.Q.value = .8;
+    g.gain.setValueAtTime(0, t); [0, .012, .024].forEach(o => { g.gain.setValueAtTime(.32, t + o); g.gain.exponentialRampToValueAtTime(.02, t + o + .01); });
+    g.gain.setValueAtTime(.3, t + .036); g.gain.exponentialRampToValueAtTime(.001, t + .18);
+    n.connect(f).connect(g); n.start(t); n.stop(t + .2);
+  }
+}
+// Organ steps plus a drum pattern ("k" kick, "c" clap at each beat)
+function groove(bpm, steps, beats, vol) { const b = 60 / bpm; beats.forEach(([at, k]) => drum(k, at * b)); return phrase(bpm, steps, vol); }
+const maj = r => [r, r + 4, r + 7], mnr = r => [r, r + 3, r + 7], seq = (from, list, len) => list.map((n, i) => [from + i * len, n, len]);
+const fourOnFloor = n => Array.from({ length: n }, (_, i) => [i, i % 2 ? "c" : "k"]);
+const WALKUPS = [
+  ["charge", "Charge Up", () => groove(150, [...[60, 60, 65, 65, 67, 67, 57, 67].map((r, i) => [i, r === 57 ? mnr(57) : maj(r), .45]),
+    ...seq(8, [67, 72, 76, 79], .5), [10, [48, 60, 64, 67, 72, 79], 2.5]], fourOnFloor(10))],
+  ["stomp", "Stomp & Clap", () => groove(100, [[1, [52, 55, 59, 64], .5], [3, [52, 55, 59, 64], .5], [5, [50, 54, 57, 62], .5], [7, [50, 54, 57, 62], .5],
+    ...seq(8, [64, 66, 67, 69, 71], .5), [10.5, [52, 59, 64, 67, 71, 76], 2]],
+    [0, .5, 2, 2.5, 4, 4.5, 6, 6.5, 8, 9].map(b => [b, "k"]).concat([1, 3, 5, 7, 8.5, 9.5].map(b => [b, "c"])))],
+  ["boogie", "Ballpark Boogie", () => groove(160, [...seq(0, [48, 52, 55, 57, 58, 57, 55, 52, 48, 52, 55, 57, 58, 57, 55, 52], .5),
+    ...seq(8, [53, 57, 60, 62, 63, 62, 60, 57], .5), ...seq(12, [48, 52, 55, 57, 58, 57, 55, 52], .5),
+    ...[1, 3, 5, 7, 13, 15].map(b => [b, [64, 67, 70], .4]), ...[9, 11].map(b => [b, [65, 69, 72], .4]), [16, [48, 60, 64, 67, 70, 72], 2]], fourOnFloor(16))],
+  ["heat", "Bring the Heat", () => groove(120, [...seq(0, [57, 60, 64, 62, 60, 57], .5), [3, mnr(57), 1], ...seq(4, [57, 60, 64, 67, 64, 62], .5), [7, [55, 59, 62], 1],
+    ...seq(8, [57, 60, 64, 69, 67, 64], .5), [11, [53, 57, 60, 65], 1], [12, [45, 57, 60, 64, 69], 2.5]], fourOnFloor(12))],
+  ["bounce", "Rally Bounce", () => groove(132, [...seq(0, [67, 72, 72, 74, 76, 74, 72, 67], .5), ...seq(4, [69, 72, 72, 74, 76, 79, 76, 74], .5),
+    ...[.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5].map((b, i) => [b, i < 4 ? maj(48) : maj(53), .3]), ...seq(8, [76, 77, 79], .5), [9.5, [55, 60, 64, 67, 72, 76], 2.5]], fourOnFloor(10))],
+  ["bigleague", "Big League", () => groove(84, [[0, [48, 60, 64, 67, 72], 1.8], [2, [45, 57, 60, 64, 69], 1.8], [4, [41, 53, 57, 60, 65], 1.8], [6, [43, 55, 59, 62, 67, 71], 1.8],
+    ...seq(7, [74, 76], .5), [8, [36, 48, 60, 64, 67, 72, 76, 79], 2.5]], [[0, "k"], [2, "k"], [4, "k"], [6, "k"], [7, "c"], [7.5, "c"], [8, "k"]])],
+  ["hotcorner", "Hot Corner Funk", () => groove(116, [...[0, .75, 1.5, 2.5, 3.25, 4, 4.75, 5.5, 6.5, 7.25].map(b => [b, [62, 65, 69, 72], .35]),
+    ...seq(0, [50, 50, 53, 55], 1), ...seq(4, [50, 50, 53, 55], 1), [8, [55, 59, 62, 65], 1], [9, [48, 60, 64, 67, 72], 2.5]],
+    [0, 1.5, 2.75, 4, 5.5, 6.75, 8].map(b => [b, "k"]).concat([1, 3, 5, 7, 9].map(b => [b, "c"])))],
+  ["swing", "Dugout Swing", () => groove(150, [...[[0, 65], [.67, 68], [1, 69], [1.67, 72], [2, 74], [2.67, 72], [3, 69], [3.67, 68]].map(([b, n]) => [b, n, .4]),
+    ...[[4, 70], [4.67, 73], [5, 74], [5.67, 77], [6, 79], [6.67, 77], [7, 74], [7.67, 73]].map(([b, n]) => [b, n, .4]),
+    ...[1, 3].map(b => [b, [53, 57, 62], .35]), ...[5, 7].map(b => [b, [58, 62, 67], .35]), [8, [41, 53, 57, 62, 65, 69], 2.5]], fourOnFloor(8))]
+];
+WALKUPS.forEach(([k, , fn]) => { SFX["wu-" + k] = fn; });
+// Which built-in tune a player gets: their pick, or one chosen from their id so teammates differ
+function tuneOf(p) {
+  if (!p || p.tune === "none") return null;
+  if (p.tune && WALKUPS.some(w => w[0] === p.tune)) return p.tune;
+  let h = 0; for (const c of String(p.id)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return WALKUPS[h % WALKUPS.length][0];
+}
+const tuneName = k => (WALKUPS.find(w => w[0] === k) || [, ""])[1];
+function hushOrgan() { if (organBus) { try { organBus.input.disconnect(); } catch (e) {} organBus = null; } }
+
 /* ---------- Your own sound clips ----------
    Audio files picked on this device are kept in the browser's IndexedDB
    (never uploaded). Slots: "fx:<event>" for game sounds, "walkup:<playerId>" for walk-up songs.
@@ -1415,6 +1475,14 @@ async function snippet(c) {
   return out;
 }
 async function playClip(slot, onEnd) {
+  if (slot.startsWith("tune:")) {   // a built-in walk-up tune
+    const fn = SFX["wu-" + slot.slice(5)]; if (!fn || !audio()) return false;
+    stopClip(false);
+    const len = fn(), np = { slot, tune: true };
+    np.timer = setTimeout(() => { if (nowPlaying === np) { nowPlaying = null; refreshPlaying(); if (onEnd) onEnd(); } }, len * 1000);
+    nowPlaying = np; refreshPlaying();
+    return true;
+  }
   const c = clips[slot], a = audio(); if (!c || !a) return false;
   stopClip(false);
   let buf;
@@ -1432,6 +1500,7 @@ async function playClip(slot, onEnd) {
 }
 function stopClip(fade) {
   if (!nowPlaying) return;
+  if (nowPlaying.tune) { clearTimeout(nowPlaying.timer); hushOrgan(); nowPlaying = null; refreshPlaying(); return; }
   const { src, gn } = nowPlaying, a = audio();
   nowPlaying = null;
   try {
@@ -1440,8 +1509,12 @@ function stopClip(fade) {
   } catch (e) {}
   refreshPlaying();
 }
-function refreshPlaying() { if ((ui.view === "game" || ui.view === "book") && G && $("gamebar")) { renderGamebar(); if ($("atbat")) renderAtBat(); } if (ui.sheet && ui.sheet.type === "sounds") renderSheet(); }
-function walkupSlot(who) { return who && who.pid && clips["walkup:" + who.pid] ? "walkup:" + who.pid : null; }
+function refreshPlaying() { if ((ui.view === "game" || ui.view === "book") && G && $("gamebar")) { renderGamebar(); if ($("atbat")) renderAtBat(); } if (ui.sheet && (ui.sheet.type === "sounds" || ui.sheet.type === "player")) renderSheet(); }
+function walkupSlot(who) {   // their own song file, else their built-in tune
+  if (!who || !who.pid) return null;
+  if (clips["walkup:" + who.pid]) return "walkup:" + who.pid;
+  const t = tuneOf(player(who.pid)); return t ? "tune:" + t : null;
+}
 
 /* ---------- Sound director ----------
    After each play, build a list of sounds and play them one after another:
@@ -1737,7 +1810,7 @@ function renderAtBat() {
     <div class="meta">${todayLine(t, slot)} · On deck: ${esc(nameAt(S, t, next))}</div>
     <div class="meta">${(() => { const on = S.bases.map((r, b) => r ? `${["1st", "2nd", "3rd"][b]} ${esc(runnerName(S, r).split(" ")[0])}` : "").filter(Boolean);
       return on.length ? `On base: ${on.join(" · ")} <span style="opacity:.75">(tap a base to move a runner)</span>` : "Bases empty"; })()}</div>
-    ${walkupSlot(who) ? `<button class="tbtn walkup" data-act="walkup" data-v="${walkupSlot(who)}">${nowPlaying && nowPlaying.slot === walkupSlot(who) ? "■ Stop walk-up" : "♪ Play walk-up song"}</button>` : ""}`;
+    ${walkupSlot(who) ? `<button class="tbtn walkup" data-act="walkup" data-v="${walkupSlot(who)}">${nowPlaying && nowPlaying.slot === walkupSlot(who) ? "■ Stop" : "♪ Walk-up"}</button>` : ""}`;
 }
 
 function key(act, val, big, small, cls, off) {
@@ -2751,8 +2824,11 @@ function renderSheet() {
         <div class="posset">${[0, 1, 2].map(k => `<select aria-label="${["Main", "Second", "Third"][k]} position" data-ch="ppos" data-k="${k}" data-id="${pl.id}"><option value="">—</option>${LINEUP_POS.map(x => `<option ${x === cur[k] ? "selected" : ""}>${x}</option>`).join("")}</select>`).join("")}</div></div>
       <div class="pfield"><span style="font-family:var(--f-label);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Bats</span>
         <div class="bbrow">${[["R", "Right"], ["L", "Left"], ["S", "Switch"]].map(([v, l]) => `<button data-act="pbats" data-id="${pl.id}" data-v="${v}" aria-pressed="${pl.bats === v}">${l}</button>`).join("")}</div></div>
-      <div class="setlist"><div class="setrow"><span><b>Walk-up song</b><small>${song ? "♪ " + esc(song.name) : "None yet"}</small></span>
-        <span style="display:flex;gap:6px">${song ? `<button class="tbtn" data-act="clip-play" data-v="${wslot}">▶</button>` : ""}<button class="tbtn" data-act="clip-choose" data-v="${wslot}">${song ? "Change" : "Choose file"}</button></span></div></div>
+      <div class="setlist"><div class="setrow"><span><b>Walk-up song</b><small>${song ? "♪ " + esc(song.name) : "Your own song file. Until you pick one, the built-in tune below plays."}</small></span>
+        <span style="display:flex;gap:6px">${song ? `<button class="tbtn" data-act="clip-play" data-v="${wslot}">▶</button>` : ""}<button class="tbtn" data-act="clip-choose" data-v="${wslot}">${song ? "Change" : "Choose file"}</button></span></div>
+        <div class="setrow col"><span><b>Built-in tune</b><small>${song ? "Used if you remove the song file." : "An organ riff, about 7 seconds. Each player gets one to start."}</small></span>
+          <span class="tunepick">${tuneOf(pl) ? `<button class="tbtn" data-act="clip-play" data-v="tune:${tuneOf(pl)}" aria-label="Play ${esc(tuneName(tuneOf(pl)))}">${nowPlaying && nowPlaying.slot === "tune:" + tuneOf(pl) ? "■" : "▶"}</button>` : ""}
+          <select data-ch="ptune" data-id="${pl.id}" aria-label="Built-in walk-up tune">${WALKUPS.map(([k, n]) => `<option value="${k}" ${tuneOf(pl) === k ? "selected" : ""}>${n}</option>`).join("")}<option value="none" ${pl.tune === "none" ? "selected" : ""}>None</option></select></span></div></div>
       <div class="acts" style="justify-content:space-between">
         <button class="tbtn ${ui.confirm === "rm:" + pl.id ? "danger" : ""}" data-act="rmplayer" data-v="${pl.id}">${ui.confirm === "rm:" + pl.id ? "Tap again to remove" : "Remove player"}</button>
         <button class="tbtn primary" data-act="close">Done</button></div>`;
@@ -2823,7 +2899,7 @@ function push(e) {
   const g = curGame(); if (!g) return;
   const prev = S;
   cancelQueue();
-  if (nowPlaying && /^(walkup|inning):/.test(nowPlaying.slot)) stopClip(true);   // music fades when the next play is scored
+  if (nowPlaying && /^(walkup|inning|tune):/.test(nowPlaying.slot)) stopClip(true);   // music fades when the next play is scored
   if (!g.clock && e.t !== "sub") g.clock = { start: Date.now() };   // the time limit runs from the first play
   g.events.push(e);
   save(); ui.bookTeam = null; ui.sheet = null; ui.bb = null;
@@ -3001,6 +3077,7 @@ document.addEventListener("click", ev => {
       audio();
       if (nowPlaying && nowPlaying.slot === v) { stopClip(false); break; }
       if (clips[v]) playClip(v).then(ok => { if (!ok) { ui.msg = "That file couldn't be played. MP3, M4A and WAV files work best."; renderSheet(); } });
+      else if (v.startsWith("tune:")) playClip(v).then(() => renderSheet());
       else if (BUILT_IN[v]) SFX[BUILT_IN[v]]();
       break;
     }
@@ -3197,6 +3274,7 @@ document.addEventListener("change", ev => {
     else { readDraftRows(); const g = mode === "setting" && curGame(); if (g) Object.assign(g.settings, ruleSettings(ui.draft)); }
     save();
   }
+  else if (ch === "ptune") { if (p) { p.tune = el.value; save(); stopClip(false); renderSheet(); } }
   else if (ch === "prefrule") { store.prefs = Object.assign({}, store.prefs, readRules("p-")); save(); render(); }
   else if (ch === "incCur") { ui.incCur = el.checked; render(); }
   else if (ch === "lu") {

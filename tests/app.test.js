@@ -683,3 +683,22 @@ test("Tap on the field: place a hit or an out exactly, and it shows on the spray
   assert.deepEqual(errors, []);
   await context.close();
 });
+
+test("built-in walk-up tunes: every player has one by default, it plays, and it can be changed or turned off", async () => {
+  const { page, context, errors } = await open(393, 852);
+  assert.ok(await page.$("[data-act=walkup]"), "the batter has a walk-up button with no file chosen");
+  await page.click("[data-act=walkup]");
+  assert.match(await text(page, "[data-act=walkup]"), /Stop/);
+  await page.click("[data-act=walkup]");
+  assert.match(await text(page, "[data-act=walkup]"), /Walk-up/);
+  await page.click(".tabbar [data-v=roster]");
+  await page.click("[data-act=editplayer]");
+  const sel = "select[data-ch=ptune]";
+  assert.equal((await page.$$(sel + " option")).length, 9, "8 tunes and None");
+  await page.selectOption(sel, "bigleague");
+  await page.click("[data-act=clip-play][data-v='tune:bigleague']");
+  await page.selectOption(sel, "none");
+  assert.equal(await page.$("[data-act=clip-play][data-v^='tune:']"), null);
+  assert.deepEqual(errors, []);
+  await context.close();
+});

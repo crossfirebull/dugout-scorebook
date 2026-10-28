@@ -80,6 +80,10 @@ Everyone can bat: pick **EH · bats only** in the lineup for anyone who isn't in
 
 ScoreKept comes with a set of **built-in ballpark organ sounds**: a "Charge!" for home runs, short stings for hits, walks and runs, a strikeout taunt, "shave and a haircut" when the side is retired, a clap-along rally riff, and fanfares for taking the lead, tying it and winning. Each is 1 to 4 seconds long. Any one of them can be swapped for your own clip, and the rest keep working.
 
+### Built-in walk-up tunes
+
+Every player starts with one of 8 original organ walk-ups (Charge Up, Stomp & Clap, Ballpark Boogie, Bring the Heat, Rally Bounce, Big League, Hot Corner Funk, Dugout Swing), 5 to 8 seconds each. Tap **♪ Walk-up** on the Game tab to play the batter's. Pick a different one, or **None**, on the player's page. Choosing your own song file replaces it.
+
 ### Adding your own sound or walk-up song (3 steps)
 
 1. **Get the file onto the iPad.** Save it to the **Files** app: download it in Safari (it lands in *Downloads*), AirDrop it from a computer or phone, or put it in iCloud Drive. MP3, M4A and WAV all work.
