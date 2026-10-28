@@ -55,6 +55,13 @@ Tap what the batter did. The app moves the runners the usual way, and you can fi
 - **Walk-offs:** the game ends the moment the home team takes the lead in the last inning. Only the winning run counts, unless it's a home run.
 - **Undo** takes back the last tap, as many times as you need.
 
+## Changing things mid-game
+
+Nothing is locked once the game starts:
+- **Game settings** changes the opponent, date, park, **home or away**, and the league rules any time. Switching home and away mid-game moves each play to the other half of its inning, so every play stays with the team that made it.
+- **+ New player** on the lineup screens adds a late fill-in. Leave the name blank and they're "Fill-in" (rename them on the Team tab later; their stats follow).
+- **Lineups** subs players in and out once play has started, and **Undo** takes back any tap.
+
 ## Sharing a game recap
 
 When a game ends, tap **Share recap** on the final banner (or **Stats → Overview → View** on any saved game). It makes:

@@ -754,3 +754,36 @@ test("panels only close with the red X (or their own buttons), never by tapping 
   assert.deepEqual(errors, []);
   await context.close();
 });
+
+test("switch home and away mid-game: every play stays with the team that made it", async () => {
+  // we're the visitors: top 1 we score 2 (1B, HR), bottom 1 they score 1, top 2 we single
+  const ev = [PA("1B"), PA("HR"), PA("K"), PA("K"), PA("K"), Q("run"), Q("out"), Q("out"), Q("out"), PA("1B")];
+  const { page, context, errors } = await openGame(ruleGame({}, ev, { ourSide: 0 }));
+  assert.deepEqual(await runs(page), [2, 1]);
+  await gameSettings(page);
+  await page.click("[data-act=flipside]"); await page.click("[data-act=flipside]");
+  await closeSheet(page);
+  assert.deepEqual(await runs(page), [1, 2], "now home: they're on top with 1, we have 2");
+  await page.click(".tabbar [data-v=book]");
+  const v = await page.textContent("#view");
+  assert.match(v, /Player 2 homers/);
+  await page.click(".tabbar [data-v=stats]"); await page.click("[data-act=statstab][data-v=batting]");
+  const row = await page.$$eval("table.stats tbody tr", r => r.map(x => x.textContent).find(t => /Player 2/.test(t)));
+  assert.ok(row, "our batter keeps their stats");
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("add a fill-in player on the fly while building the lineup", async () => {
+  const { page, context, errors } = await open(393, 852);
+  await gameSettings(page); await page.click(".sheet [data-act=endgame]");
+  await page.click("[data-act=newgame]");
+  await page.click("[data-act=np-open]");
+  await page.click("[data-act=np-save]");   // no name yet
+  assert.deepEqual(await page.$$eval(".lurow .who b", b => b.map(x => x.textContent)), ["Fill-in"]);
+  await page.click("[data-act=np-open]"); await page.fill("#np-name", "Marcus"); await page.fill("#np-num", "44"); await page.click("[data-act=np-save]");
+  assert.deepEqual(await page.$$eval(".lurow .who b", b => b.map(x => x.textContent)), ["Fill-in", "Marcus"]);
+  assert.ok(await page.$(".pcard:has-text('Marcus')"), "on the roster too");
+  assert.deepEqual(errors, []);
+  await context.close();
+});

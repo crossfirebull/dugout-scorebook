@@ -228,6 +228,9 @@ input.switch:checked::after, .check input[type=checkbox]:checked::after { transf
 .setrow small { display: block; color: var(--muted); font-size: 13px; line-height: 1.35; margin-top: 2px; }
 .setrow select { font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); flex: none; max-width: 50%; }
 .setrow > span:first-child { flex: 1; min-width: 0; }
+.npform { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; width: 100%; }
+.npform input { font: inherit; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); min-width: 0; }
+.npform #np-name { flex: 1 1 180px; } .npform #np-num { width: 64px; }
 .recapimg img { display: block; width: 100%; max-width: 420px; margin: 0 auto; border-radius: 12px; box-shadow: 0 8px 24px rgba(0, 0, 0, .3); }
 .recapacts { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 .recaptext pre { white-space: pre-wrap; font-size: 12px; background: var(--paper); border: 1px solid var(--rule); border-radius: 8px; padding: 10px; overflow-x: auto; }
@@ -1160,9 +1163,10 @@ function substitute(s, e) {
   log(s, `Lineup: ${esc(entryName(s.lu[e.team][e.slot]))} bats ${ordinal(e.slot + 1)}${e.pos ? ", plays " + esc(e.pos) : ""}.`);
 }
 
-function derive(g) {
+function derive(g, tags) {   // tags (optional): filled with [inning, half] for each event, for switching home and away
   const s = fresh(g);
   for (const e of g.events) {
+    if (tags) tags.push(s.final ? null : [s.inning, s.half]);
     if (e.t === "sub") { substitute(s, e); continue; }
     if (s.final) break;
     s.fx = { bat: s.half };
@@ -2268,7 +2272,7 @@ function lineupRows(rows, opts) {
     ${warn ? `<p class="lusum warn">${warn}</p>` : ""}
     <div class="bench"><span>${opts.started ? "Bench (tap to add as an extra batter, or pick them in a row above to sub in):" : "Bench (tap to add to the batting order):"}</span>
       ${bench.length ? bench.map(p => `<button class="chipbtn" data-act="lu-bench" data-v="${p.id}">+ ${esc(p.name || "Unnamed")}${posList(p).length ? " · " + esc(posList(p).join("/")) : ""}</button>`).join("") : "<span>everyone is in the lineup.</span>"}
-      <button class="chipbtn" data-act="lu-add">+ Empty row</button></div>`;
+      <button class="chipbtn" data-act="lu-add">+ Empty row</button>${newPlayerForm()}</div>`;
 }
 /* ---------- Lineup builder: New Game, and Lineups before the first pitch ----------
    The batting order, with a ☰ handle on each batter to drag them into place, next to your
@@ -2329,7 +2333,7 @@ function lineupBuilder(d) {
       ${rows.length ? `<p class="lusum">Batting ${rows.length} · In the field ${field.length} (${of} outfielder${of === 1 ? "" : "s"})${rows.length > field.length ? ` · ${rows.length - field.length} bat only` : ""}</p>
       <div class="dstrip" aria-label="Defense">${defense}</div>` : ""}
     </section>
-    <section class="lupool"><div class="luhead"><h4>Your players</h4></div>
+    <section class="lupool"><div class="luhead"><h4>Your players</h4><span class="spacer"></span>${newPlayerForm()}</div>
       ${pool || `<p>No players yet. Add them on the Team tab.</p>`}</section>
   </div>`;
 }
@@ -2384,6 +2388,34 @@ document.addEventListener("keydown", ev => {
   renderSheet();
   const g = document.querySelector(`[data-grip="${j}"]`); if (g) g.focus();
 });
+
+// Switch home and away, even mid-game. Each inning's halves trade places so every play stays
+// with the team that made it. A half that hadn't been played yet is marked as ended with nothing recorded.
+function flipHomeAway(g) {
+  const tags = []; derive(g, tags);
+  const blocks = new Map(), tail = [];
+  g.events.forEach((e, i) => { const t = tags[i]; if (!t) { tail.push(e); return; } if (!blocks.has(t[0])) blocks.set(t[0], [[], []]); blocks.get(t[0])[t[1]].push(e); });
+  const swapT = e => e.t === "sub" ? Object.assign({}, e, { team: 1 - e.team }) : e;
+  const order = [];
+  [...blocks.keys()].sort((a, b) => a - b).forEach(n => { const [top, bot] = blocks.get(n); order.push(bot.map(swapT), top.map(swapT)); });
+  while (order.length && !order[order.length - 1].length) order.pop();
+  const ng = Object.assign({}, g, { ourSide: 1 - g.ourSide, lineups: [g.lineups[1], g.lineups[0]], events: [] });
+  order.forEach((blk, i) => {
+    ng.events.push(...blk);
+    if (i < order.length - 1) { const st = derive(ng); if (!st.final && (st.inning - 1) * 2 + st.half < i + 1) ng.events.push({ t: "quick", k: "end" }); }
+  });
+  ng.events.push(...tail);
+  g.ourSide = ng.ourSide; g.lineups = ng.lineups; g.events = ng.events;
+}
+// Add a player on the fly (a late fill-in whose name you may not know yet). Rename them on the Team tab later.
+function quickPlayer(name, num) {
+  const n = store.team.players.filter(p => /^Fill-in( \d+)?$/.test(p.name)).length;
+  const p = { id: uid(), name: (name || "").trim() || (n ? "Fill-in " + (n + 1) : "Fill-in"), num: (num || "").trim(), pos: "", alt: [], bats: "" };
+  store.team.players.push(p); save();
+  return p;
+}
+const newPlayerForm = () => ui.sheet && ui.sheet.addP ? `<div class="npform"><input id="np-name" placeholder="Name (or leave blank: Fill-in)" autocomplete="off"><input id="np-num" placeholder="#" inputmode="numeric" autocomplete="off">
+    <button class="tbtn primary" data-act="np-save">Add</button><button class="tbtn" data-act="np-cancel">Cancel</button></div>` : `<button class="chipbtn" data-act="np-open">+ New player</button>`;
 
 function lineupError(rows) {
   const seen = {};
@@ -2531,6 +2563,8 @@ const HELP = [
     <li><b>Courtesy runner</b>: pick who runs instead. Once per inning for each team. If they score, the run counts for the courtesy runner.</li></ul>`],
   ["Fixing mistakes", `
     <ul><li><b>Undo</b> takes back the last tap, as many times as you need.</li>
+    <li><b>Game settings</b> changes the opponent, date, park, home or away, and league rules at any point. Switching home and away mid-game moves each play to the other half of its inning, so stats stay with the right team.</li>
+    <li><b>+ New player</b> on the lineup screens adds a late fill-in. Leave the name blank and they're "Fill-in" until you rename them on the Team tab; their stats follow them.</li>
     <li><b>Lineups</b> changes the batting order or positions. Mid-game, each change is saved as a substitution.</li>
     <li>A saved game can be reopened from <b>Stats → Overview → View → Reopen to edit</b>.</li></ul>`],
   ["League rules", `
@@ -2752,6 +2786,9 @@ function renderSheet() {
       <div class="two"><div class="field"><label for="d-opponent">Opponent</label><input id="d-opponent" data-ch="setting" value="${esc(d.opponent)}" autocomplete="off"></div>
       <div class="field" style="max-width:120px"><label for="d-oppAbbr">Short name</label><input id="d-oppAbbr" data-ch="setting" maxlength="5" value="${esc(d.oppAbbr || "")}" placeholder="${esc(abbrOf(d.opponent))}" autocomplete="off" style="text-transform:uppercase"></div></div>
       ${parkInput(d, "setting")}
+      <div class="two"><div class="field"><label for="d-date">Date</label><input id="d-date" type="date" data-ch="setting" value="${esc(G.date)}"></div>
+        <div class="field"><label>${esc(store.team.name)} are</label><button class="tbtn ${ui.confirm === "flip" ? "danger" : ""}" data-act="flipside" style="min-height:44px">${ui.confirm === "flip" ? "Tap again to switch to " + (G.ourSide ? "visitors" : "home") : (G.ourSide ? "Home (bat second)" : "Visitors (bat first)") + " · switch"}</button></div></div>
+      ${G.events.length && ui.confirm === "flip" ? `<p style="color:var(--stitch);font-size:14px">Plays already scored move to the other half of each inning, so every play stays with the team that made it.</p>` : ""}
       ${rulesFields(d, true)}
       ${clockRows(curGame())}
       <div class="setlist"><button class="setrow" data-act="help"><span><b>Help &amp; how to score</b><small>Every button, moving runners, league rules and more.</small></span><span class="chev" aria-hidden="true">›</span></button>
@@ -2999,6 +3036,7 @@ function applyGameMenu() {
   g.opponent = d.opponent.trim() || g.opponent;
   g.opponentAbbr = d.oppAbbr || "";
   if (d.park != null) { g.park = d.park.trim(); rememberPark(g.park); }
+  if (d.date) g.date = d.date;
   Object.assign(g.settings, { startCount: d.startCount, foulOut: d.foulOut, askHits: d.askHits, mode: d.mode, trackCount: d.trackCount }, ruleSettings(d));
   store.prefs = Object.assign({}, store.prefs, { askHits: d.askHits, mode: d.mode, trackCount: d.trackCount }, ruleSettings(d));
   ui.bookTeam = null; save(); render();
@@ -3283,7 +3321,21 @@ document.addEventListener("click", ev => {
     case "recap": openRecap(v || (ui.peekId || store.currentId)); break;
     case "recap-share": shareRecap(v); break;
     case "recap-copy": (async () => { try { await navigator.clipboard.writeText(ui.sheet.text); ui.sheet.msg = "Recap text copied. Paste it into Discord."; } catch (e) { ui.sheet.msg = "Couldn't copy. Open Text version below and copy it."; } renderSheet(); })(); break;
+    case "flipside": {
+      const g = curGame(); if (!g) break;
+      if (ui.confirm !== "flip") { ui.confirm = "flip"; renderSheet(); break; }
+      readDraftRows(); ui.confirm = null; flipHomeAway(g); save(); render(); break;
+    }
     case "park-rm": store.parks.splice(+v, 1); save(); renderSheet(); break;
+    case "np-open": { readDraftRows(); ui.sheet.addP = true; renderSheet(); const f = $("np-name"); if (f) f.focus(); break; }
+    case "np-cancel": ui.sheet.addP = false; renderSheet(); break;
+    case "np-save": {
+      readDraftRows();
+      const p = quickPlayer($("np-name") && $("np-name").value, $("np-num") && $("np-num").value), rows = ui.draft.rows;
+      const midGame = ui.sheet.type === "lineups" && G && G.events.length;   // mid-game: they join the bench, ready to sub in
+      if (!midGame) rows.push({ pid: p.id, pos: firstOpenPos(rows, rows.length, p) });
+      ui.sheet.addP = false; renderSheet(); break;
+    }
     case "lu-clear": ui.draft.rows = []; renderSheet(); break;
     case "ng-next": {
       readDraftRows(); const clash = lineupError(ui.draft.rows);
