@@ -646,3 +646,40 @@ test("Stats tabs all fit on a small phone, with no sideways scrolling", async ()
     await context.close();
   }
 });
+
+test("Tap on the field: place a hit or an out exactly, and it shows on the spray chart there", async () => {
+  const { page, context, errors } = await open(393, 852, { hasTouch: true, isMobile: true });
+  const tapField = async (x, y) => {
+    const [px, py] = await page.evaluate(([x, y]) => { const m = document.querySelector("#ffield").getScreenCTM(); return [m.a * x + m.e, m.d * y + m.f]; }, [x, y]);
+    await page.mouse.click(px, py);
+  };
+  // a double into the left-center gap
+  await page.click("[data-act=pa][data-v='2B']");
+  await page.click("[data-act=fieldopen]");
+  assert.ok(await page.$(".fieldfs"), "full-screen field");
+  assert.equal(await page.isDisabled("[data-act=fieldsave]"), true, "nothing to save until you tap");
+  await tapField(60, 55);
+  assert.match(await text(page, ".fft small"), /left-center/);
+  await page.click("[data-act=bbtype][data-v=LD]");
+  await tapField(62, 56);   // tap again to move it
+  await page.click("[data-act=fieldsave]");
+  assert.equal(await page.$(".fieldfs"), null);
+  // Back returns to the usual choices
+  await page.click("[data-act=pa][data-v=GO]");
+  await page.click("[data-act=fieldopen]");
+  await page.click(".fffoot [data-act=fieldback]");
+  assert.ok(await page.$(".posgrid"), "back to the fielder choices");
+  await page.click("[data-act=fieldopen]");
+  await tapField(84, 100);   // shortstop's spot
+  await page.click("[data-act=fieldsave]");
+  await page.click(".tabbar [data-v=book]");
+  const pbp = await page.textContent("#view");
+  assert.match(pbp, /doubles to left-center field/);
+  assert.match(pbp, /grounds out to shortstop/);
+  // the spray chart puts the double where it was tapped
+  await page.click(".tabbar [data-v=stats]"); await page.click("[data-act=statstab][data-v=spray]");
+  const dots = await page.$$eval(".teamcard circle.h2", c => c.map(x => [+x.getAttribute("cx"), +x.getAttribute("cy")]));
+  assert.ok(dots.some(([x, y]) => Math.abs(x - 62) <= 1 && Math.abs(y - 56) <= 1), "double drawn at the tapped spot: " + JSON.stringify(dots.filter(([x, y]) => Math.abs(x - 62) < 6 && Math.abs(y - 56) < 6)));
+  assert.deepEqual(errors, []);
+  await context.close();
+});

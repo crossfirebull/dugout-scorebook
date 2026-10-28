@@ -622,6 +622,41 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 .roster-top .field { flex: 1; min-width: 200px; }
 .sheet.wide { max-width: 720px; }
 .bbrow { display: flex; gap: 6px; flex-wrap: wrap; }
+.fieldbtn { display: grid; justify-items: center; gap: 2px; width: 100%; min-height: 54px; padding: 8px; font-size: 16px; border-style: dashed; }
+.fieldbtn small { font-weight: 500; font-size: 12px; color: var(--muted); }
+.fieldfs { position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; gap: 8px; background: var(--team-board, #0d1b2a); color: #ffffff;
+  padding: max(10px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); }
+.ffhead { display: flex; align-items: center; gap: 12px; }
+.fft b { display: block; font-family: var(--f-display); font-weight: 800; font-size: 24px; text-transform: uppercase; line-height: 1.1; }
+.fft small { display: block; font-size: 14px; color: rgba(255, 255, 255, .8); }
+.fieldfs .bbrow { justify-content: center; }
+.fieldfs .bbrow button { background: rgba(255, 255, 255, .08); color: #ffffff; border-color: rgba(255, 255, 255, .3); }
+.fieldfs .bbrow button[aria-pressed="true"] { background: #ffffff; color: #111111; border-color: #ffffff; }
+.fieldfs .tbtn { background: rgba(255, 255, 255, .08); color: #ffffff; border-color: rgba(255, 255, 255, .3); }
+.fieldfs .tbtn.primary { background: var(--team-lamp, #ffc93c); color: #1b1400; border-color: transparent; }
+.fieldfs .tbtn.primary:disabled { opacity: .45; }
+#ffield { flex: 1; min-height: 0; width: 100%; touch-action: manipulation; cursor: crosshair; }
+#ffield .fbeyond { fill: rgba(255, 255, 255, .06); }
+#ffield .fgrass { fill: #2e7a49; }
+#ffield .ffence { fill: none; stroke: #ffd25c; stroke-width: 1.4; }
+#ffield .fdirt { fill: #b98b5d; }
+#ffield .fline { fill: none; stroke: rgba(255, 255, 255, .85); stroke-width: .8; }
+#ffield .fbag { fill: #ffffff; }
+#ffield .fl { font-family: var(--f-label); font-weight: 700; font-size: 6px; fill: rgba(255, 255, 255, .6); text-anchor: middle; pointer-events: none; }
+#ffield .fl.far { font-size: 5px; fill: rgba(255, 255, 255, .45); letter-spacing: .05em; text-transform: uppercase; }
+#ffield .fpath { stroke: #ffd25c; stroke-width: .8; stroke-dasharray: 2 2; fill: none; pointer-events: none; }
+#ffield .fmark { fill: rgba(255, 210, 92, .35); stroke: #ffd25c; stroke-width: 1.2; pointer-events: none; }
+#ffield .fdot { fill: #ffffff; pointer-events: none; }
+.fffoot { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
+.fffoot .big { min-height: 52px; font-size: 18px; }
+/* Phone on its side or a Pi screen: controls in a column on the left, the field gets the full height */
+@media (orientation: landscape) and (max-height: 600px) {
+  .fieldfs { display: grid; grid-template-columns: minmax(200px, 30%) minmax(0, 1fr); grid-template-rows: auto auto 1fr auto; column-gap: 14px; }
+  .fieldfs > .ffhead, .fieldfs > .bbrow, .fieldfs > .fffoot { grid-column: 1; }
+  .fieldfs > .bbrow { justify-content: flex-start; align-self: start; }
+  .fieldfs > .fffoot { grid-row: 4; grid-template-columns: 1fr; }
+  #ffield { grid-column: 2; grid-row: 1 / -1; height: 100%; }
+}
 .bbrow button { min-height: 40px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--rule); background: var(--surface); font-weight: 600; }
 .bbrow button[aria-pressed="true"] { background: var(--sel-bg); color: var(--sel-ink); border-color: var(--sel-bg); }
 .srow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--rule-soft); }
@@ -981,7 +1016,7 @@ function fielderAt(s, t, p) {
   return i < 0 ? null : keyOf(s.lu[t][i], t, i);
 }
 
-function plateAppearance(s, g, r, p, bb, foulK, fcOut) {
+function plateAppearance(s, g, r, p, bb, foulK, fcOut, loc) {
   if (r === "HR" && hrOver(s, s.half)) r = "HRO";   // over the league's home run limit: the batter is out
   const bt = s.half, ft = 1 - bt, slot = curSlot(s), who = occ(s, bt, slot), key = keyOf(who, bt, slot), st = stat(s, bt, key);
   const risp = !!(s.bases[1] || s.bases[2]);
@@ -1005,7 +1040,7 @@ function plateAppearance(s, g, r, p, bb, foulK, fcOut) {
   const type = hit ? bb : BB_OF[r];
   if (type) st[type]++;
   if (p && (hit || NEEDS_POS[r])) {
-    s.bip.push({ team: bt, key, name: entryName(who), r, p, bb: type });   // for spray charts and scouting
+    s.bip.push(Object.assign({ team: bt, key, name: entryName(who), r, p, bb: type }, loc ? { loc } : {}));   // for spray charts and scouting
     const bats = who.pid && player(who.pid) ? player(who.pid).bats : "";
     if (bats === "R" || bats === "L") {
       const side = LEFT_SIDE.has(p) ? "L" : RIGHT_SIDE.has(p) ? "R" : "C";
@@ -1120,7 +1155,7 @@ function derive(g) {
     if (s.final) break;
     s.fx = { bat: s.half };
     if (e.t === "pitch") pitch(s, g, e.k);
-    else if (e.t === "pa") plateAppearance(s, g, e.r, e.p, e.bb, false, e.out);
+    else if (e.t === "pa") plateAppearance(s, g, e.r, e.p, e.bb, false, e.out, e.loc);
     else if (e.t === "run") runnerMove(s, g, e.b, e.a, e.rbi);
     else if (e.t === "quick") quickEvent(s, g, e.k);
     else if (e.t === "cr") courtesy(s, e);
@@ -1874,9 +1909,9 @@ const HOME = [100, 162];
 function sprayField(balls) {
   const n = {}, sz = balls.length > 60 ? .65 : 1;   // a season of team dots: smaller and tighter so they don't pile up
   const marks = balls.map(b => {
-    const k = b.p + (b.r === "HR" ? "hr" : ""), i = n[k] = (n[k] || 0) + 1;
-    let [x, y] = ZONE[b.p] || ZONE[8];
-    if (b.r === "HR") { const dx = x - HOME[0], dy = y - HOME[1], len = Math.hypot(dx, dy); x = HOME[0] + dx / len * 148; y = HOME[1] + dy / len * 148; }
+    const k = b.p + (b.r === "HR" ? "hr" : ""), i = b.loc ? 0 : n[k] = (n[k] || 0) + 1;
+    let [x, y] = b.loc ? [Math.min(197, Math.max(3, b.loc[0])), Math.min(170, Math.max(11, b.loc[1]))] : ZONE[b.p] || ZONE[8];   // tapped on the field: exactly there
+    if (b.r === "HR" && !b.loc) { const dx = x - HOME[0], dy = y - HOME[1], len = Math.hypot(dx, dy); x = HOME[0] + dx / len * 148; y = HOME[1] + dy / len * 148; }
     if (i > 1) { const a = i * 2.4, rad = (2.5 + 3 * Math.sqrt(i)) * sz; x += Math.cos(a) * rad; y += Math.sin(a) * rad; }
     const tip = `<title>${b.r === "E" ? "Error" : b.r} to ${POS[b.p]} · ${esc(b.date)} vs ${esc(b.opp)}</title>`;
     x = x.toFixed(1); y = y.toFixed(1);
@@ -1892,6 +1927,49 @@ function sprayField(balls) {
     ${[[134, 128], [100, 94], [66, 128]].map(([x, y]) => `<rect class="bag" x="${x - 3}" y="${y - 3}" width="6" height="6" transform="rotate(45 ${x} ${y})" />`).join("")}
     ${marks}</svg>`;
 }
+/* ---------- Tap on the field: a full-screen field for placing a ball exactly ----------
+   Same coordinates as the spray charts (home plate at 100,162). The spot is saved with the play,
+   and the nearest fielder still gets the credit, so stats work the same either way. */
+const PLAY_NAME = { "1B": "Single", "2B": "Double", "3B": "Triple", HR: "Home run", GO: "Ground out", FO: "Fly out", LO: "Line out", PO: "Pop out", SF: "Sacrifice fly", E: "Error" };
+function nearestFielder(x, y) {
+  let best = 8, d = Infinity;
+  fieldChoices().forEach(({ n }) => { const z = ZONE[n]; if (!z) return; const dd = Math.hypot(z[0] - x, z[1] - y); if (dd < d) { d = dd; best = n; } });
+  return best;
+}
+const pastFence = (x, y) => Math.hypot(x - 100, y - 166) > 126 && 162 - y >= Math.abs(x - 100) - 4;   // beyond the fence, in fair territory
+function fieldHTML(sh) {
+  const hit = HIT_CODES.includes(sh.r), loc = sh.loc;
+  const where = loc ? `${pastFence(loc[0], loc[1]) ? "Over the fence, " : ""}${POS_NAME[sh.p].toLowerCase()} (${POS[sh.p]})` : "Tap where the ball went";
+  const labels = fieldChoices().filter(f => ZONE[f.n]).map(f => `<text class="fl" x="${ZONE[f.n][0]}" y="${ZONE[f.n][1] + 2}">${POS[f.n]}</text>`).join("");
+  const mark = loc ? `<path class="fpath" d="M100 162 L${loc[0]} ${loc[1]}" /><circle class="fmark" cx="${loc[0]}" cy="${loc[1]}" r="4.5" /><circle class="fdot" cx="${loc[0]}" cy="${loc[1]}" r="1.2" />` : "";
+  return `<div class="fieldfs" role="dialog" aria-modal="true" aria-label="Tap where the ball went">
+    <div class="ffhead"><button class="tbtn" data-act="fieldback">Back</button><div class="fft"><b>${PLAY_NAME[sh.r] || sh.r}</b><small>${esc(where)}</small></div></div>
+    ${hit ? `<div class="bbrow">${[["GB", "Grounder"], ["LD", "Line drive"], ["FB", "Fly ball"]].map(([k, l]) => `<button data-act="bbtype" data-v="${k}" aria-pressed="${ui.bb === k}">${l}</button>`).join("")}</div>` : ""}
+    <svg id="ffield" viewBox="-6 -6 212 178" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Field. Tap where the ball went.">
+      <path class="fbeyond" d="M100 166 L-40 26 A198 198 0 0 1 240 26 Z" />
+      <text class="fl far" x="100" y="6">Over the fence</text>
+      <path class="fgrass" d="M100 166 L11 77 A126 126 0 0 1 189 77 Z" />
+      <path class="ffence" d="M11 77 A126 126 0 0 1 189 77" />
+      <path class="fdirt" d="M100 168 L146 122 Q100 66 54 122 Z" />
+      <path class="fline" d="M100 162 L-6 56 M100 162 L206 56" />
+      <path class="fline" d="M100 162 L134 128 L100 94 L66 128 Z" />
+      ${[[134, 128], [100, 94], [66, 128]].map(([x, y]) => `<rect class="fbag" x="${x - 3}" y="${y - 3}" width="6" height="6" transform="rotate(45 ${x} ${y})" />`).join("")}
+      <path class="fbag" d="M97 160 h6 v3 l-3 3 l-3 -3 z" />
+      <text class="fl far" x="14" y="150">Foul</text><text class="fl far" x="186" y="150">Foul</text>
+      ${labels}${mark}
+    </svg>
+    <div class="fffoot"><button class="tbtn big" data-act="fieldback">Cancel</button><button class="tbtn primary big" data-act="fieldsave" ${loc ? "" : "disabled"}>Save ${PLAY_NAME[sh.r] ? PLAY_NAME[sh.r].toLowerCase() : ""}</button></div>
+  </div>`;
+}
+document.addEventListener("click", ev => {
+  const svg = ev.target.closest && ev.target.closest("#ffield"); if (!svg || !ui.sheet || ui.sheet.type !== "field") return;
+  const pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+  const q = pt.matrixTransform(svg.getScreenCTM().inverse()), clamp = (v, lo, hi) => Math.round(Math.min(hi, Math.max(lo, v)) * 10) / 10;
+  const x = clamp(q.x, -6, 206), y = clamp(q.y, -6, 172);   // a tap in the margin counts as the edge of the field
+  ui.sheet.loc = [x, y]; ui.sheet.p = nearestFielder(x, y);
+  renderSheet();
+});
+
 function sprayData() {
   const by = {};
   store.games.forEach(g => {
@@ -2362,7 +2440,8 @@ const HELP = [
       <dt>HR out</dt><dd>A home run ruled an out under the HR limit. ScoreKept does this for you when the limit is set.</dd>
       <dt>FBO</dt><dd>Foul ball out (out on a foul with two strikes). An at-bat, not a strikeout.</dd>
     </dl>
-    <p>With <b>Hit location</b> on, it asks who fielded the ball or where a hit went. That feeds the spray charts and fielding stats. Every question has <b>Skip</b>.</p>`],
+    <p>With <b>Hit location</b> on, it asks who fielded the ball or where a hit went. That feeds the spray charts and fielding stats. Every question has <b>Skip</b>.</p>
+    <p>For an exact spot, tap <b>Tap on the field</b>: a full-screen field opens. Tap where the ball went (tap again to move it), then <b>Save</b>. The nearest fielder still gets the credit, and the spray chart shows the ball right where you put it.</p>`],
   ["Moving runners", `
     <p>Tap a lit base on the score bug (or the diamond) to open that runner:</p>
     <ul><li><b>Advance</b> one base.</li>
@@ -2518,12 +2597,14 @@ function renderSheet() {
   if (sh.type === "pos") {
     body = `<h3>${esc({ GO: "Ground out", FO: "Fly out", LO: "Line out", PO: "Pop out", SF: "Sacrifice fly", E: "Error" }[sh.r])}</h3><p>${NEEDS_POS[sh.r]}</p>
       ${posGrid("pos")}
+      <button class="tbtn fieldbtn" data-act="fieldopen">Tap on the field<small>Opens a full-screen field for an exact spot</small></button>
       <div class="acts"><button class="tbtn" data-act="close">Cancel</button><button class="tbtn primary" data-act="posskip">Skip, just record the ${sh.r === "E" ? "error" : "out"}</button></div>`;
   } else if (sh.type === "hit") {
     body = `<h3>${{ "1B": "Single", "2B": "Double", "3B": "Triple", HR: "Home run" }[sh.r]}</h3>
       <p>What kind of hit, and where did it go? Tap the fielder nearest the ball.</p>
       <div class="bbrow">${[["GB", "Grounder"], ["LD", "Line drive"], ["FB", "Fly ball"]].map(([k, l]) => `<button data-act="bbtype" data-v="${k}" aria-pressed="${ui.bb === k}">${l}</button>`).join("")}</div>
       ${posGrid("hitpos")}
+      <button class="tbtn fieldbtn" data-act="fieldopen">Tap on the field<small>Opens a full-screen field for an exact spot</small></button>
       <div class="acts"><button class="tbtn" data-act="close">Cancel</button><button class="tbtn primary" data-act="hitskip">Skip, just record the ${sh.r}</button></div>`;
   } else if (sh.type === "runner") {
     const r = S.bases[sh.b], who = esc(runnerName(S, r)), b = sh.b, nextTaken = b < 2 && S.bases[b + 1], nextName = ["second", "third", "home"][b];
@@ -2727,6 +2808,7 @@ function renderSheet() {
       <div class="acts"><button class="tbtn" data-act="close">Done</button></div>`;
   }
   if (sh.type === "onboard") { o.innerHTML = onboardHTML(sh); return; }
+  if (sh.type === "field") { o.innerHTML = fieldHTML(sh); o.dataset.sheet = "field"; return; }
   const key = sh.type + ":" + (sh.step || ""), old = o.querySelector(".sheet"), top = old && o.dataset.sheet === key ? old.scrollTop : 0;
   o.innerHTML = `<div class="scrim" data-act="scrim"><div class="sheet ${wide === "xwide" ? "wide xwide" : wide ? "wide" : ""}" role="dialog" aria-modal="true">${body}</div></div>`;
   o.dataset.sheet = key;
@@ -2868,6 +2950,14 @@ document.addEventListener("click", ev => {
     case "fcout": push({ t: "pa", r: "FC", out: +v }); break;
     case "posskip": push({ t: "pa", r: ui.sheet.r }); break;
     case "bbtype": ui.bb = ui.bb === v ? null : v; renderSheet(); break;
+    case "fieldopen": ui.sheet = { type: "field", r: ui.sheet.r, from: ui.sheet.type }; renderSheet(); break;
+    case "fieldback": ui.sheet = { type: ui.sheet.from, r: ui.sheet.r }; renderSheet(); break;
+    case "fieldsave": {
+      const sh = ui.sheet; if (!sh.loc) break;
+      const e = { t: "pa", r: sh.r, p: sh.p, loc: sh.loc };
+      if (HIT_CODES.includes(sh.r) && ui.bb) e.bb = ui.bb;
+      push(e); break;
+    }
     case "hitpos": { const e = { t: "pa", r: ui.sheet.r, p: +v }; if (ui.bb) e.bb = ui.bb; push(e); break; }
     case "hitskip": { const e = { t: "pa", r: ui.sheet.r }; if (ui.bb) e.bb = ui.bb; push(e); break; }
     case "base": { const b = +el.dataset.b; if (!ui.peekId && S.bases[b] && !S.final) { ui.sheet = { type: "runner", b }; renderSheet(); } break; }

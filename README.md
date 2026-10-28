@@ -48,7 +48,7 @@ Tap what the batter did. The app moves the runners the usual way, and you can fi
 
 - **Batter reaches:** 1B, 2B, 3B, HR, BB (walk), E (error), and **FC** (fielder's choice: a runner is out, the batter is safe). FC asks which runner was out, or whether everyone was safe, and is grayed out with nobody on base.
 - **Batter out:** K swinging, backwards K looking, GO, F, L, P, SF (sac fly), DP, **HR out** (for leagues with a home run limit) and **FBO** (foul ball out).
-- **Where it went:** with **Hit location** on, the app asks which fielder made the play or where the hit landed, for spray charts and fielding stats. Every question has **Skip**.
+- **Where it went:** with **Hit location** on, the app asks which fielder made the play or where the hit landed, for spray charts and fielding stats. Every question has **Skip**. For an exact spot, **Tap on the field** opens a full-screen field: tap where the ball went, then **Save**. The nearest fielder still gets the credit, and the spray chart shows the ball exactly there.
 - **Moving runners:** tap a runner's base to advance, score or put them out. Right after a play, scoring a runner offers **Scored on the play** (RBI to the batter) or **Scored, no RBI** (error, overthrow, passed ball).
 - **Courtesy runner:** also on the runner menu. Once per inning for each team; if they score, the run counts for the courtesy runner.
 - **Walk-offs:** the game ends the moment the home team takes the lead in the last inning. Only the winning run counts, unless it's a home run.
