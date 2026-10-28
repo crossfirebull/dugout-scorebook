@@ -474,8 +474,9 @@ html[data-layout="short"] .tabbar svg { width: 21px; height: 21px; }
 html[data-layout="wide"] body { padding-left: calc(112px + env(safe-area-inset-left, 0px)); padding-bottom: 24px; }
 html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-left, 0px)); }
 .situ { grid-template-columns: minmax(0, 1fr) 110px; }
-.seg { margin-top: 10px; display: flex; overflow-x: auto; }
-.seg button { flex: 1; white-space: nowrap; }
+.seg { margin-top: 10px; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }   /* equal tabs that always fit, no sideways scrolling */
+.seg button { white-space: nowrap; padding: 0 6px; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 360px) { .seg button { font-size: 13px; padding: 0 2px; } }
 .chipbtn.on { background: var(--sel-bg); color: var(--sel-ink); border-style: solid; border-color: var(--sel-bg); }
 .scoutbar { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 2px; }
 .scoutteam { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
@@ -1859,7 +1860,7 @@ function renderStats() {
         <span class="spacer"></span>
         <button class="tbtn" data-act="newseason">New Season</button>
       </div>
-      <div class="tabs seg" role="tablist">${[["overview", "Overview"], ["batting", "Batting"], ["spray", "Spray charts"], ["lineups", "Lineups"]].map(([k, l]) => `<button role="tab" aria-selected="${seg === k}" data-act="statstab" data-v="${k}">${l}</button>`).join("")}</div>
+      <div class="tabs seg" role="tablist">${[["overview", "Overview"], ["batting", "Batting"], ["spray", "Charts"], ["lineups", "Lineups"]].map(([k, l]) => `<button role="tab" aria-selected="${seg === k}" data-act="statstab" data-v="${k}">${l}</button>`).join("")}</div>
     </section>
     ${body}`;
 }
@@ -2382,7 +2383,7 @@ const HELP = [
     <li>Start a new season (Spring, Summer or Fall) with <b>New Season</b> on the Stats tab. Your roster carries over and old seasons stay saved. The season menu switches between them or shows all seasons together.</li></ul>`],
   ["Stats, spray charts and scouting", `
     <ul><li><b>Stats → Batting</b> has Standard, Advanced, Batted ball and Fielding tables. Tap a column to sort. Each table explains its stats underneath.</li>
-    <li><b>Spray charts</b> show where your team and each player hit the ball, with All / Hits / Outs filters.</li>
+    <li><b>Charts</b> are spray charts: where your team and each player hit the ball, with All / Hits / Outs filters.</li>
     <li><b>Scout</b> shows every team you've played, where their hitters hit it, and where to shade your defense. It needs their half scored in Scorekeeper mode.</li></ul>`],
   ["Sounds and walk-up songs", `
     <ul><li>The speaker button turns sound on and off. Built-in ballpark organ sounds play for hits, runs, strikeouts and big moments.</li>
