@@ -118,12 +118,14 @@ test("New Game will not start with two players at the same position", async () =
   const { page, context } = await open();
   await gameSettings(page); await page.click(".sheet [data-act=endgame]");
   await page.click("[data-act=newgame]");
-  await page.fill("#d-opponent", "Test Opponent");
+  const cards = await page.$$(".pcard");
+  await cards[0].click(); await (await page.$$(".pcard"))[1].click();
   // put the second batter at the first batter's position
   const firstPos = await page.inputValue("[data-row=pos][data-i='0']");
   await page.evaluate(pos => { const s = document.querySelector("[data-row=pos][data-i='1']"); [...s.options].forEach(o => o.disabled = false); s.value = pos; }, firstPos);
-  await page.click("[data-act=startgame]");
+  await page.click("[data-act=ng-next]");
   assert.match(await text(page, ".sheet"), /Each position can only be used once/);
+  assert.ok(await page.$(".lubuild"), "stays on the lineup step");
   await context.close();
 });
 
@@ -230,6 +232,9 @@ test("first launch walks through setup, and the choices land in Settings", async
   assert.match(summary, /Test Tigers/); assert.match(summary, /Maroon & Gold/); assert.match(summary, /Scorekeeper mode/); assert.match(summary, /8 innings · ties stand/); assert.match(summary, /HR 1 per team/); assert.match(summary, /2 players/);
   await page.click("[data-act=onb-finish][data-v=game]");
   assert.match(await text(page, ".sheet h3"), /New Game/, "Start a game opens New Game");
+  assert.ok(await page.$(".luempty"), "New Game starts with the lineup, and the roster doesn't fill it in");
+  assert.equal(await page.$$eval(".pgroup h5", h => h.map(x => x.firstChild.textContent).join(",")), "Catchers,Infield", "players grouped by position");
+  await page.click("[data-act=ng-next]");
   assert.match(await text(page, ".sheet .stepper"), /8/, "new game uses the 8-inning default");
   await page.click(".sheet [data-act=close]");
   await page.click("[data-act=settings]");
@@ -580,6 +585,48 @@ test("Help opens from Settings and Game settings, and Done goes back", async () 
   await page.click("[data-act=help]");
   await page.click(".sheet [data-act=close]");
   assert.match(await text(page, ".sheet h3"), /Settings/, "back to Settings");
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("New Game: build the lineup from player cards, drag to reorder, then game details", async () => {
+  const { page, context, errors } = await open(1180, 820);
+  await gameSettings(page); await page.click(".sheet [data-act=endgame]");
+  await page.click("[data-act=newgame]");
+  assert.ok(await page.$(".luempty"), "starts empty");
+  const names = await page.$$eval(".pcard .nm b", b => b.map(x => x.textContent));
+  assert.ok(names.length >= 10);
+  assert.ok(await page.$(".pcard .st b"), "cards show season stats");
+  for (const n of names.slice(0, 4)) await page.click(`.pcard:has-text("${n}")`);
+  const order = () => page.$$eval(".lurow .who b", b => b.map(x => x.textContent.replace(/^#\d+\s*/, "")));
+  const before = await order();
+  assert.equal(before.length, 4);
+  assert.match(await page.getAttribute(`.pcard:has-text("${names[0]}") .flag`, "aria-label"), /Bats 1st/);
+  // drag the 4th batter to the top by the handle
+  const grip = await page.$("[data-grip='3']"), box = await grip.boundingBox(), top = await (await page.$("[data-grip='0']")).boundingBox();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  for (let i = 1; i <= 10; i++) await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2 + (top.y - box.y - 4) * i / 10);
+  await page.mouse.up();
+  assert.deepEqual(await order(), [before[3], before[0], before[1], before[2]]);
+  // tapping a card in the lineup takes that player out
+  await page.click(`.pcard:has-text("${before[1]}")`);
+  assert.deepEqual(await order(), [before[3], before[0], before[2]]);
+  await page.click("[data-act=ng-next]");
+  assert.match(await text(page, ".sheet .steps"), /Game details/);
+  await page.fill("#d-opponent", "Drag Testers");
+  await page.click("[data-act=startgame]");
+  assert.match(await text(page, "#atbat"), new RegExp(before[3]));
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("New Game: Same as last game copies the last lineup", async () => {
+  const { page, context, errors } = await open(390, 844);
+  await gameSettings(page); await page.click(".sheet [data-act=endgame]");
+  await page.click("[data-act=newgame]");
+  await page.click("[data-act=lu-last]");
+  assert.ok((await page.$$(".lurow")).length >= 9);
   assert.deepEqual(errors, []);
   await context.close();
 });

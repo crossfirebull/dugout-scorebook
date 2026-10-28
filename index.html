@@ -292,7 +292,7 @@ table.stats tfoot td:first-child { background: var(--paper); }
 /* Roster + lineup builder */
 .rows { display: grid; gap: 6px; }
 .prow { display: grid; grid-template-columns: 30px minmax(0, 1fr) 84px 70px 40px; gap: 6px; align-items: center; }
-.prow.lu { grid-template-columns: 26px minmax(0, 1fr) 84px 36px 36px 36px; }
+.prow.lu { grid-template-columns: 26px minmax(0, 1fr) 110px; }
 .prow .n { font-family: var(--f-display); font-weight: 700; font-size: 18px; color: var(--muted); text-align: center; }
 .prow input, .prow select { font: inherit; font-size: 15px; padding: 8px; border-radius: 6px; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); width: 100%; min-width: 0; }
 .prow .ibtn { min-height: 34px; border-radius: 6px; border: 1px solid var(--rule); background: var(--surface); padding: 0; }
@@ -306,6 +306,50 @@ table.stats tfoot td:first-child { background: var(--paper); }
 .lusum { font-size: 14px; color: var(--muted); margin: 4px 0 0; }
 .lusum.warn { color: var(--stitch); }
 .bench { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; font-size: 14px; color: var(--muted); }
+.sheet.wide.xwide { max-width: 1060px; }
+.steps { display: flex; gap: 8px; align-items: center; font-family: var(--f-label); font-weight: 600; font-size: 14px; letter-spacing: .06em; text-transform: uppercase; }
+.steps b { color: var(--ink); }
+.lubuild { display: grid; gap: 16px; }
+@media (min-width: 820px) { .lubuild { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); align-items: start; } .luorder { position: sticky; top: 0; z-index: 2; background: var(--surface); } }
+.luhead { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; min-height: 40px; }
+.luhead .tbtn { min-height: 34px; font-size: 14px; }
+.luhead h4 { margin: 0; }
+.luhead .spacer { flex: 1; }
+.lurows { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.lurow { display: grid; grid-template-columns: 36px 22px minmax(0, 1fr) 84px 38px; gap: 6px; align-items: center; padding: 3px 6px 3px 0; border: 1px solid var(--rule); border-radius: 10px; background: var(--paper); transition: transform .15s ease; position: relative; }
+.lurow.dragging { transition: none; z-index: 5; border-color: var(--sel-bg); box-shadow: 0 10px 24px rgba(0, 0, 0, .25); background: var(--surface); }
+.grip { touch-action: none; width: 36px; height: 44px; border: 0; background: none; color: var(--muted); display: grid; place-items: center; cursor: grab; padding: 0; }
+.lurow.dragging .grip { cursor: grabbing; color: var(--ink); }
+.grip svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
+.lurow .n { font-family: var(--f-display); font-weight: 800; font-size: 20px; text-align: center; color: var(--ink); }
+.lurow .who { min-width: 0; }
+.lurow .who b { display: block; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lurow .who b i { font-style: normal; color: var(--muted); font-family: var(--f-label); font-weight: 600; }
+.lurow .who small { display: block; color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lurow select { font: inherit; font-size: 15px; padding: 7px 6px; border-radius: 8px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); min-width: 0; width: 100%; }
+.lurow .ibtn { min-height: 38px; border-radius: 8px; border: 1px solid var(--rule); background: var(--surface); padding: 0; }
+.luempty { border: 2px dashed var(--rule); border-radius: 12px; padding: 22px 16px; text-align: center; color: var(--muted); }
+.dstrip { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.dpos { display: inline-flex; gap: 5px; align-items: baseline; padding: 3px 8px; border-radius: 6px; background: var(--rule-soft); font-size: 13px; }
+.dpos b { font-family: var(--f-label); font-size: 12px; letter-spacing: .04em; }
+.dpos.open { background: none; border: 1px dashed var(--stitch); color: var(--stitch); }
+.pgroup + .pgroup { margin-top: 12px; }
+.pgroup h5 { display: flex; justify-content: space-between; gap: 8px; margin: 0 0 6px; font-family: var(--f-display); font-weight: 800; font-size: 18px; text-transform: uppercase; letter-spacing: .02em; color: var(--ink); }
+.pgroup h5 span { font-family: var(--f-label); font-weight: 600; font-size: 12px; letter-spacing: .06em; color: var(--muted); align-self: center; }
+.pcards { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.pcard { position: relative; display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 4px 8px; align-items: center; text-align: left; padding: 8px; border-radius: 12px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); font: inherit; cursor: pointer; }
+.pcard .num { grid-row: span 2; width: 40px; height: 40px; border-radius: 9px; display: grid; place-items: center; background: var(--team-board, #14284b); color: #ffffff; font-family: var(--f-display); font-weight: 800; font-size: 20px; box-shadow: inset 0 -3px 0 var(--team-p, #c8102e); }
+.pcard .nm { min-width: 0; padding-right: 26px; }
+.pcard .nm b { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-weight: 700; font-size: 15px; line-height: 1.2; }
+.pcard .flag { position: absolute; top: 6px; right: 6px; min-width: 24px; height: 24px; padding: 0 7px; border-radius: 12px; display: grid; place-items: center; font-family: var(--f-label); font-weight: 700; font-size: 12px; letter-spacing: .02em; background: var(--rule-soft); color: var(--muted); }
+.pcard .tags { display: flex; gap: 4px; flex-wrap: wrap; }
+.pcard .tags i { font-style: normal; font-family: var(--f-label); font-weight: 700; font-size: 11px; letter-spacing: .05em; padding: 1px 6px; border-radius: 4px; background: var(--rule-soft); color: var(--ink); }
+.pcard .tags i.b { background: none; color: var(--muted); padding-left: 2px; }
+.pcard .st { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px; padding-top: 6px; border-top: 1px solid var(--rule-soft); font-family: var(--f-label); font-size: 10px; letter-spacing: .06em; color: var(--muted); text-align: center; }
+.pcard .st b { display: block; font-family: var(--f-display); font-weight: 800; font-size: 16px; letter-spacing: 0; color: var(--ink); font-variant-numeric: tabular-nums; }
+.pcard .st .none { grid-column: 1 / -1; text-transform: none; letter-spacing: 0; font-size: 13px; padding: 4px 0; }
+.pcard.in { border-color: var(--sel-bg); box-shadow: inset 0 0 0 1px var(--sel-bg); background: var(--paper); }
+.pcard.in .flag { background: var(--safe); color: #ffffff; }
 .chipbtn { min-height: 34px; padding: 0 10px; border-radius: 17px; border: 1px dashed var(--rule); background: var(--surface); color: var(--ink); font-size: 14px; font-weight: 600; }
 .stepper { display: inline-flex; align-items: center; gap: 10px; flex: none; }
 .stepper b { font-family: var(--f-display); font-size: 22px; min-width: 24px; text-align: center; }
@@ -1444,7 +1488,7 @@ function render() {
   else if (ui.view === "stats") { shellKey = ""; renderStats(); }
   else if (ui.view === "scout") { shellKey = ""; renderScout(); }
   else { shellKey = ""; renderRoster(); }
-  renderSheet();
+  if (!ui.keepSheet) renderSheet();
 }
 
 const TABS = [
@@ -2051,7 +2095,6 @@ function lineupRows(rows, opts) {
       <span class="n">${i + 1}</span>
       <select aria-label="Batter ${i + 1}" data-row="pid" data-i="${i}" data-ch="lu"><option value="">Choose player…</option>${ps.map(p => `<option value="${p.id}" ${p.id === r.pid ? "selected" : ""} ${p.id !== r.pid && used.includes(p.id) ? "disabled" : ""}>${esc(p.num ? "#" + p.num + " " : "")}${esc(p.name)}</option>`).join("")}</select>
       <select aria-label="Position for batter ${i + 1}" data-row="pos" data-i="${i}" data-ch="lu">${posOpts}</select>
-      ${opts.reorder ? `<button class="ibtn" data-act="lu-up" data-v="${i}" aria-label="Move up">↑</button><button class="ibtn" data-act="lu-down" data-v="${i}" aria-label="Move down">↓</button><button class="ibtn" data-act="lu-rm" data-v="${i}" aria-label="Remove">✕</button>` : "<span></span><span></span><span></span>"}
     </div>`;
   }).join("");
   const filled = rows.filter(r => r.pid), field = filled.filter(r => FIELD_POS.includes(r.pos));
@@ -2065,6 +2108,121 @@ function lineupRows(rows, opts) {
       ${bench.length ? bench.map(p => `<button class="chipbtn" data-act="lu-bench" data-v="${p.id}">+ ${esc(p.name || "Unnamed")}${posList(p).length ? " · " + esc(posList(p).join("/")) : ""}</button>`).join("") : "<span>everyone is in the lineup.</span>"}
       <button class="chipbtn" data-act="lu-add">+ Empty row</button></div>`;
 }
+/* ---------- Lineup builder: New Game, and Lineups before the first pitch ----------
+   The batting order, with a ☰ handle on each batter to drag them into place, next to your
+   players grouped by position like a video-game roster screen, with this season's stats. */
+const POS_GROUPS = [["Pitchers", ["P"]], ["Catchers", ["C"]], ["Infield", ["1B", "2B", "3B", "SS"]], ["Outfield", ["LF", "LCF", "CF", "RCF", "RF", "SF"]], ["Bats only", ["EH"]]];
+const GRIP = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"/></svg>';
+function cardStats() {   // this season's numbers, whatever the Stats tab is showing
+  const keep = [ui.seasonView, ui.incCur]; ui.seasonView = null; ui.incCur = false;
+  const { list } = season(); [ui.seasonView, ui.incCur] = keep;
+  return Object.fromEntries(list.map(r => [r.pid, r]));
+}
+function lastLineup() {
+  const g = store.games.slice().reverse().find(x => x.id !== store.currentId && x.lineups[x.ourSide].some(y => player(y.pid)));
+  if (!g) return null;
+  const rows = g.lineups[g.ourSide].filter(x => player(x.pid)).map(x => ({ pid: x.pid, pos: LINEUP_POS.includes(x.pos) ? x.pos : "" }));
+  rows.forEach((r, i) => { if (!r.pos || takenBy(rows.slice(0, i), -1).has(r.pos)) r.pos = firstOpenPos(rows.slice(0, i), -1, player(r.pid)); });
+  return rows;
+}
+function lineupBuilder(d) {
+  const rows = d.rows, stats = cardStats(), order = rows.map(r => r.pid);
+  const items = rows.map((r, i) => {
+    const p = player(r.pid), taken = takenBy(rows, i), mine = posList(p);
+    const opt = x => `<option value="${x}" ${x === r.pos ? "selected" : ""} ${taken.has(x) ? "disabled" : ""}>${x === "EH" ? "EH · bats only" : x}${taken.has(x) ? " (taken)" : ""}</option>`;
+    const posOpts = mine.length ? `<optgroup label="Plays">${mine.map(opt).join("")}</optgroup><optgroup label="Other">${LINEUP_POS.filter(x => !mine.includes(x)).map(opt).join("")}</optgroup>` : LINEUP_POS.map(opt).join("");
+    return `<li class="lurow" data-i="${i}">
+      <button class="grip" data-grip="${i}" aria-label="Move ${esc(p.name)}. Drag, or use the arrow keys.">${GRIP}</button>
+      <span class="n">${i + 1}</span>
+      <span class="who"><b>${esc(p.name || "Unnamed")}</b><small>${p.num ? "#" + esc(p.num) + " · " : ""}${esc(mine.join("/") || "No position")}${p.bats ? " · " + esc(p.bats) : ""}</small></span>
+      <select aria-label="Position for ${esc(p.name)}" data-row="pos" data-i="${i}" data-ch="lu">${posOpts}</select>
+      <button class="ibtn" data-act="lu-rm" data-v="${i}" aria-label="Take ${esc(p.name)} out of the lineup">✕</button></li>`;
+  }).join("");
+  const field = rows.filter(r => FIELD_POS.includes(r.pos)), of = field.filter(r => ["LF", "LCF", "CF", "RCF", "RF"].includes(r.pos)).length;
+  const open = ["P", "C", "1B", "2B", "3B", "SS"].filter(x => !field.some(r => r.pos === x));
+  const defense = FIELD_POS.filter(x => field.some(r => r.pos === x)).map(x => `<span class="dpos"><b>${x}</b>${esc(player(field.find(r => r.pos === x).pid).name.split(" ")[0])}</span>`).join("")
+    + open.map(x => `<span class="dpos open"><b>${x}</b>open</span>`).join("");
+  const last = lastLineup();
+  const card = p => {
+    const i = order.indexOf(p.id), st = stats[p.id];
+    const line = st && st.PA ? [["AVG", fmt.avg(st.AVG)], ["OBP", fmt.avg(st.OBP)], ["HR", st.HR], ["RBI", st.RBI]].map(([k, v]) => `<span><b>${v}</b>${k}</span>`).join("") : `<span class="none">No at-bats yet this season</span>`;
+    return `<button class="pcard ${i >= 0 ? "in" : ""}" data-act="lu-pick" data-v="${p.id}" aria-pressed="${i >= 0}">
+      <span class="num">${esc(p.num || "–")}</span>
+      <span class="nm"><b>${esc(p.name || "Unnamed")}</b><span class="flag" aria-label="${i >= 0 ? "Bats " + ordinal(i + 1) : "Add"}">${i >= 0 ? ordinal(i + 1) : "+"}</span></span>
+      <span class="tags">${posList(p).map(x => `<i>${x}</i>`).join("") || "<i>No position</i>"}${p.bats ? `<i class="b">Bats ${esc(p.bats)}</i>` : ""}</span>
+      <span class="st">${line}</span></button>`;
+  };
+  const groupOf = p => { const f = posList(p)[0] || "EH"; return POS_GROUPS.findIndex(([, list]) => list.includes(f)); };
+  const val = p => { const st = stats[p.id]; return st && st.OPS != null ? st.OPS : -1; };
+  const pool = POS_GROUPS.map(([label], gi) => {
+    const members = store.team.players.filter(p => groupOf(p) === gi).sort((a, b) => val(b) - val(a) || a.name.localeCompare(b.name));
+    if (!members.length) return "";
+    return `<div class="pgroup"><h5>${label}<span>${members.filter(p => order.includes(p.id)).length} of ${members.length} in the lineup</span></h5><div class="pcards">${members.map(card).join("")}</div></div>`;
+  }).join("");
+  return `<div class="lubuild">
+    <section class="luorder">
+      <div class="luhead"><h4>Batting order${rows.length ? ` · ${rows.length}` : ""}</h4><span class="spacer"></span>
+        ${last ? `<button class="tbtn" data-act="lu-last">Same as last game</button>` : ""}${rows.length ? `<button class="tbtn" data-act="lu-clear">Clear</button>` : ""}</div>
+      ${rows.length ? `<ol class="lurows">${items}</ol>` : `<div class="luempty">Tap players to add them in batting order. Drag the ☰ handle to move a batter.</div>`}
+      ${rows.length ? `<p class="lusum">Batting ${rows.length} · In the field ${field.length} (${of} outfielder${of === 1 ? "" : "s"})${rows.length > field.length ? ` · ${rows.length - field.length} bat only` : ""}</p>
+      <div class="dstrip" aria-label="Defense">${defense}</div>` : ""}
+    </section>
+    <section class="lupool"><div class="luhead"><h4>Your players</h4></div>
+      ${pool || `<p>No players yet. Add them on the Team tab.</p>`}</section>
+  </div>`;
+}
+
+// Drag a batter by the ☰ handle. The row follows your finger and the others slide out of the way.
+let drag = null;
+document.addEventListener("pointerdown", ev => {
+  const grip = ev.target.closest && ev.target.closest("[data-grip]"); if (!grip || ev.button > 0) return;
+  ev.preventDefault();
+  readDraftRows();
+  const row = grip.closest(".lurow"), list = row.parentElement, rows = [...list.children], from = rows.indexOf(row);
+  const step = rows.length > 1 ? rows[1].getBoundingClientRect().top - rows[0].getBoundingClientRect().top : row.offsetHeight + 6;
+  const scroller = row.closest(".sheet");
+  drag = { row, rows, from, to: from, step, y0: ev.clientY, s0: scroller ? scroller.scrollTop : 0, scroller, id: ev.pointerId, moved: false };
+  try { grip.setPointerCapture(ev.pointerId); } catch (e) {}
+  row.classList.add("dragging");
+});
+document.addEventListener("pointermove", ev => {
+  if (!drag || ev.pointerId !== drag.id) return;
+  ev.preventDefault();
+  const sc = drag.scroller;
+  if (sc) {   // near the top or bottom of the panel: scroll it
+    const b = sc.getBoundingClientRect();
+    if (ev.clientY < b.top + 50) sc.scrollTop -= 10; else if (ev.clientY > b.bottom - 50) sc.scrollTop += 10;
+  }
+  const dy = ev.clientY - drag.y0 + (sc ? sc.scrollTop - drag.s0 : 0);
+  if (Math.abs(dy) > 4) drag.moved = true;
+  drag.row.style.transform = `translateY(${dy}px)`;
+  const to = Math.max(0, Math.min(drag.rows.length - 1, drag.from + Math.round(dy / drag.step)));
+  drag.to = to;
+  drag.rows.forEach((r, j) => {
+    if (r === drag.row) return;
+    const shift = drag.from < j && j <= to ? -drag.step : to <= j && j < drag.from ? drag.step : 0;
+    r.style.transform = shift ? `translateY(${shift}px)` : "";
+  });
+});
+function endDrag(ev) {
+  if (!drag || (ev && ev.pointerId !== drag.id)) return;
+  const { from, to, moved } = drag; drag = null;
+  if (moved && to !== from) { const rows = ui.draft.rows, [r] = rows.splice(from, 1); rows.splice(to, 0, r); }
+  renderSheet();
+}
+document.addEventListener("pointerup", endDrag);
+document.addEventListener("pointercancel", endDrag);
+// The handle also moves a batter with the arrow keys
+document.addEventListener("keydown", ev => {
+  const grip = ev.target.closest && ev.target.closest("[data-grip]"); if (!grip || !/^Arrow(Up|Down)$/.test(ev.key)) return;
+  ev.preventDefault(); readDraftRows();
+  const rows = ui.draft.rows, i = +grip.dataset.grip, j = ev.key === "ArrowUp" ? i - 1 : i + 1;
+  if (j < 0 || j >= rows.length) return;
+  [rows[i], rows[j]] = [rows[j], rows[i]];
+  renderSheet();
+  const g = document.querySelector(`[data-grip="${j}"]`); if (g) g.focus();
+});
+
 function lineupError(rows) {
   const seen = {};
   for (const r of rows) {
@@ -2166,7 +2324,7 @@ function pregameChecklist(d) {
     <span class="ckt"><b>${title}</b><small>${detail}</small></span>${acts ? `<span class="ckacts">${acts}</span>` : ""}</li>`;
   return `<ul class="checklist">
     ${item(d.opponent.trim() ? "ok" : "bad", "Opponent", d.opponent.trim() ? `${esc(d.opponent.trim())} · we're ${d.ourSide ? "home" : "the visitors"} · ${esc(d.date)}` : "Enter the other team's name below.")}
-    ${item(filled.length >= 8 && !clash ? "ok" : "bad", "Lineup", clash || `${filled.length} batting · ${field.length} in the field${filled.length < 8 ? " · most leagues need at least 8" : ""}`)}
+    ${item(filled.length >= 8 && !clash ? "ok" : "bad", "Lineup", clash || `${filled.length} batting · ${field.length} in the field${filled.length < 8 ? " · most leagues need at least 8" : ""}`, `<button class="tbtn" data-act="ng-back">Edit</button>`)}
     ${item("ok", "Game settings", `${d.mode === "dugout" ? "Dugout" : "Scorekeeper"} mode · ${rulesSummary(rulesOf(d))}${d.askHits ? "" : " · hit location off"}`)}
     ${item(ui.sound ? "ok" : "info", "Sound", ui.sound ? "On. Connect the speaker, then test it." : "Off. Turn it on if you're using a speaker.",
       `<button class="tbtn" data-act="sound-toggle">${ui.sound ? "Turn off" : "Turn on"}</button><button class="tbtn" data-act="testsound">Test speaker</button>`)}
@@ -2180,8 +2338,10 @@ function pregameChecklist(d) {
 /* ---------- Help: how to use ScoreKept, one topic per fold ---------- */
 const HELP = [
   ["Start a game", `
-    <p>Tap <b>New Game</b> (Game tab or Stats → Overview). The pregame checklist covers the opponent, your lineup, the game settings, sound, walk-up songs and your last backup.</p>
-    <ul><li><b>Lineup:</b> each player's own positions come first, and a position that's taken is locked for everyone else. Pick <b>EH · bats only</b> for anyone who bats but doesn't field. Everyone can bat.</li>
+    <p>Tap <b>New Game</b> (Game tab or Stats → Overview). It starts with the lineup, then the game details.</p>
+    <ul><li><b>Lineup:</b> your players are grouped by position with this season's stats. Tap them in batting order; tap again to take one out. Drag the <b>☰</b> handle to move a batter up or down. <b>Same as last game</b> copies your last lineup.</li>
+    <li><b>Positions:</b> each player gets their main position if it's open. Change it in their row; a position that's taken is locked. Pick <b>EH · bats only</b> for anyone who bats but doesn't field. Everyone can bat.</li>
+    <li><b>Game details:</b> the opponent, home or away, league rules, and a pregame checklist for sound, walk-up songs and your last backup.</li>
     <li><b>Dugout mode</b> scores your batters one at a time. When the other team bats you just tap <b>+1 Run</b> and <b>+1 Out</b>.</li>
     <li><b>Scorekeeper mode</b> scores every batter on both teams and builds scouting reports.</li></ul>`],
   ["Scoring a play", `
@@ -2385,9 +2545,17 @@ function renderSheet() {
     body = `<h3>Courtesy runner</h3><p>Who runs for ${esc(runnerName(S, r))} at ${["first", "second", "third"][sh.b]}? If they score, the run counts for the courtesy runner. One per inning.</p>
       <div class="keys" style="grid-template-columns:repeat(2,minmax(0,1fr))">${list.map((x, i) => `<button class="key on" data-act="cr" data-v="${i}"><b>${esc(x.name)}</b><span>${esc(x.note)}</span></button>`).join("")}</div>
       <div class="acts"><button class="tbtn" data-act="close">Cancel</button></div>`;
+  } else if (sh.type === "newgame" && sh.step !== "game") {
+    const d = ui.draft; wide = "xwide";
+    body = `<h3>New Game</h3>
+      <p class="steps"><b>1 Lineup</b><span aria-hidden="true">›</span>2 Game details</p>
+      ${lineupBuilder(d)}
+      ${ui.msg ? `<p style="color:var(--stitch)">${ui.msg}</p>` : ""}
+      <div class="acts"><button class="tbtn" data-act="close">Cancel</button><button class="tbtn primary" data-act="ng-next">Next: game details</button></div>`;
   } else if (sh.type === "newgame") {
     const d = ui.draft; wide = true;
     body = `<h3>New Game</h3>
+      <p class="steps">1 Lineup<span aria-hidden="true">›</span><b>2 Game details</b></p>
       <h4 style="margin:0">Pregame checklist</h4>
       ${pregameChecklist(d)}
       <h4>Matchup</h4>
@@ -2397,20 +2565,18 @@ function renderSheet() {
         <div class="field"><label for="d-date">Date</label><input id="d-date" type="date" data-ch="draft" value="${esc(d.date)}"></div>
         <div class="field"><label for="d-side">${esc(store.team.name)} are</label><select id="d-side" data-ch="draft"><option value="0" ${d.ourSide === 0 ? "selected" : ""}>Visitors (bat first)</option><option value="1" ${d.ourSide === 1 ? "selected" : ""}>Home (bat second)</option></select></div>
       </div>
-      <h4>${esc(store.team.name)} batting order &amp; positions</h4>
-      ${lineupRows(d.rows, { reorder: true })}
       ${d.mode === "dugout" ? "" : `<div class="field"><label for="d-opp">Opponent batting order (optional, one per line)</label><textarea id="d-opp" style="min-height:120px" placeholder="Leave blank to use Batter 1, Batter 2…">${esc(d.opp)}</textarea></div>`}
       <h4>Game settings</h4>
       ${rulesFields(d, false)}
       ${ui.msg ? `<p style="color:var(--stitch)">${ui.msg}</p>` : ""}
-      <div class="acts"><button class="tbtn" data-act="close">Cancel</button><button class="tbtn primary" data-act="startgame">Play ball</button></div>`;
+      <div class="acts"><button class="tbtn" data-act="close">Cancel</button><button class="tbtn" data-act="ng-back">Back to lineup</button><button class="tbtn primary" data-act="startgame">Play ball</button></div>`;
   } else if (sh.type === "lineups") {
-    const d = ui.draft; wide = true;
-    const started = G.events.length > 0;
+    const d = ui.draft;
+    const started = G.events.length > 0; wide = started ? true : "xwide";
     body = `<h3>Lineups</h3>
       <p>${started ? "Changes here are substitutions from this point on. Earlier at-bats stay with the player who batted." : "Set the batting order before the first pitch."}</p>
       <h2 style="margin:0">${esc(store.team.name)}</h2>
-      ${lineupRows(d.rows, { reorder: !started, started })}
+      ${started ? lineupRows(d.rows, { started }) : lineupBuilder(d)}
       ${ui.msg ? `<p style="color:var(--stitch)">${ui.msg}</p>` : ""}
       ${modeOf(G) === "dugout" ? "" : `<div class="field"><label for="d-opp">${esc(G.opponent)} batting order (one per line)</label><textarea id="d-opp" style="min-height:120px">${esc(d.opp)}</textarea></div>`}
       <div class="acts"><button class="tbtn" data-act="close">Cancel</button><button class="tbtn primary" data-act="savelineups">Save</button></div>`;
@@ -2558,7 +2724,10 @@ function renderSheet() {
       <div class="acts"><button class="tbtn" data-act="close">Done</button></div>`;
   }
   if (sh.type === "onboard") { o.innerHTML = onboardHTML(sh); return; }
-  o.innerHTML = `<div class="scrim" data-act="scrim"><div class="sheet ${wide ? "wide" : ""}" role="dialog" aria-modal="true">${body}</div></div>`;
+  const key = sh.type + ":" + (sh.step || ""), old = o.querySelector(".sheet"), top = old && o.dataset.sheet === key ? old.scrollTop : 0;
+  o.innerHTML = `<div class="scrim" data-act="scrim"><div class="sheet ${wide === "xwide" ? "wide xwide" : wide ? "wide" : ""}" role="dialog" aria-modal="true">${body}</div></div>`;
+  o.dataset.sheet = key;
+  if (top) o.querySelector(".sheet").scrollTop = top;   // tapping a player or a setting doesn't jump back to the top
 }
 
 /* =====================================================================
@@ -2584,28 +2753,19 @@ function syncSoundBtn() {
 }
 function closeSheet() { ui.sheet = null; ui.draft = null; ui.confirm = null; ui.msg = ""; ui.bb = null; render(); }
 
-// Start from the last game's lineup; otherwise the roster, giving each player
-// their first position that isn't already taken.
-function defaultRows() {
-  const last = store.games.slice().reverse().find(g => g.lineups[g.ourSide].some(x => x.pid));
-  let rows = last ? last.lineups[last.ourSide].filter(x => player(x.pid)).map(x => ({ pid: x.pid, pos: LINEUP_POS.includes(x.pos) ? x.pos : "" })) : [];
-  if (!rows.length) rows = store.team.players.map(p => ({ pid: p.id, pos: "" }));
-  rows.forEach((r, i) => { if (!r.pos || takenBy(rows.slice(0, i), -1).has(r.pos)) r.pos = firstOpenPos(rows.slice(0, i), -1, player(r.pid)); });
-  return rows;
-}
 function openNewGame() {
   ui.draft = { opponent: "", oppAbbr: "", date: today(), ourSide: 0, innings: (store.prefs && store.prefs.innings) || 7, startCount: false, foulOut: false, askHits: !(store.prefs && store.prefs.askHits === false),
-    mode: (store.prefs && store.prefs.mode) || "dugout", trackCount: !(store.prefs && store.prefs.trackCount === false), rows: defaultRows(), opp: "" };
+    mode: (store.prefs && store.prefs.mode) || "dugout", trackCount: !(store.prefs && store.prefs.trackCount === false), rows: [], opp: "" };   // the lineup starts empty: you build it each game
   Object.assign(ui.draft, prefRules());
-  ui.msg = ""; ui.sheet = { type: "newgame" }; renderSheet();
+  ui.msg = ""; ui.sheet = { type: "newgame", step: "lineup" }; renderSheet();
 }
 function startGame() {
   readDraftRows();
   const d = ui.draft;
   const ours = d.rows.filter(r => player(r.pid)).map(r => ({ pid: r.pid, name: player(r.pid).name, pos: r.pos }));
   if (!d.opponent.trim()) { ui.msg = "Enter the opponent's name."; renderSheet(); return; }
-  if (!ours.length) { ui.msg = "Pick at least one player for your batting order."; renderSheet(); return; }
-  const clash = lineupError(d.rows); if (clash) { ui.msg = clash; renderSheet(); return; }
+  if (!ours.length) { ui.msg = "Pick at least one player for your batting order."; ui.sheet.step = "lineup"; renderSheet(); return; }
+  const clash = lineupError(d.rows); if (clash) { ui.msg = clash; ui.sheet.step = "lineup"; renderSheet(); return; }
   const theirs = d.opp.split("\n").map(x => x.trim()).filter(Boolean).map(name => ({ pid: null, name, pos: "" }));
   const lineups = d.ourSide === 0 ? [ours, theirs] : [theirs, ours];
   const g = { id: uid(), seasonId: store.currentSeasonId, date: d.date || today(), opponent: d.opponent.trim(), opponentAbbr: d.oppAbbr || "", ourSide: d.ourSide,
@@ -2799,11 +2959,19 @@ document.addEventListener("click", ev => {
       break;
     }
     case "lu-rm": readDraftRows(); ui.draft.rows.splice(+v, 1); renderSheet(); break;
-    case "lu-up": case "lu-down": {
-      readDraftRows(); const i = +v, j = act === "lu-up" ? i - 1 : i + 1, rows = ui.draft.rows;
-      if (j >= 0 && j < rows.length) [rows[i], rows[j]] = [rows[j], rows[i]];
-      renderSheet(); break;
+    case "lu-pick": {
+      readDraftRows(); const rows = ui.draft.rows, i = rows.findIndex(r => r.pid === v);
+      if (i >= 0) rows.splice(i, 1); else rows.push({ pid: v, pos: firstOpenPos(rows, rows.length, player(v)) });
+      ui.msg = ""; renderSheet(); break;
     }
+    case "lu-last": { const rows = lastLineup(); if (rows) ui.draft.rows = rows; ui.msg = ""; renderSheet(); break; }
+    case "lu-clear": ui.draft.rows = []; renderSheet(); break;
+    case "ng-next": {
+      readDraftRows(); const clash = lineupError(ui.draft.rows);
+      if (clash) { ui.msg = clash; renderSheet(); break; }
+      ui.msg = ""; ui.sheet.step = "game"; renderSheet(); break;
+    }
+    case "ng-back": readDraftRows(); ui.msg = ""; ui.sheet.step = "lineup"; renderSheet(); break;
     case "gamemenu": openGameMenu(); break;
     case "savegamemenu": saveGameMenu(); break;
     case "endgame": endGame(); break;
@@ -2908,12 +3076,18 @@ document.addEventListener("input", ev => {
   const ab = $("onbAbbr"); if (ab && k === "name") ab.placeholder = abbrOf(store.team.name);
 });
 document.addEventListener("toggle", ev => { if (ev.target.matches && ev.target.matches(".help details") && ev.target.open) ui.helpOpen = ev.target.querySelector("summary").textContent; }, true);
+const typedField = el => el.tagName === "TEXTAREA" || (el.tagName === "INPUT" && !/^(checkbox|radio|range|file)$/.test(el.type));
 document.addEventListener("change", ev => {
   const el = ev.target, ch = el.dataset && el.dataset.ch; if (!ch) return;
   const p = el.dataset.id ? player(el.dataset.id) : null;
   if (ch === "minPA") { ui.minPA = +el.value; render(); }
   else if (ch === "seasonSel") { ui.seasonView = el.value === store.currentSeasonId ? null : el.value; render(); }
-  else if (ch === "draft") { readDraftRows(); renderSheet(); }
+  else if (ch === "draft") {
+    readDraftRows();
+    // Typing: refresh just the checklist, so the button you tap next isn't redrawn under your finger
+    if (typedField(el)) { const ck = document.querySelector(".sheet .checklist"); if (ck && ui.draft.rows) ck.outerHTML = pregameChecklist(ui.draft); }
+    else renderSheet();
+  }
   else if (ch === "pref") {
     store.prefs = Object.assign({}, store.prefs);
     if (el.dataset.k === "dugout") store.prefs.mode = el.checked ? "dugout" : "scorekeeper"; else store.prefs[el.dataset.k] = el.checked;
@@ -2935,7 +3109,7 @@ document.addEventListener("change", ev => {
     ui.msg = ""; renderSheet();
   }
   else if (ch === "draftMode") { if (ui.sheet && ui.sheet.type === "gamemenu") applyGameMenu(); else { readDraftRows(); renderSheet(); } }
-  else if (ch === "setting") applyGameMenu();
+  else if (ch === "setting") { ui.keepSheet = typedField(el); applyGameMenu(); ui.keepSheet = false; }
   else if (ch === "clockstart") {
     const g = curGame(), m = /^(\d\d):(\d\d)$/.exec(el.value); if (!g || !m) return;
     const d = new Date(); d.setHours(+m[1], +m[2], 0, 0);
