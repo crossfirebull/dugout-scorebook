@@ -702,3 +702,23 @@ test("built-in walk-up tunes: every player has one by default, it plays, and it 
   assert.deepEqual(errors, []);
   await context.close();
 });
+
+test("park & field: typed once, offered next time, and deletable in Settings", async () => {
+  const { page, context, errors } = await open(393, 852);
+  await gameSettings(page); await page.click(".sheet [data-act=endgame]");
+  for (const park of ["Rolland Moore Park #3", "Spring Park #1"]) {
+    await page.click("[data-act=newgame]"); await page.click("[data-act=lu-last]"); await page.click("[data-act=ng-next]");
+    await page.fill("#d-opponent", "Park Testers"); await page.fill("#d-park", park);
+    await page.click("[data-act=startgame]");
+    await gameSettings(page); await page.click(".sheet [data-act=endgame]");
+  }
+  await page.click("[data-act=newgame]"); await page.click("[data-act=ng-next]");
+  assert.deepEqual(await page.$$eval("#parkList option", o => o.map(x => x.value)), ["Spring Park #1", "Rolland Moore Park #3"]);
+  await page.click(".sheet [data-act=close]");
+  assert.match(await page.textContent("#view"), /Rolland Moore Park #3/, "shown in the games list");
+  await page.click("[data-act=settings]");
+  await page.click(".sheet [data-act=park-rm][data-v='1']");
+  assert.doesNotMatch(await text(page, ".sheet"), /Rolland Moore/);
+  assert.deepEqual(errors, []);
+  await context.close();
+});

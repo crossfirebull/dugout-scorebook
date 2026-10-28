@@ -665,6 +665,7 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 .srow .sl { min-width: 0; }
 .srow .sl small { display: block; color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .srow .sb { display: flex; gap: 6px; align-items: center; }
+.setrow .ibtn { flex: none; min-width: 40px; min-height: 40px; border-radius: 8px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); }
 .srow .ibtn { min-width: 40px; min-height: 40px; border-radius: 8px; border: 1px solid var(--rule); background: var(--surface); }
 .srow .ibtn:disabled { opacity: .35; }
 .srow .sx { grid-column: 1 / -1; display: flex; gap: 8px 16px; flex-wrap: wrap; align-items: center; font-size: 14px; color: var(--muted); }
@@ -1933,7 +1934,7 @@ function renderStats() {
     const res = live ? "" : us > them ? "W" : us < them ? "L" : "T";
     const confirmDel = ui.confirm === "del:" + g.id;
     return `<li><span class="res ${res.toLowerCase()}">${live ? "●" : res}</span>
-      <span class="who">${g.ourSide ? "vs" : "at"} ${esc(g.opponent)} <b>${us}–${them}</b><small>${esc(g.date)}${live ? " · in progress" : ""}</small></span>
+      <span class="who">${g.ourSide ? "vs" : "at"} ${esc(g.opponent)} <b>${us}–${them}</b><small>${esc(g.date)}${g.park ? " · " + esc(g.park) : ""}${live ? " · in progress" : ""}</small></span>
       ${live ? `<button class="tbtn" data-act="resume">Resume</button>` : `<button class="tbtn" data-act="peek" data-v="${g.id}">View</button>`}
       <button class="tbtn ${confirmDel ? "danger" : ""}" data-act="delgame" data-v="${g.id}">${confirmDel ? "Confirm delete" : "Delete"}</button></li>`;
   }).join("");
@@ -2389,7 +2390,7 @@ function lineupError(rows) {
 function readDraftRows() {
   const d = ui.draft; if (!d) return;
   document.querySelectorAll("[data-row]").forEach(el => { const r = d.rows[+el.dataset.i]; if (r) r[el.dataset.row] = el.value; });
-  ["opponent", "date", "opp"].forEach(k => { if ($("d-" + k)) d[k] = $("d-" + k).value; });
+  ["opponent", "date", "opp", "park"].forEach(k => { if ($("d-" + k)) d[k] = $("d-" + k).value; });
   if ($("d-oppAbbr")) d.oppAbbr = $("d-oppAbbr").value.trim().toUpperCase().slice(0, 5);
   if ($("d-side")) d.ourSide = +$("d-side").value;
   if ($("d-inn")) d.innings = +$("d-inn").value;
@@ -2477,7 +2478,7 @@ function pregameChecklist(d) {
   const item = (state, title, detail, acts) => `<li class="ck ${state}"><span class="mark" aria-hidden="true">${state === "ok" ? "✓" : state === "bad" ? "!" : "•"}</span>
     <span class="ckt"><b>${title}</b><small>${detail}</small></span>${acts ? `<span class="ckacts">${acts}</span>` : ""}</li>`;
   return `<ul class="checklist">
-    ${item(d.opponent.trim() ? "ok" : "bad", "Opponent", d.opponent.trim() ? `${esc(d.opponent.trim())} · we're ${d.ourSide ? "home" : "the visitors"} · ${esc(d.date)}` : "Enter the other team's name below.")}
+    ${item(d.opponent.trim() ? "ok" : "bad", "Opponent", d.opponent.trim() ? `${esc(d.opponent.trim())} · we're ${d.ourSide ? "home" : "the visitors"} · ${esc(d.date)}${d.park && d.park.trim() ? " · " + esc(d.park.trim()) : ""}` : "Enter the other team's name below.")}
     ${item(filled.length >= 8 && !clash ? "ok" : "bad", "Lineup", clash || `${filled.length} batting · ${field.length} in the field${filled.length < 8 ? " · most leagues need at least 8" : ""}`, `<button class="tbtn" data-act="ng-back">Edit</button>`)}
     ${item("ok", "Game settings", `${d.mode === "dugout" ? "Dugout" : "Scorekeeper"} mode · ${rulesSummary(rulesOf(d))}${d.askHits ? "" : " · hit location off"}`)}
     ${item(ui.sound ? "ok" : "info", "Sound", ui.sound ? "On. Connect the speaker, then test it." : "Off. Turn it on if you're using a speaker.",
@@ -2720,6 +2721,7 @@ function renderSheet() {
         <div class="field"><label for="d-opponent">Opponent</label><input id="d-opponent" data-ch="draft" value="${esc(d.opponent)}" placeholder="Team name" autocomplete="off"></div>
         <div class="field" style="max-width:120px"><label for="d-oppAbbr">Short name</label><input id="d-oppAbbr" data-ch="draft" maxlength="5" value="${esc(d.oppAbbr || "")}" placeholder="${esc(abbrOf(d.opponent))}" autocomplete="off" style="text-transform:uppercase"></div>
         <div class="field"><label for="d-date">Date</label><input id="d-date" type="date" data-ch="draft" value="${esc(d.date)}"></div>
+        ${parkInput(d, "draft")}
         <div class="field"><label for="d-side">${esc(store.team.name)} are</label><select id="d-side" data-ch="draft"><option value="0" ${d.ourSide === 0 ? "selected" : ""}>Visitors (bat first)</option><option value="1" ${d.ourSide === 1 ? "selected" : ""}>Home (bat second)</option></select></div>
       </div>
       ${d.mode === "dugout" ? "" : `<div class="field"><label for="d-opp">Opponent batting order (optional, one per line)</label><textarea id="d-opp" style="min-height:120px" placeholder="Leave blank to use Batter 1, Batter 2…">${esc(d.opp)}</textarea></div>`}
@@ -2742,6 +2744,7 @@ function renderSheet() {
     body = `<h3>Game Settings</h3>
       <div class="two"><div class="field"><label for="d-opponent">Opponent</label><input id="d-opponent" data-ch="setting" value="${esc(d.opponent)}" autocomplete="off"></div>
       <div class="field" style="max-width:120px"><label for="d-oppAbbr">Short name</label><input id="d-oppAbbr" data-ch="setting" maxlength="5" value="${esc(d.oppAbbr || "")}" placeholder="${esc(abbrOf(d.opponent))}" autocomplete="off" style="text-transform:uppercase"></div></div>
+      ${parkInput(d, "setting")}
       ${rulesFields(d, true)}
       ${clockRows(curGame())}
       <div class="setlist"><button class="setrow" data-act="help"><span><b>Help &amp; how to score</b><small>Every button, moving runners, league rules and more.</small></span><span class="chev" aria-hidden="true">›</span></button>
@@ -2851,6 +2854,9 @@ function renderSheet() {
       <div class="setlist">${link("help", "Help &amp; how to score", "Every button, moving runners, league rules, stats and backups.")}</div>
       <h4 style="margin:0">Team</h4>
       <div class="setlist">${link("teamedit", esc(store.team.name), `Short name ${esc(store.team.abbr || abbrOf(store.team.name))} · ${esc(colorName(c.primary))} &amp; ${esc(colorName(c.secondary))}`)}</div>
+      <h4 style="margin:0">Parks &amp; fields</h4>
+      <div class="setlist">${(store.parks || []).length ? store.parks.map((x, i) => `<div class="setrow"><span><b>${esc(x)}</b></span><button class="ibtn" data-act="park-rm" data-v="${i}" aria-label="Delete ${esc(x)}">✕</button></div>`).join("")
+        : `<div class="setrow"><span><small>Parks you type in New Game show up here and in its dropdown. Delete any you don't need.</small></span></div>`}</div>
       <h4 style="margin:0">New game defaults</h4>
       <div class="setlist">
         ${psw("dugout", "Dugout mode", "Score your batters one at a time; their half-innings with quick run and out buttons. Off: score every batter on both teams.", pf.mode === "dugout")}
@@ -2929,13 +2935,21 @@ function startGame() {
   const clash = lineupError(d.rows); if (clash) { ui.msg = clash; ui.sheet.step = "lineup"; renderSheet(); return; }
   const theirs = d.opp.split("\n").map(x => x.trim()).filter(Boolean).map(name => ({ pid: null, name, pos: "" }));
   const lineups = d.ourSide === 0 ? [ours, theirs] : [theirs, ours];
-  const g = { id: uid(), seasonId: store.currentSeasonId, date: d.date || today(), opponent: d.opponent.trim(), opponentAbbr: d.oppAbbr || "", ourSide: d.ourSide,
+  rememberPark(d.park);
+  const g = { id: uid(), seasonId: store.currentSeasonId, date: d.date || today(), opponent: d.opponent.trim(), opponentAbbr: d.oppAbbr || "", park: (d.park || "").trim(), ourSide: d.ourSide,
               settings: Object.assign({ innings: d.innings, startCount: d.startCount, foulOut: d.foulOut, askHits: d.askHits, mode: d.mode, trackCount: d.trackCount }, ruleSettings(d)), lineups, events: [], done: false };
   store.prefs = Object.assign({}, store.prefs, { askHits: d.askHits, mode: d.mode, trackCount: d.trackCount }, ruleSettings(d));
   store.games.push(g); store.currentId = g.id;
   save(); ui.sheet = null; ui.draft = null; ui.view = "game"; ui.peekId = null; render();
 }
 const ruleSettings = d => { const r = rulesOf(d); return { innings: r.innings, extras: r.extras, timeLimit: r.timeLimit, runRule: d.runRule ? d.runRule.slice() : r.runRule, hrRule: r.hrRule }; };
+// Parks & fields: typed once, then offered in a dropdown. Most recent first; delete them in Settings.
+function rememberPark(name) {
+  name = (name || "").trim(); if (!name) return;
+  store.parks = [name].concat((store.parks || []).filter(x => x.toLowerCase() !== name.toLowerCase())).slice(0, 40);
+}
+const parkInput = (d, ch) => `<div class="field"><label for="d-park">Park &amp; field</label><input id="d-park" list="parkList" data-ch="${ch}" value="${esc(d.park || "")}" placeholder="e.g. Rolland Moore Park #3" autocomplete="off">
+  <datalist id="parkList">${(store.parks || []).map(x => `<option value="${esc(x)}"></option>`).join("")}</datalist></div>`;
 function openLineups() {
   const t = G.ourSide;
   ui.draft = { rows: S.lu[t].map(x => ({ pid: x.pid, pos: x.pos })), opp: S.lu[1 - t].map(x => x.name).join("\n") };
@@ -2958,7 +2972,7 @@ function saveLineups() {
 }
 function openGameMenu() {
   const s = G.settings;
-  ui.draft = Object.assign({ opponent: G.opponent, oppAbbr: G.opponentAbbr || "", startCount: s.startCount, foulOut: s.foulOut, askHits: s.askHits !== false, mode: modeOf(G), trackCount: countOn(G) }, ruleSettings(s));
+  ui.draft = Object.assign({ opponent: G.opponent, oppAbbr: G.opponentAbbr || "", park: G.park || "", startCount: s.startCount, foulOut: s.foulOut, askHits: s.askHits !== false, mode: modeOf(G), trackCount: countOn(G) }, ruleSettings(s));
   ui.confirm = null; ui.sheet = { type: "gamemenu" }; renderSheet();
 }
 function saveGameMenu() { applyGameMenu(); closeSheet(); }
@@ -2967,6 +2981,7 @@ function applyGameMenu() {
   const g = curGame(), d = ui.draft; if (!g || !d) return;
   g.opponent = d.opponent.trim() || g.opponent;
   g.opponentAbbr = d.oppAbbr || "";
+  if (d.park != null) { g.park = d.park.trim(); rememberPark(g.park); }
   Object.assign(g.settings, { startCount: d.startCount, foulOut: d.foulOut, askHits: d.askHits, mode: d.mode, trackCount: d.trackCount }, ruleSettings(d));
   store.prefs = Object.assign({}, store.prefs, { askHits: d.askHits, mode: d.mode, trackCount: d.trackCount }, ruleSettings(d));
   ui.bookTeam = null; save(); render();
@@ -3135,6 +3150,7 @@ document.addEventListener("click", ev => {
       ui.msg = ""; renderSheet(); break;
     }
     case "lu-last": { const rows = lastLineup(); if (rows) ui.draft.rows = rows; ui.msg = ""; renderSheet(); break; }
+    case "park-rm": store.parks.splice(+v, 1); save(); renderSheet(); break;
     case "lu-clear": ui.draft.rows = []; renderSheet(); break;
     case "ng-next": {
       readDraftRows(); const clash = lineupError(ui.draft.rows);
