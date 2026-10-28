@@ -787,3 +787,16 @@ test("add a fill-in player on the fly while building the lineup", async () => {
   assert.deepEqual(errors, []);
   await context.close();
 });
+
+test("New Game ends with the coin toss: home or visitors starts the game", async () => {
+  const { page, context, errors } = await open(393, 852);
+  await gameSettings(page); await page.click(".sheet [data-act=endgame]");
+  await page.click("[data-act=newgame]"); await page.click("[data-act=lu-last]"); await page.click("[data-act=ng-next]");
+  assert.equal(await page.$("#d-side"), null, "no home/away choice before the end");
+  await page.fill("#d-opponent", "Coin Flippers");
+  await page.click("[data-act=startgame][data-v='1']");
+  assert.match(await text(page, "#bug .row:not(.us) .abbr"), /COI|FLI/);
+  assert.ok(await page.$("#bug .row.us:last-child") || await page.$("#bug .rows .row:nth-child(2).us"), "we're the second row: home");
+  assert.deepEqual(errors, []);
+  await context.close();
+});

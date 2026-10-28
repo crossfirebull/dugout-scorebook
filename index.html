@@ -231,6 +231,9 @@ input.switch:checked::after, .check input[type=checkbox]:checked::after { transf
 .npform { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; width: 100%; }
 .npform input { font: inherit; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); min-width: 0; }
 .npform #np-name { flex: 1 1 180px; } .npform #np-num { width: 64px; }
+.tossbtns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.tossbtns .tbtn { min-height: 76px; display: grid; place-content: center; gap: 2px; font-size: 19px; }
+.tossbtns small { font-weight: 500; font-size: 13px; opacity: .85; }
 .recapimg img { display: block; width: 100%; max-width: 420px; margin: 0 auto; border-radius: 12px; box-shadow: 0 8px 24px rgba(0, 0, 0, .3); }
 .recapacts { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 .recaptext pre { white-space: pre-wrap; font-size: 12px; background: var(--paper); border: 1px solid var(--rule); border-radius: 8px; padding: 10px; overflow-x: auto; }
@@ -2517,7 +2520,7 @@ function pregameChecklist(d) {
   const item = (state, title, detail, acts) => `<li class="ck ${state}"><span class="mark" aria-hidden="true">${state === "ok" ? "✓" : state === "bad" ? "!" : "•"}</span>
     <span class="ckt"><b>${title}</b><small>${detail}</small></span>${acts ? `<span class="ckacts">${acts}</span>` : ""}</li>`;
   return `<ul class="checklist">
-    ${item(d.opponent.trim() ? "ok" : "bad", "Opponent", d.opponent.trim() ? `${esc(d.opponent.trim())} · we're ${d.ourSide ? "home" : "the visitors"} · ${esc(d.date)}${d.park && d.park.trim() ? " · " + esc(d.park.trim()) : ""}` : "Enter the other team's name below.")}
+    ${item(d.opponent.trim() ? "ok" : "bad", "Opponent", d.opponent.trim() ? `${esc(d.opponent.trim())} · ${esc(d.date)}${d.park && d.park.trim() ? " · " + esc(d.park.trim()) : ""}` : "Enter the other team's name below.")}
     ${item(filled.length >= 8 && !clash ? "ok" : "bad", "Lineup", clash || `${filled.length} batting · ${field.length} in the field${filled.length < 8 ? " · most leagues need at least 8" : ""}`, `<button class="tbtn" data-act="ng-back">Edit</button>`)}
     ${item("ok", "Game settings", `${d.mode === "dugout" ? "Dugout" : "Scorekeeper"} mode · ${rulesSummary(rulesOf(d))}${d.askHits ? "" : " · hit location off"}`)}
     ${item(ui.sound ? "ok" : "info", "Sound", ui.sound ? "On. Connect the speaker, then test it." : "Off. Turn it on if you're using a speaker.",
@@ -2763,13 +2766,16 @@ function renderSheet() {
         <div class="field" style="max-width:120px"><label for="d-oppAbbr">Short name</label><input id="d-oppAbbr" data-ch="draft" maxlength="5" value="${esc(d.oppAbbr || "")}" placeholder="${esc(abbrOf(d.opponent))}" autocomplete="off" style="text-transform:uppercase"></div>
         <div class="field"><label for="d-date">Date</label><input id="d-date" type="date" data-ch="draft" value="${esc(d.date)}"></div>
         ${parkInput(d, "draft")}
-        <div class="field"><label for="d-side">${esc(store.team.name)} are</label><select id="d-side" data-ch="draft"><option value="0" ${d.ourSide === 0 ? "selected" : ""}>Visitors (bat first)</option><option value="1" ${d.ourSide === 1 ? "selected" : ""}>Home (bat second)</option></select></div>
       </div>
       ${d.mode === "dugout" ? "" : `<div class="field"><label for="d-opp">Opponent batting order (optional, one per line)</label><textarea id="d-opp" style="min-height:120px" placeholder="Leave blank to use Batter 1, Batter 2…">${esc(d.opp)}</textarea></div>`}
       <h4>Game settings</h4>
       ${rulesFields(d, false)}
       ${ui.msg ? `<p style="color:var(--stitch)">${ui.msg}</p>` : ""}
-      <div class="acts"><button class="tbtn" data-act="close">Cancel</button><button class="tbtn" data-act="ng-back">Back to lineup</button><button class="tbtn primary" data-act="startgame">Play ball</button></div>`;
+      <h4>Coin toss</h4>
+      <p>Last step: who bats first? Tap one to start the game.</p>
+      <div class="tossbtns"><button class="tbtn primary" data-act="startgame" data-v="0"><b>We're visitors</b><small>We bat first</small></button>
+        <button class="tbtn primary" data-act="startgame" data-v="1"><b>We're home</b><small>We bat second</small></button></div>
+      <div class="acts"><button class="tbtn" data-act="close">Cancel</button><button class="tbtn" data-act="ng-back">Back to lineup</button></div>`;
   } else if (sh.type === "lineups") {
     const d = ui.draft;
     const started = G.events.length > 0; wide = started ? true : "xwide";
@@ -3300,7 +3306,7 @@ document.addEventListener("click", ev => {
       closeSheet(); break;
     }
     case "newgame": openNewGame(); break;
-    case "startgame": startGame(); break;
+    case "startgame": readDraftRows(); if (v === "0" || v === "1") ui.draft.ourSide = +v; startGame(); break;
     case "lineups": openLineups(); break;
     case "savelineups": saveLineups(); break;
     case "lu-add": readDraftRows(); ui.draft.rows.push({ pid: "", pos: "EH" }); renderSheet(); break;
