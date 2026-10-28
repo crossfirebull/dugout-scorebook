@@ -114,7 +114,7 @@ Sounds play in order, so the next batter's walk-up starts when the previous play
 
 - **Standard:** G, PA, AB, R, H, 2B, 3B, HR, RBI, BB, K, AVG, OBP, SLG, OPS
 - **Advanced:** wOBA, ISO, BABIP, K%, BB%, BB/K, AVG with runners in scoring position, runs created, reached on error
-- **Batted ball:** grounder / line drive / fly ball / pop-up rates, and pull / center / opposite-field rates
+- **Contact** (batted ball): grounder / line drive / fly ball / pop-up rates, and pull / center / opposite-field rates
 - **Fielding:** positions played, plays made, errors, fielding %
 
 Stats are recalculated from the play-by-play every time, so new stats added later apply to every game already scored.

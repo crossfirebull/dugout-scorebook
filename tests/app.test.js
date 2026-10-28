@@ -632,13 +632,17 @@ test("New Game: Same as last game copies the last lineup", async () => {
 });
 
 test("Stats tabs all fit on a small phone, with no sideways scrolling", async () => {
-  for (const width of [320, 390]) {
+  for (const width of [320, 344, 360, 368, 375, 390, 414, 430]) {
     const { page, context } = await open(width, 700);
     await page.click(".tabbar [data-v=stats]");
     const fit = await page.$eval(".tabs.seg", el => ({ over: el.scrollWidth - el.clientWidth, labels: [...el.children].map(b => b.scrollWidth <= b.clientWidth + 1) }));
     assert.equal(fit.over, 0, `${width}px: tabs scroll sideways`);
     assert.ok(fit.labels.every(Boolean), `${width}px: a tab label is cut off`);
     assert.deepEqual(await page.$$eval(".tabs.seg button", b => b.map(x => x.textContent)), ["Overview", "Batting", "Charts", "Lineups"]);
+    await page.click("[data-act=statstab][data-v=batting]");
+    const sub = await page.$eval(".tabs.seg.sub", el => ({ over: el.scrollWidth - el.clientWidth, labels: [...el.children].map(b => b.scrollWidth <= b.clientWidth + 1 && b.offsetHeight < 50) }));
+    assert.equal(sub.over, 0, `${width}px: table tabs scroll sideways`);
+    assert.ok(sub.labels.every(Boolean), `${width}px: a table tab label is cut off or wraps`);
     await context.close();
   }
 });

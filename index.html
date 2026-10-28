@@ -262,6 +262,8 @@ input.switch:checked::after, .check input[type=checkbox]:checked::after { transf
 
 /* Stats tables */
 .sbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
+.sbar .seg.sub { flex: 1 1 100%; margin: 0; }
+.nostats { color: var(--muted); padding: 14px; border: 1px dashed var(--rule); border-radius: 8px; }
 .sbar .spacer { flex: 1; }
 .sbar label { font-size: 14px; color: var(--muted); display: inline-flex; gap: 6px; align-items: center; }
 .sbar select { font: inherit; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); }
@@ -474,9 +476,9 @@ html[data-layout="short"] .tabbar svg { width: 21px; height: 21px; }
 html[data-layout="wide"] body { padding-left: calc(112px + env(safe-area-inset-left, 0px)); padding-bottom: 24px; }
 html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-left, 0px)); }
 .situ { grid-template-columns: minmax(0, 1fr) 110px; }
-.seg { margin-top: 10px; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }   /* equal tabs that always fit, no sideways scrolling */
-.seg button { white-space: nowrap; padding: 0 6px; overflow: hidden; text-overflow: ellipsis; }
-@media (max-width: 360px) { .seg button { font-size: 13px; padding: 0 2px; } }
+/* Tabs fill the row; each is as wide as its label, and the text scales with the screen so nothing scrolls or gets cut off */
+.seg { margin-top: 10px; display: flex; }
+.seg button { flex: 1 1 auto; white-space: nowrap; padding: 0 4px; font-size: clamp(12px, 3.8vw, 15px); }
 .chipbtn.on { background: var(--sel-bg); color: var(--sel-ink); border-style: solid; border-color: var(--sel-bg); }
 .scoutbar { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 2px; }
 .scoutteam { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
@@ -1194,7 +1196,7 @@ const fmt = {
 const TABLES = {
   std: { label: "Standard", cols: [["G", "int"], ["PA", "int"], ["AB", "int"], ["R", "int", 1], ["H", "int", 1], ["2B", "int", 1], ["3B", "int", 1], ["HR", "int", 1], ["RBI", "int", 1], ["BB", "int", 1], ["K", "int"], ["AVG", "avg", 1], ["OBP", "avg", 1], ["SLG", "avg", 1], ["OPS", "avg", 1]] },
   adv: { label: "Advanced", cols: [["PA", "int"], ["OPS", "avg", 1], ["wOBA", "avg", 1], ["ISO", "avg", 1], ["BABIP", "avg", 0], ["Kp", "pct", -1, "K%"], ["BBp", "pct", 1, "BB%"], ["BBK", "dec2", 1, "BB/K"], ["RISP", "avg", 1, "RISP AVG"], ["RC", "dec", 1], ["ROE", "int", 0], ["HRO", "int", 0, "HR out"], ["FBO", "int", 0]] },
-  bb: { label: "Batted ball", cols: [["BIP", "int"], ["GBp", "pct", 0, "GB%"], ["LDp", "pct", 1, "LD%"], ["FBp", "pct", 0, "FB%"], ["PUp", "pct", -1, "IFFB%"], ["PULLp", "pct", 0, "Pull%"], ["CENTp", "pct", 0, "Cent%"], ["OPPOp", "pct", 0, "Oppo%"]] },
+  bb: { label: "Contact", cols: [["BIP", "int"], ["GBp", "pct", 0, "GB%"], ["LDp", "pct", 1, "LD%"], ["FBp", "pct", 0, "FB%"], ["PUp", "pct", -1, "IFFB%"], ["PULLp", "pct", 0, "Pull%"], ["CENTp", "pct", 0, "Cent%"], ["OPPOp", "pct", 0, "Oppo%"]] },
   fld: { label: "Fielding", cols: [["POS", "txt", 0, "Positions"], ["PL", "int", 1, "Plays"], ["E", "int", -1], ["FLD", "pct", 1, "Fld%"]] }
 };
 const GLOSS = {
@@ -1805,7 +1807,7 @@ function renderStats() {
   let h = `<thead><tr>${th("name", "Player")}${tdef.cols.map(([k, , , label]) => th(k, label || k)).join("")}</tr></thead><tbody>`;
   h += qualified.map(r => `<tr><td><span style="color:var(--muted);font-family:var(--f-label);font-weight:600;margin-right:6px">${esc(r.num)}</span>${esc(r.name)}</td>` +
     tdef.cols.map(([k, f]) => `<td class="${best[k] != null && r[k] === best[k] ? "best" : ""}">${fmt[f](r[k])}</td>`).join("") + "</tr>").join("");
-  if (!qualified.length) h += `<tr><td colspan="${tdef.cols.length + 1}" style="text-align:left;color:var(--muted)">No stats yet. Finish a game and choose “Save to season”, and the numbers appear here.</td></tr>`;
+  if (!qualified.length && list.length) h += `<tr><td colspan="${tdef.cols.length + 1}" style="text-align:left;color:var(--muted)">Nobody has ${ui.minPA} plate appearances yet. Lower Min. PA to see everyone.</td></tr>`;
   h += `</tbody><tfoot><tr><td>Team</td>${tdef.cols.map(([k, f]) => `<td>${k === "POS" ? "" : fmt[f](teamTot[k])}</td>`).join("")}</tr></tfoot>`;
 
   const cur = curGame();
@@ -1842,12 +1844,12 @@ function renderStats() {
   else if (seg === "batting") body = `
     <section class="panel">
       <div class="sbar">
-        <div class="tabs" role="tablist">${Object.entries(TABLES).map(([k, t]) => `<button role="tab" aria-selected="${ui.table === k}" data-act="table" data-v="${k}">${t.label}</button>`).join("")}</div>
+        <div class="tabs seg sub" role="tablist">${Object.entries(TABLES).map(([k, t]) => `<button role="tab" aria-selected="${ui.table === k}" data-act="table" data-v="${k}">${t.label}</button>`).join("")}</div>
         <span class="spacer"></span>
         <label for="minPA">Min. PA <select id="minPA" data-ch="minPA">${[0, 5, 10, 20, 40].map(n => `<option ${n === ui.minPA ? "selected" : ""}>${n}</option>`).join("")}</select></label>
         ${incSwitch}
       </div>
-      <div class="tscroll"><table class="stats">${h}</table></div>
+      ${list.length ? `<div class="tscroll"><table class="stats">${h}</table></div>` : `<p class="nostats">No stats yet. Finish a game and choose <b>Save to season</b>, and the numbers appear here.</p>`}
       <div class="gloss">${GLOSS[ui.table].map(([k, v]) => `<div><b>${k}</b>${v}</div>`).join("")}</div>
     </section>`;
   else body = `<section class="panel">${incSwitch ? `<div class="sbar">${incSwitch}</div>` : ""}${seg === "spray" ? sprayCharts() : lineupHistory()}</section>`;
@@ -2382,7 +2384,7 @@ const HELP = [
     <ul><li>When the game is over, tap <b>Save to season</b> to add it to everyone's stats. <b>End game now</b> in Game settings ends it early.</li>
     <li>Start a new season (Spring, Summer or Fall) with <b>New Season</b> on the Stats tab. Your roster carries over and old seasons stay saved. The season menu switches between them or shows all seasons together.</li></ul>`],
   ["Stats, spray charts and scouting", `
-    <ul><li><b>Stats → Batting</b> has Standard, Advanced, Batted ball and Fielding tables. Tap a column to sort. Each table explains its stats underneath.</li>
+    <ul><li><b>Stats → Batting</b> has Standard, Advanced, Contact (grounders, liners, fly balls, pull and opposite field) and Fielding tables. Tap a column to sort. Each table explains its stats underneath.</li>
     <li><b>Charts</b> are spray charts: where your team and each player hit the ball, with All / Hits / Outs filters.</li>
     <li><b>Scout</b> shows every team you've played, where their hitters hit it, and where to shade your defense. It needs their half scored in Scorekeeper mode.</li></ul>`],
   ["Sounds and walk-up songs", `
