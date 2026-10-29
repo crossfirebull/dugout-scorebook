@@ -889,3 +889,20 @@ test("Tap on the field: a hit tapped past the fence stays in the park; a home ru
   assert.deepEqual(errors, []);
   await context.close();
 });
+
+test("inside-the-park home run: counts as a HR, not toward the HR limit, and stays in the park", async () => {
+  const { page, context, errors } = await openGame(ruleGame({ hrRule: "max1", askHits: true }, [...threeOuts()]));
+  await page.click("[data-act=pa][data-v=HR]");
+  await page.click("[data-act=hrkind][data-v=ip]");
+  await page.click("[data-act=hitpos][data-v='8']");
+  await page.click("[data-act=pa][data-v=HR]");     // over the fence: still allowed, the limit is 1
+  await page.click("[data-act=hitpos][data-v='7']");
+  assert.deepEqual(await runs(page), [0, 2]);
+  await page.click(".tabbar [data-v=book]");
+  assert.match(await page.textContent("#pbp"), /inside-the-park home run to center field/);
+  await page.click(".tabbar [data-v=stats]"); await page.click("[data-act=statstab][data-v=spray]");
+  const hr = await page.$$eval(".teamcard circle.hr", c => c.map(x => Math.hypot(+x.getAttribute("cx") - 100, +x.getAttribute("cy") - 166)));
+  assert.equal(hr.filter(d => d < 126).length, 1, "the inside-the-park one is inside the fence");
+  assert.deepEqual(errors, []);
+  await context.close();
+});

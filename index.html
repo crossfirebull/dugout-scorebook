@@ -1078,8 +1078,9 @@ function fielderAt(s, t, p) {
   return i < 0 ? null : keyOf(s.lu[t][i], t, i);
 }
 
-function plateAppearance(s, g, r, p, bb, foulK, fcOut, loc) {
-  if (r === "HR" && hrOver(s, s.half)) r = "HRO";   // over the league's home run limit: the batter is out
+function plateAppearance(s, g, r, p, bb, foulK, fcOut, loc, ip) {
+  if (r !== "HR") ip = false;
+  if (r === "HR" && !ip && hrOver(s, s.half)) r = "HRO";   // an inside-the-park homer doesn't count toward the HR limit   // over the league's home run limit: the batter is out
   const bt = s.half, ft = 1 - bt, slot = curSlot(s), who = occ(s, bt, slot), key = keyOf(who, bt, slot), st = stat(s, bt, key);
   const risp = !!(s.bases[1] || s.bases[2]);
   const cell = { ev: s.ei, slot, inning: s.inning, code: codeFor(r, p), base: 0, scored: false, out: 0, looking: r === "KC", notes: [] };
@@ -1102,7 +1103,7 @@ function plateAppearance(s, g, r, p, bb, foulK, fcOut, loc) {
   const type = hit ? bb : BB_OF[r];
   if (type) st[type]++;
   if (p && (hit || NEEDS_POS[r])) {
-    s.bip.push(Object.assign({ team: bt, key, name: entryName(who), r, p, bb: type }, loc ? { loc } : {}));   // for spray charts and scouting
+    s.bip.push(Object.assign({ team: bt, key, name: entryName(who), r, p, bb: type }, loc ? { loc } : {}, ip ? { ip: true } : {}));   // for spray charts and scouting
     const bats = who.pid && player(who.pid) ? player(who.pid).bats : "";
     if (bats === "R" || bats === "L") {
       const side = LEFT_SIDE.has(p) ? "L" : RIGHT_SIDE.has(p) ? "R" : "C";
@@ -1117,7 +1118,7 @@ function plateAppearance(s, g, r, p, bb, foulK, fcOut, loc) {
     case "1B": advAll(1); put(1); break;
     case "2B": advAll(2); put(2); break;
     case "3B": advAll(3); put(3); break;
-    case "HR": advAll(3); sc(me); s.hr[bt]++; s.fx.hr = true; break;
+    case "HR": advAll(3); sc(me); if (!ip) s.hr[bt]++; else cell.notes.push("IP"); s.fx.hr = true; break;
     case "BB": case "HBP": forceAll(); put(1); st[r]++; s.fx.walk = true; break;
     case "K": case "KC": outRunner(s, me); st.K++; s.fx.k = true; break;
     case "GO": case "FO": case "LO": case "PO": case "OUT": outRunner(s, me); break;
@@ -1143,7 +1144,7 @@ function plateAppearance(s, g, r, p, bb, foulK, fcOut, loc) {
     }
   }
   if (!["E", "DP"].includes(r)) st.RBI += runs;
-  log(s, esc(entryName(who)) + " " + verbFor(r, p) + (fcNote ? (fcNote[0] === "," ? fcNote : ";" + fcNote) : "") + (foulK ? " (foul with two strikes)" : "") + "." + (runs ? ` <span class="run">${runs} run${runs > 1 ? "s" : ""} score${runs > 1 ? "" : "s"}.</span>` : ""));
+  log(s, esc(entryName(who)) + " " + (ip ? "hits an inside-the-park home run" + (p ? " to " + POS_NAME[p].toLowerCase() : "") : verbFor(r, p)) + (fcNote ? (fcNote[0] === "," ? fcNote : ";" + fcNote) : "") + (foulK ? " (foul with two strikes)" : "") + "." + (runs ? ` <span class="run">${runs} run${runs > 1 ? "s" : ""} score${runs > 1 ? "" : "s"}.</span>` : ""));
   s.lastPA = RBI_PLAYS.has(r) ? { team: bt, key, name: entryName(who) } : null;
   s.order[bt]++;
   resetCount(s, g);
@@ -1221,7 +1222,7 @@ function derive(g, tags) {   // tags (optional): filled with [inning, half] for 
     if (s.final) break;
     s.fx = { bat: s.half };
     if (e.t === "pitch") pitch(s, g, e.k);
-    else if (e.t === "pa") plateAppearance(s, g, e.r, e.p, e.bb, false, e.out, e.loc);
+    else if (e.t === "pa") plateAppearance(s, g, e.r, e.p, e.bb, false, e.out, e.loc, e.ip);
     else if (e.t === "run") runnerMove(s, g, e.b, e.a, e.rbi, e.rbiKey);
     else if (e.t === "quick") quickEvent(s, g, e.k);
     else if (e.t === "cr") courtesy(s, e);
@@ -2048,9 +2049,9 @@ function sprayField(balls) {
   const n = {}, sz = balls.length > 60 ? .65 : 1;   // a season of team dots: smaller and tighter so they don't pile up
   const marks = balls.map(b => {
     const k = b.p + (b.r === "HR" ? "hr" : ""), i = b.loc ? 0 : n[k] = (n[k] || 0) + 1;
-    const at = b.loc ? inPark(b.r, b.loc[0], b.loc[1]) : null;
+    const at = b.loc ? inPark(b.ip ? "1B" : b.r, b.loc[0], b.loc[1]) : null;
     let [x, y] = at ? [Math.min(197, Math.max(3, at[0])), Math.min(170, Math.max(11, at[1]))] : ZONE[b.p] || ZONE[8];   // tapped on the field: exactly there
-    if (b.r === "HR" && !b.loc) { const dx = x - HOME[0], dy = y - HOME[1], len = Math.hypot(dx, dy); x = HOME[0] + dx / len * 148; y = HOME[1] + dy / len * 148; }
+    if (b.r === "HR" && !b.loc && !b.ip) { const dx = x - HOME[0], dy = y - HOME[1], len = Math.hypot(dx, dy); x = HOME[0] + dx / len * 148; y = HOME[1] + dy / len * 148; }
     if (i > 1) { const a = i * 2.4, rad = (2.5 + 3 * Math.sqrt(i)) * sz; x += Math.cos(a) * rad; y += Math.sin(a) * rad; }
     const tip = `<title>${b.r === "E" ? "Error" : b.r} to ${POS[b.p]} · ${esc(b.date)} vs ${esc(b.opp)}</title>`;
     x = x.toFixed(1); y = y.toFixed(1);
@@ -2088,7 +2089,7 @@ function fieldHTML(sh) {
   const labels = fieldChoices().filter(f => ZONE[f.n]).map(f => `<text class="fl" x="${ZONE[f.n][0]}" y="${ZONE[f.n][1] + 2}">${POS[f.n]}</text>`).join("");
   const mark = loc ? `<path class="fpath" d="M100 162 L${loc[0]} ${loc[1]}" /><circle class="fmark" cx="${loc[0]}" cy="${loc[1]}" r="4.5" /><circle class="fdot" cx="${loc[0]}" cy="${loc[1]}" r="1.2" />` : "";
   return `<div class="fieldfs" role="dialog" aria-modal="true" aria-label="Tap where the ball went">
-    <div class="ffhead"><button class="tbtn" data-act="fieldback">Back</button><div class="fft"><b>${PLAY_NAME[sh.r] || sh.r}</b><small>${esc(where)}</small></div></div>
+    <div class="ffhead"><button class="tbtn" data-act="fieldback">Back</button><div class="fft"><b>${sh.r === "HR" && ui.ip ? "Inside-the-park HR" : PLAY_NAME[sh.r] || sh.r}</b><small>${esc(where)}</small></div></div>
     ${hit ? `<div class="bbrow">${[["GB", "Grounder"], ["LD", "Line drive"], ["FB", "Fly ball"]].map(([k, l]) => `<button data-act="bbtype" data-v="${k}" aria-pressed="${ui.bb === k}">${l}</button>`).join("")}</div>` : ""}
     <svg id="ffield" viewBox="-6 -6 212 178" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Field. Tap where the ball went.">
       <path class="fbeyond" d="M100 166 L-40 26 A198 198 0 0 1 240 26 Z" />
@@ -2111,7 +2112,7 @@ document.addEventListener("click", ev => {
   const pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
   const q = pt.matrixTransform(svg.getScreenCTM().inverse()), clamp = (v, lo, hi) => Math.round(Math.min(hi, Math.max(lo, v)) * 10) / 10;
   const x = clamp(q.x, -6, 206), y = clamp(q.y, -6, 172);   // a tap in the margin counts as the edge of the field
-  ui.sheet.loc = inPark(ui.sheet.r, x, y); ui.sheet.p = nearestFielder(ui.sheet.loc[0], ui.sheet.loc[1]);
+  ui.sheet.loc = inPark(ui.ip && ui.sheet.r === "HR" ? "1B" : ui.sheet.r, x, y); ui.sheet.p = nearestFielder(ui.sheet.loc[0], ui.sheet.loc[1]);
   renderSheet();
 });
 
@@ -2602,7 +2603,7 @@ const HELP = [
     <p>Tap what the batter did. Runners move the usual way, and you can fix anything by tapping a base.</p>
     <dl class="hkeys">
       <dt>1B 2B 3B</dt><dd>Single, double, triple. Runners move up that many bases.</dd>
-      <dt>HR</dt><dd>Home run. Everyone scores. Over your league's HR limit it's ruled an out automatically.</dd>
+      <dt>HR</dt><dd>Home run. Everyone scores. Choose <b>Over the fence</b> or <b>Inside the park</b>. Over your league's HR limit, an over-the-fence homer is ruled an out automatically; inside-the-park homers don't count toward the limit.</dd>
       <dt>BB</dt><dd>Walk. Only forced runners move.</dd>
       <dt>E</dt><dd>Reached on an error. Not a hit, no RBI.</dd>
       <dt>FC</dt><dd>Fielder's choice: a runner is put out and the batter is safe. It asks which runner, or whether everyone was safe.</dd>
@@ -2879,6 +2880,7 @@ function renderSheet() {
       <div class="acts"><button class="tbtn" data-act="close">Cancel</button><button class="tbtn primary" data-act="posskip">Skip, just record the ${sh.r === "E" ? "error" : "out"}</button></div>`;
   } else if (sh.type === "hit") {
     body = `<h3>${{ "1B": "Single", "2B": "Double", "3B": "Triple", HR: "Home run" }[sh.r]}</h3>
+      ${sh.r === "HR" ? `<div class="bbrow hrkind">${[["fence", "Over the fence"], ["ip", "Inside the park"]].map(([k, l]) => `<button data-act="hrkind" data-v="${k}" aria-pressed="${(k === "ip") === !!ui.ip}">${l}</button>`).join("")}</div>` : ""}
       <p>What kind of hit, and where did it go? Tap the fielder nearest the ball.</p>
       <div class="bbrow">${[["GB", "Grounder"], ["LD", "Line drive"], ["FB", "Fly ball"]].map(([k, l]) => `<button data-act="bbtype" data-v="${k}" aria-pressed="${ui.bb === k}">${l}</button>`).join("")}</div>
       ${posGrid("hitpos")}
@@ -3341,7 +3343,8 @@ function editPlayBody(sh) {
   const lines = S.log.filter(l => l.ev === sh.i).map(l => `<li>${l.text}</li>`).join("") || "<li>(no effect now)</li>";
   let ctl = "";
   if (e.t === "pa") {
-    ctl = `<h4>Result</h4><div class="eprow">${EDIT_RESULTS.map(([k, l]) => `<button class="chipbtn ${e.r === k ? "on" : ""}" data-act="ep-r" data-v="${k}">${l}</button>`).join("")}</div>
+    ctl = `<h4>Result</h4><div class="eprow">${EDIT_RESULTS.map(([k, l]) => `<button class="chipbtn ${e.r === k && !(k === "HR" && e.ip) ? "on" : ""}" data-act="ep-r" data-v="${k}">${l}</button>`).join("")}
+      <button class="chipbtn ${e.r === "HR" && e.ip ? "on" : ""}" data-act="ep-r" data-v="IPHR">Inside-park HR</button></div>
       <label class="setrow" for="ep-p"><span><b>Fielded by / hit toward</b><small>Feeds fielding stats and spray charts.</small></span>
         <select id="ep-p" data-ch="ep-p"><option value="">Not recorded</option>${POS.slice(1, 13).map((x, n) => `<option value="${n + 1}" ${e.p === n + 1 ? "selected" : ""}>${n + 1} · ${x}</option>`).join("")}</select></label>`;
   } else if (e.t === "run") {
@@ -3403,7 +3406,7 @@ document.addEventListener("click", ev => {
     case "pa":
       if (v === "FC") { ui.sheet = { type: "fc" }; renderSheet(); break; }
       if (NEEDS_POS[v] && G.settings.askHits !== false) { ui.sheet = { type: "pos", r: v }; renderSheet(); }
-      else if (HIT_CODES.includes(v) && G.settings.askHits !== false) { ui.bb = v === "HR" ? "FB" : null; ui.sheet = { type: "hit", r: v }; renderSheet(); }
+      else if (HIT_CODES.includes(v) && G.settings.askHits !== false) { ui.bb = v === "HR" ? "FB" : null; ui.ip = false; ui.sheet = { type: "hit", r: v }; renderSheet(); }
       else push({ t: "pa", r: v });
       break;
     case "pos": push({ t: "pa", r: ui.sheet.r, p: +v }); break;
@@ -3416,10 +3419,12 @@ document.addEventListener("click", ev => {
       const sh = ui.sheet; if (!sh.loc) break;
       const e = { t: "pa", r: sh.r, p: sh.p, loc: sh.loc };
       if (HIT_CODES.includes(sh.r) && ui.bb) e.bb = ui.bb;
+      if (ui.ip && sh.r === "HR") e.ip = true;
       push(e); break;
     }
-    case "hitpos": { const e = { t: "pa", r: ui.sheet.r, p: +v }; if (ui.bb) e.bb = ui.bb; push(e); break; }
-    case "hitskip": { const e = { t: "pa", r: ui.sheet.r }; if (ui.bb) e.bb = ui.bb; push(e); break; }
+    case "hitpos": { const e = { t: "pa", r: ui.sheet.r, p: +v }; if (ui.bb) e.bb = ui.bb; if (ui.ip && e.r === "HR") e.ip = true; push(e); break; }
+    case "hitskip": { const e = { t: "pa", r: ui.sheet.r }; if (ui.bb) e.bb = ui.bb; if (ui.ip && e.r === "HR") e.ip = true; push(e); break; }
+    case "hrkind": ui.ip = v === "ip"; if (ui.ip && ui.bb === "FB") ui.bb = null; renderSheet(); break;
     case "base": { const b = +el.dataset.b; if (!ui.peekId && S.bases[b] && !S.final) { ui.sheet = { type: "runner", b }; renderSheet(); } break; }
     case "run": push(Object.assign({ t: "run", b: ui.sheet.b, a: v }, el.dataset.rbi ? { rbi: true } : {})); break;
     case "crpick": ui.sheet = { type: "cr", b: ui.sheet.b }; renderSheet(); break;
@@ -3530,9 +3535,11 @@ document.addEventListener("click", ev => {
     case "editplay": ui.confirm = null; ui.sheet = { type: "editplay", i: +v }; renderSheet(); break;
     case "ep-r": {
       const e = G.events[ui.sheet.i]; if (!e) break;
-      e.r = v; if (v !== "FC") delete e.out;
-      if (!HIT_CODES.includes(v)) delete e.bb;
-      if (!HIT_CODES.includes(v) && !NEEDS_POS[v]) { delete e.p; delete e.loc; }
+      const r = v === "IPHR" ? "HR" : v;
+      if (v === "IPHR") e.ip = true; else delete e.ip;
+      e.r = r; if (r !== "FC") delete e.out;
+      if (!HIT_CODES.includes(r)) delete e.bb;
+      if (!HIT_CODES.includes(r) && !NEEDS_POS[r]) { delete e.p; delete e.loc; }
       editedPlay(); break;
     }
     case "ep-a": { const e = G.events[ui.sheet.i]; if (e) { e.a = v; if (v !== "score" && e.b !== 2) { delete e.rbi; delete e.rbiKey; } } editedPlay(); break; }
