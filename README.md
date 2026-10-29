@@ -31,6 +31,15 @@ The speaker button at the top mutes and unmutes. The gear opens **Settings** (te
 
 The first time ScoreKept opens, a short setup walks you through it like the opening screens of a video game: name your team, pick your colors (with a live preview of the score bug and Home Screen icon), choose Dugout or Scorekeeper mode, set your league's innings and tie rule, and add your players. Or tap **Look around with sample data first** to explore a made-up season. Everything you choose can be changed later in **Settings**, and **Run the welcome setup again** is there too.
 
+## Tutorials
+
+Right after the welcome setup, a short **Basics** tour (skippable) spotlights the main parts of the app one at a time, with **Next**, **Back** and **Skip**. More tours live in **Settings → Tutorials** and in **Help**:
+- **The basics**: a one-minute look around.
+- **Starting a game**: the lineup builder, game details and the coin toss (it opens the real screens as it goes).
+- **Scoring a game**: results, where the ball went, runners, the clock, fixing plays, Game settings.
+- **Stats and sharing**: tables, charts, recaps, scouting and backups.
+- **Sounds and walk-ups**: the organ, walk-up tunes and your own clips.
+
 ## Using it at the field
 
 1. Turn on your phone's hotspot and connect the iPad.

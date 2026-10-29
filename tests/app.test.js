@@ -231,6 +231,8 @@ test("first launch walks through setup, and the choices land in Settings", async
   const summary = await text(page, ".onb .summary");
   assert.match(summary, /Test Tigers/); assert.match(summary, /Maroon & Gold/); assert.match(summary, /Scorekeeper mode/); assert.match(summary, /8 innings · ties stand/); assert.match(summary, /HR 1 per team/); assert.match(summary, /2 players/);
   await page.click("[data-act=onb-finish][data-v=game]");
+  assert.ok(await page.$("#tour .tcard"), "the basics tour starts after setup");
+  await page.click("[data-act=tour-skip]");
   assert.match(await text(page, ".sheet h3"), /New Game/, "Start a game opens New Game");
   assert.ok(await page.$(".luempty"), "New Game starts with the lineup, and the roster doesn't fill it in");
   assert.equal(await page.$$eval(".pgroup h5", h => h.map(x => x.firstChild.textContent).join(",")), "Catchers,Infield", "players grouped by position");
@@ -834,6 +836,36 @@ test("Book: tap a box in the scorebook grid to edit that at-bat; names stay visi
   await page.click(".sheet [data-act=close]");
   const visible = await page.$eval("#book", t => { const sc = t.parentElement; sc.scrollLeft = 400; const n = t.querySelector("td.name").getBoundingClientRect(), box = sc.getBoundingClientRect(); return n.left >= box.left - 1; });
   assert.ok(visible, "name column stays in view");
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("guided tours: the basics walks through with Next and Back; every tour runs to the end without errors", async () => {
+  const { page, context, errors } = await open(393, 852);
+  await gameSettings(page); await page.click("[data-act=help]");
+  assert.equal((await page.$$("[data-act=tour]")).length, 5, "five tutorials in Help");
+  await page.click("[data-act=tour][data-v=basics]");
+  assert.match(await text(page, "#tour .tcard"), /Welcome/);
+  await page.click("[data-act=tour-next]");
+  assert.ok(await page.$("#tour .thole"), "spotlight on a feature");
+  await page.click("[data-act=tour-back]");
+  assert.match(await text(page, "#tour .tcard"), /Welcome/);
+  for (const id of ["basics", "newgame", "scoring", "stats", "sounds"]) {
+    if (!(await page.$("#tour"))) { await gameSettings(page); await page.click("[data-act=help]"); await page.click(`[data-act=tour][data-v=${id}]`); }
+    for (let i = 0; i < 20 && await page.$("#tour"); i++) await page.click("[data-act=tour-next]");
+    assert.equal(await page.$("#tour"), null, id + " finishes");
+  }
+  // the New Game tour, with no game in progress, opens the real lineup builder and coin toss
+  await gameSettings(page); await page.click(".sheet [data-act=endgame]");
+  await page.click("[data-act=settings]"); await page.click("[data-act=tour][data-v=newgame]");
+  await page.click("[data-act=tour-next]");
+  assert.ok(await page.$(".lupool"), "lineup builder open behind the tour");
+  for (let i = 0; i < 4; i++) await page.click("[data-act=tour-next]");
+  assert.ok(await page.$(".tossbtns"), "coin toss shown");
+  await page.click("[data-act=tour-next]");
+  assert.equal(await page.$(".sheet"), null, "tour closes what it opened");
+  await page.click("[data-act=settings]");
+  assert.match(await text(page, ".sheet"), /Starting a game ✓/);
   assert.deepEqual(errors, []);
   await context.close();
 });

@@ -256,6 +256,16 @@ input.switch:checked::after, .check input[type=checkbox]:checked::after { transf
 .tossbtns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .tossbtns .tbtn { min-height: 76px; display: grid; place-content: center; gap: 2px; font-size: 19px; }
 .tossbtns small { font-weight: 500; font-size: 13px; opacity: .85; }
+#tour { position: fixed; inset: 0; z-index: 200; }
+#tour .tdim { position: absolute; inset: 0; background: rgba(5, 9, 12, .62); }
+#tour .thole { position: absolute; border-radius: 12px; box-shadow: 0 0 0 9999px rgba(5, 9, 12, .62), 0 0 0 3px var(--team-lamp, #ffc93c); pointer-events: none; transition: all .2s ease; }
+#tour .tcard { position: absolute; background: var(--surface); color: var(--ink); border-radius: 14px; padding: 14px 16px; box-shadow: 0 12px 32px rgba(0, 0, 0, .4); display: grid; gap: 6px; }
+#tour .tstep { font-family: var(--f-label); font-weight: 700; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+#tour .tcard b { font-family: var(--f-display); font-weight: 800; font-size: 24px; text-transform: uppercase; line-height: 1.1; }
+#tour .tcard p { margin: 0; font-size: 16px; line-height: 1.45; }
+#tour .tacts { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+#tour .tacts .spacer { flex: 1; }
+.tdone { color: var(--safe); }
 .recapimg img { display: block; width: 100%; max-width: 420px; margin: 0 auto; border-radius: 12px; box-shadow: 0 8px 24px rgba(0, 0, 0, .3); }
 .recapacts { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 .recaptext pre { white-space: pre-wrap; font-size: 12px; background: var(--paper); border: 1px solid var(--rule); border-radius: 8px; padding: 10px; overflow-x: auto; }
@@ -2636,8 +2646,109 @@ const HELP = [
 ];
 function helpBody() {
   return `<h3>Help</h3>
+    <h4 style="margin:0">Tutorials</h4><div class="setlist">${tutorialsList()}</div>
     <div class="help">${HELP.map(([t, h], i) => `<details ${i === 0 && !ui.helpOpen ? "open" : ""} ${ui.helpOpen === t ? "open" : ""}><summary>${t}</summary><div class="hbody">${h}</div></details>`).join("")}</div>
     <div class="acts"><button class="tbtn primary" data-act="close">Done</button></div>`;
+}
+
+/* ---------- Guided tours ----------
+   A spotlight on one part of the screen and a card explaining it, with Back, Next and Skip.
+   Steps whose target isn't on screen show the card in the middle instead (or are skipped if optional). */
+const openNG = step => () => { if (!store.currentId && store.team.players.length) { if (!(ui.sheet && ui.sheet.type === "newgame")) { ui.view = "game"; render(); openNewGame(); } else readDraftRows(); ui.sheet.step = step; ui.tourSheet = true; renderSheet(); } };
+const statsTab = k => () => { ui.statsTab = k; };
+const TOURS = {
+  basics: { title: "The basics", desc: "A one-minute look around the app.", steps: [
+    { title: "Welcome to ScoreKept", text: "Here's a one-minute tour of the basics. Tap Next to go on, or Skip any time." },
+    { tab: "game", sel: "[data-act=newgame]", optional: true, title: "Start a game", text: "New Game walks you through it: build the lineup, set the game details, then the coin toss starts the game." },
+    { tab: "game", sel: "#bug", optional: true, title: "The score bug", text: "Score, inning and outs. Lit bases have runners on them: tap one to move that runner." },
+    { tab: "game", sel: "#atbat", optional: true, title: "Who's up", text: "The batter, how they've done today, and who's on deck. ♪ Walk-up plays their song." },
+    { tab: "game", sel: "#pad", optional: true, title: "Score the play", text: "Tap what the batter did. Green: they reached base. Red: they're out. Runners move the usual way." },
+    { tab: "game", sel: "[data-act=undo]", optional: true, title: "Undo", text: "Tapped the wrong thing? Undo takes back the last tap, as many times as you need." },
+    { sel: ".tabbar [data-v=book]", title: "Book", text: "The full scorebook and play-by-play. Tap any box or play to fix it, even after the game." },
+    { sel: ".tabbar [data-v=stats]", title: "Stats", text: "Season stats, spray charts, lineups, and every game you've saved." },
+    { sel: ".tabbar [data-v=scout]", title: "Scout", text: "Where the teams you play hit the ball, so you know where to shade your defense." },
+    { sel: ".tabbar [data-v=roster]", title: "Team", text: "Your roster, positions, team colors, and walk-up songs." },
+    { sel: "#soundBtn", title: "Sound", text: "Turns the ballpark organ and walk-up songs on and off." },
+    { sel: "[data-act=settings]", title: "Settings and Help", text: "League rules, sounds, backups and Help live here. More tutorials are in Settings → Tutorials whenever you want them." }] },
+  newgame: { title: "Starting a game", desc: "Lineup builder, game details and the coin toss.", steps: [
+    { title: "Starting a game", text: "New Game has three parts: the lineup, the game details, and the coin toss.", before: openNG("lineup") },
+    { sel: ".lupool", before: openNG("lineup"), title: "Pick your players", text: "Players are grouped by position with this season's stats. Tap them in batting order; tap again to take one out." },
+    { sel: ".luorder", before: openNG("lineup"), title: "Batting order", text: "Drag the ☰ handle to move a batter. Change anyone's position in their row. Same as last game copies your last lineup." },
+    { sel: "[data-act=np-open]", before: openNG("lineup"), title: "Fill-ins", text: "+ New player adds someone on the spot. Leave the name blank and rename them later on the Team tab." },
+    { sel: ".checklist", before: openNG("game"), title: "Game details", text: "The opponent, date, park and league rules, plus a checklist for sound, walk-ups and your last backup." },
+    { sel: ".tossbtns", before: openNG("game"), title: "Coin toss", text: "The last step. Tap We're visitors or We're home and the game starts. You can still switch later in Game settings." }] },
+  scoring: { title: "Scoring a game", desc: "Plays, runners, fixing mistakes and league rules.", steps: [
+    { tab: "game", sel: "#pad", title: "Results", text: "Hits and walks are green, outs are red. FC asks which runner was out. HRO is a home run over your league's limit (the app does this for you)." },
+    { tab: "game", sel: "[data-act=pa][data-v='1B']", title: "Where it went", text: "After a hit or out it asks who fielded it. Tap a fielder, Skip, or Tap on the field for an exact spot. It feeds the spray charts." },
+    { tab: "game", sel: "#bug .bases", title: "Runners", text: "Tap a lit base to advance, score or put out a runner. Right after a play, Scored on the play gives the batter the RBI. Courtesy runners are there too." },
+    { tab: "game", sel: "#bug .inn", title: "Clock and innings", text: "With a time limit, the clock counts down under the inning. LAST means time's up and this inning is the last one." },
+    { sel: ".tabbar [data-v=book]", title: "Fix anything", text: "On the Book tab, tap any box in the scorebook or any play to change the result, the fielder, who got the RBI, or delete it." },
+    { sel: "[data-act=settings]", title: "Game settings", text: "During a game the gear opens Game settings: opponent, park, home or away, league rules, the clock, and End game now." }] },
+  stats: { title: "Stats and sharing", desc: "Batting tables, charts, scouting, recaps and backups.", steps: [
+    { tab: "stats", sel: ".tabs.seg", before: statsTab("overview"), title: "Stats", text: "Overview, Batting, Charts and Lineups for this season. The season menu switches seasons, or shows all of them." },
+    { tab: "stats", sel: ".games", optional: true, before: statsTab("overview"), title: "Your games", text: "Every saved game. View opens it: fix plays in the Book, or Share recap to send the team a picture and text for Discord." },
+    { tab: "stats", sel: ".tscroll", optional: true, before: statsTab("batting"), title: "Batting tables", text: "Standard, Advanced, Contact and Fielding. Tap a column to sort. Each table explains its stats underneath." },
+    { tab: "stats", sel: ".teamspray", optional: true, before: statsTab("spray"), title: "Charts", text: "Where your team and each player hit the ball. All, Hits and Outs filter it." },
+    { tab: "stats", sel: "[data-act=backup]", optional: true, before: statsTab("overview"), title: "Back up", text: "Save a backup now and then, to Files, iCloud Drive or email. Restore brings everything back on any device." },
+    { sel: ".tabbar [data-v=scout]", title: "Scout", text: "The teams you've played: where they hit it and where to shade your defense. Score their half in Scorekeeper mode to build it." }] },
+  sounds: { title: "Sounds and walk-ups", desc: "The organ, walk-up songs and your own clips.", steps: [
+    { sel: "#soundBtn", title: "Sound on", text: "Turn sound on here, and connect your speaker. The ballpark organ plays for hits, runs, strikeouts and big moments." },
+    { tab: "game", sel: "[data-act=walkup]", optional: true, title: "Walk-ups", text: "Tap ♪ Walk-up when the batter heads to the plate. Every player starts with a built-in organ tune." },
+    { tab: "roster", sel: ".rosterhead, .roster-top, #view h2", optional: true, title: "Each player's song", text: "Tap a player to pick a different built-in tune, choose None, or pick your own song file with a start time and length." },
+    { sel: "[data-act=settings]", title: "Your own sounds", text: "Settings → Sounds & walk-up songs swaps any game sound for your own clip and adds between-innings music." }] }
+};
+function startTour(id, after) {
+  if (ui.sheet && ui.sheet.type !== "newgame") closeSheet();
+  ui.tour = { id, i: 0, after }; ui.tourSheet = false;
+  tourStep(0);
+}
+function tourStep(dir) {
+  const T = TOURS[ui.tour.id];
+  for (;;) {
+    const st = T.steps[ui.tour.i]; if (!st) return endTour(true);
+    if (st.tab && ui.view !== st.tab) { if (ui.sheet && ui.tourSheet) { ui.sheet = null; ui.draft = null; } ui.view = st.tab; ui.peekId = null; }
+    if (st.before) st.before();
+    else if (ui.tourSheet && ui.sheet) { ui.sheet = null; ui.draft = null; ui.tourSheet = false; }
+    render();
+    if (st.optional && !document.querySelector(st.sel)) { ui.tour.i += dir || 1; if (ui.tour.i < 0) { ui.tour.i = 0; dir = 1; } continue; }
+    break;
+  }
+  drawTour();
+}
+function drawTour() {
+  if (!ui.tour) return;
+  const T = TOURS[ui.tour.id], st = T.steps[ui.tour.i], el = st.sel && document.querySelector(st.sel);
+  let box = $("tour"); if (!box) { box = document.createElement("div"); box.id = "tour"; document.body.appendChild(box); }
+  if (el) el.scrollIntoView({ block: "center", behavior: "instant" });
+  const r = el && el.getBoundingClientRect(), pad = 6, W = Math.min(360, innerWidth - 24);
+  const last = ui.tour.i === T.steps.length - 1;
+  const card = `<div class="tcard" role="dialog" aria-modal="true" aria-label="${esc(st.title)}" style="width:${W}px">
+      <div class="tstep">${esc(T.title)} · ${ui.tour.i + 1} of ${T.steps.length}</div>
+      <b>${esc(st.title)}</b><p>${esc(st.text)}</p>
+      <div class="tacts"><button class="tbtn" data-act="tour-skip">${last ? "Close" : "Skip"}</button><span class="spacer"></span>
+        ${ui.tour.i ? `<button class="tbtn" data-act="tour-back">Back</button>` : ""}<button class="tbtn primary" data-act="tour-next">${last ? "Done" : "Next"}</button></div></div>`;
+  box.innerHTML = `${r ? `<div class="thole" style="left:${r.left - pad}px;top:${r.top - pad}px;width:${r.width + pad * 2}px;height:${r.height + pad * 2}px"></div>` : `<div class="tdim"></div>`}${card}`;
+  const c = box.querySelector(".tcard"), ch = c.offsetHeight;
+  let top, left = r ? Math.min(Math.max(12, r.left + r.width / 2 - W / 2), innerWidth - W - 12) : (innerWidth - W) / 2;
+  if (!r) top = (innerHeight - ch) / 2;
+  else if (r.bottom + pad + 12 + ch < innerHeight - 8) top = r.bottom + pad + 12;
+  else if (r.top - pad - 12 - ch > 8) top = r.top - pad - 12 - ch;
+  else top = innerHeight - ch - 16;
+  c.style.left = left + "px"; c.style.top = Math.max(8, top) + "px";
+  const next = c.querySelector("[data-act=tour-next]"); if (next) next.focus({ preventScroll: true });
+}
+function endTour(done) {
+  const t = ui.tour; ui.tour = null;
+  const box = $("tour"); if (box) box.remove();
+  if (t && done) { store.toursDone = Object.assign({}, store.toursDone, { [t.id]: true }); save(); }
+  if (ui.tourSheet && ui.sheet) { ui.sheet = null; ui.draft = null; }
+  ui.tourSheet = false; render();
+  if (t && t.after) t.after();
+}
+addEventListener("resize", () => { if (ui.tour) drawTour(); });
+function tutorialsList() {
+  const done = store.toursDone || {};
+  return Object.entries(TOURS).map(([k, t]) => `<button class="setrow" data-act="tour" data-v="${k}"><span><b>${esc(t.title)}${done[k] ? ' <span class="tdone">✓</span>' : ""}</b><small>${esc(t.desc)}</small></span><span class="chev" aria-hidden="true">›</span></button>`).join("");
 }
 
 /* ---------- First-launch setup ---------- */
@@ -2738,8 +2849,9 @@ function startOnboarding(step) { ui.msg = ""; ui.confirm = null; ui.sheet = { ty
 function finishOnboarding(then) {
   store.onboarded = true; save();
   ui.sheet = null;
-  if (then === "game" && store.team.players.length && !store.currentId) { ui.view = "game"; render(); openNewGame(); }
-  else { ui.view = "roster"; render(); }
+  const go = () => { if (then === "game" && store.team.players.length && !store.currentId) { ui.view = "game"; render(); openNewGame(); } else { ui.view = "roster"; render(); } };
+  ui.view = "game"; render();
+  startTour("basics", go);   // a quick, skippable tour of the basics first
 }
 function onbAddPlayer() {
   const name = $("onbPName").value.trim(); if (!name) { $("onbPName").focus(); return; }
@@ -2954,6 +3066,8 @@ function renderSheet() {
     const link = (act, title, desc) => `<button class="setrow" data-act="${act}"><span><b>${title}</b><small>${desc}</small></span><span class="chev" aria-hidden="true">›</span></button>`;
     const c = teamColors();
     body = `<h3>Settings</h3>
+      <h4 style="margin:0">Tutorials</h4>
+      <div class="setlist">${tutorialsList()}</div>
       <div class="setlist">${link("help", "Help &amp; how to score", "Every button, moving runners, league rules, stats and backups.")}</div>
       <h4 style="margin:0">Team</h4>
       <div class="setlist">${link("teamedit", esc(store.team.name), `Short name ${esc(store.team.abbr || abbrOf(store.team.name))} · ${esc(colorName(c.primary))} &amp; ${esc(colorName(c.secondary))}`)}</div>
@@ -3419,6 +3533,10 @@ document.addEventListener("click", ev => {
       if (ui.confirm !== "ep-del") { ui.confirm = "ep-del"; renderSheet(); break; }
       G.events.splice(ui.sheet.i, 1); ui.sheet = null; editedPlay(); break;
     }
+    case "tour": startTour(v); break;
+    case "tour-next": if (ui.tour) { ui.tour.i++; if (ui.tour.i >= TOURS[ui.tour.id].steps.length) endTour(true); else tourStep(1); } break;
+    case "tour-back": if (ui.tour && ui.tour.i > 0) { ui.tour.i--; tourStep(-1); } break;
+    case "tour-skip": endTour(true); break;
     case "park-rm": store.parks.splice(+v, 1); save(); renderSheet(); break;
     case "np-open": { readDraftRows(); ui.sheet.addP = true; renderSheet(); const f = $("np-name"); if (f) f.focus(); break; }
     case "np-cancel": ui.sheet.addP = false; renderSheet(); break;
