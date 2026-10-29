@@ -694,7 +694,9 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 .fieldfs .tbtn { background: rgba(255, 255, 255, .08); color: #ffffff; border-color: rgba(255, 255, 255, .3); }
 .fieldfs .tbtn.primary { background: var(--team-lamp, #ffc93c); color: #1b1400; border-color: transparent; }
 .fieldfs .tbtn.primary:disabled { opacity: .45; }
-#ffield { flex: 1; min-height: 0; width: 100%; touch-action: manipulation; cursor: crosshair; }
+#ffield { flex: 1; min-height: 0; width: 100%; touch-action: none; cursor: crosshair; }
+.spray .spot { cursor: pointer; }
+.spray .spot .hit { fill: transparent; }
 #ffield .fbeyond { fill: rgba(255, 255, 255, .06); }
 #ffield .fgrass { fill: #2e7a49; }
 #ffield .ffence { fill: none; stroke: #ffd25c; stroke-width: 1.4; }
@@ -1103,7 +1105,7 @@ function plateAppearance(s, g, r, p, bb, foulK, fcOut, loc, ip) {
   const type = hit ? bb : BB_OF[r];
   if (type) st[type]++;
   if (p && (hit || NEEDS_POS[r])) {
-    s.bip.push(Object.assign({ team: bt, key, name: entryName(who), r, p, bb: type }, loc ? { loc } : {}, ip ? { ip: true } : {}));   // for spray charts and scouting
+    s.bip.push(Object.assign({ team: bt, key, name: entryName(who), r, p, bb: type }, loc ? { loc } : {}, ip ? { ip: true } : {}, { ev: s.ei }));   // for spray charts and scouting
     const bats = who.pid && player(who.pid) ? player(who.pid).bats : "";
     if (bats === "R" || bats === "L") {
       const side = LEFT_SIDE.has(p) ? "L" : RIGHT_SIDE.has(p) ? "R" : "C";
@@ -2055,9 +2057,10 @@ function sprayField(balls) {
     if (i > 1) { const a = i * 2.4, rad = (2.5 + 3 * Math.sqrt(i)) * sz; x += Math.cos(a) * rad; y += Math.sin(a) * rad; }
     const tip = `<title>${b.r === "E" ? "Error" : b.r} to ${POS[b.p]} · ${esc(b.date)} vs ${esc(b.opp)}</title>`;
     x = x.toFixed(1); y = y.toFixed(1);
-    if (b.r === "E") { const e = (3 * sz).toFixed(1); return `<g class="e">${tip}<path d="M${x - e} ${y - e} l${2 * e} ${2 * e} M${x - e} ${+y + +e} l${2 * e} -${2 * e}" /></g>`; }
+    const spot = m => b.gid != null && b.ev != null ? `<g class="spot" data-act="spot" data-g="${esc(b.gid)}" data-v="${b.ev}" role="button" aria-label="Move this ball"><circle class="hit" cx="${x}" cy="${y}" r="7" />${m}</g>` : m;
+    if (b.r === "E") { const e = (3 * sz).toFixed(1); return spot(`<g class="e">${tip}<path d="M${x - e} ${y - e} l${2 * e} ${2 * e} M${x - e} ${+y + +e} l${2 * e} -${2 * e}" /></g>`); }
     const cls = { "1B": "h1", "2B": "h2", "3B": "h3", HR: "hr" }[b.r] || "o";
-    return `<circle class="${cls}" cx="${x}" cy="${y}" r="${((cls === "o" ? 3.2 : 4.2) * sz).toFixed(1)}">${tip}</circle>`;
+    return spot(`<circle class="${cls}" cx="${x}" cy="${y}" r="${((cls === "o" ? 3.2 : 4.2) * sz).toFixed(1)}">${tip}</circle>`);
   }).join("");
   return `<svg class="spray" viewBox="0 8 200 164" role="img" aria-label="Spray chart, ${balls.length} balls in play">
     <path class="grass" d="M100 166 L11 77 A126 126 0 0 1 189 77 Z" />
@@ -2085,11 +2088,11 @@ function inPark(r, x, y) {
 const pastFence = (x, y) => Math.hypot(x - 100, y - 166) > 126 && 162 - y >= Math.abs(x - 100) - 4;   // beyond the fence, in fair territory
 function fieldHTML(sh) {
   const hit = HIT_CODES.includes(sh.r), loc = sh.loc;
-  const where = loc ? `${pastFence(loc[0], loc[1]) ? "Over the fence, " : ""}${POS_NAME[sh.p].toLowerCase()} (${POS[sh.p]})` : "Tap where the ball went";
+  const where = loc ? `${sh.edit ? "Drag the ball where it went · " : ""}${pastFence(loc[0], loc[1]) ? "Over the fence, " : ""}${POS_NAME[sh.p].toLowerCase()} (${POS[sh.p]})` : "Tap where the ball went";
   const labels = fieldChoices().filter(f => ZONE[f.n]).map(f => `<text class="fl" x="${ZONE[f.n][0]}" y="${ZONE[f.n][1] + 2}">${POS[f.n]}</text>`).join("");
   const mark = loc ? `<path class="fpath" d="M100 162 L${loc[0]} ${loc[1]}" /><circle class="fmark" cx="${loc[0]}" cy="${loc[1]}" r="4.5" /><circle class="fdot" cx="${loc[0]}" cy="${loc[1]}" r="1.2" />` : "";
   return `<div class="fieldfs" role="dialog" aria-modal="true" aria-label="Tap where the ball went">
-    <div class="ffhead"><button class="tbtn" data-act="fieldback">Back</button><div class="fft"><b>${sh.r === "HR" && ui.ip ? "Inside-the-park HR" : PLAY_NAME[sh.r] || sh.r}</b><small>${esc(where)}</small></div></div>
+    <div class="ffhead"><button class="tbtn" data-act="fieldback">${sh.edit ? "Cancel" : "Back"}</button><div class="fft"><b>${sh.r === "HR" && ui.ip ? "Inside-the-park HR" : PLAY_NAME[sh.r] || sh.r}</b><small>${esc(where)}</small></div></div>
     ${hit ? `<div class="bbrow">${[["GB", "Grounder"], ["LD", "Line drive"], ["FB", "Fly ball"]].map(([k, l]) => `<button data-act="bbtype" data-v="${k}" aria-pressed="${ui.bb === k}">${l}</button>`).join("")}</div>` : ""}
     <svg id="ffield" viewBox="-6 -6 212 178" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Field. Tap where the ball went.">
       <path class="fbeyond" d="M100 166 L-40 26 A198 198 0 0 1 240 26 Z" />
@@ -2107,14 +2110,24 @@ function fieldHTML(sh) {
     <div class="fffoot"><button class="tbtn big" data-act="fieldback">Cancel</button><button class="tbtn primary big" data-act="fieldsave" ${loc ? "" : "disabled"}>Save ${PLAY_NAME[sh.r] ? PLAY_NAME[sh.r].toLowerCase() : ""}</button></div>
   </div>`;
 }
-document.addEventListener("click", ev => {
-  const svg = ev.target.closest && ev.target.closest("#ffield"); if (!svg || !ui.sheet || ui.sheet.type !== "field") return;
+// Tap to place the ball, or drag it; the marker follows your finger
+let fdrag = false;
+function placeBall(ev) {
+  const svg = $("ffield"); if (!svg || !ui.sheet || ui.sheet.type !== "field") return;
   const pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
   const q = pt.matrixTransform(svg.getScreenCTM().inverse()), clamp = (v, lo, hi) => Math.round(Math.min(hi, Math.max(lo, v)) * 10) / 10;
   const x = clamp(q.x, -6, 206), y = clamp(q.y, -6, 172);   // a tap in the margin counts as the edge of the field
+  const had = !!ui.sheet.loc;
   ui.sheet.loc = inPark(ui.ip && ui.sheet.r === "HR" ? "1B" : ui.sheet.r, x, y); ui.sheet.p = nearestFielder(ui.sheet.loc[0], ui.sheet.loc[1]);
-  renderSheet();
-});
+  if (!had) { renderSheet(); return; }
+  const [lx, ly] = ui.sheet.loc;
+  svg.querySelectorAll(".fmark, .fdot").forEach(c => { c.setAttribute("cx", lx); c.setAttribute("cy", ly); });
+  const path = svg.querySelector(".fpath"); if (path) path.setAttribute("d", `M100 162 L${lx} ${ly}`);
+}
+document.addEventListener("pointerdown", ev => { if (!(ev.target.closest && ev.target.closest("#ffield"))) return; ev.preventDefault(); fdrag = true; placeBall(ev); });
+document.addEventListener("pointermove", ev => { if (fdrag) { ev.preventDefault(); placeBall(ev); } });
+document.addEventListener("pointerup", () => { if (fdrag) { fdrag = false; renderSheet(); } });
+document.addEventListener("pointercancel", () => { if (fdrag) { fdrag = false; renderSheet(); } });
 
 function sprayData() {
   const by = {};
@@ -2124,7 +2137,7 @@ function sprayData() {
     derive(g).bip.forEach(b => {
       if (b.team !== g.ourSide || !b.key.startsWith("p:")) return;
       const pid = b.key.slice(2);
-      (by[pid] = by[pid] || []).push(Object.assign({ date: g.date, opp: g.opponent }, b));
+      (by[pid] = by[pid] || []).push(Object.assign({ date: g.date, opp: g.opponent, gid: g.id }, b));
     });
   });
   return by;
@@ -2183,7 +2196,7 @@ function scoutData() {
     const T = teams[k] || (teams[k] = { key: k, name, games: [], balls: [] });
     const s = derive(g);
     T.games.push({ g, us: total(s, g.ourSide), them: total(s, 1 - g.ourSide), live: g.id === store.currentId });
-    s.bip.forEach(b => { if (b.team !== g.ourSide) T.balls.push(Object.assign({ date: g.date, opp: name }, b)); });
+    s.bip.forEach(b => { if (b.team !== g.ourSide) T.balls.push(Object.assign({ date: g.date, opp: name, gid: g.id }, b)); });
   });
   return Object.values(teams).sort((a, b) => b.balls.length - a.balls.length || a.name.localeCompare(b.name));
 }
@@ -2641,7 +2654,7 @@ const HELP = [
     <li>Start a new season (Spring, Summer or Fall) with <b>New Season</b> on the Stats tab. Your roster carries over and old seasons stay saved. The season menu switches between them or shows all seasons together.</li></ul>`],
   ["Stats, spray charts and scouting", `
     <ul><li><b>Stats → Batting</b> has Standard, Advanced, Contact (grounders, liners, fly balls, pull and opposite field) and Fielding tables. Tap a column to sort. Each table explains its stats underneath.</li>
-    <li><b>Charts</b> are spray charts: where your team and each player hit the ball, with All / Hits / Outs filters.</li>
+    <li><b>Charts</b> are spray charts: where your team and each player hit the ball, with All / Hits / Outs filters. Tap any dot to move it: drag it where the ball really went, then Save.</li>
     <li><b>Scout</b> shows every team you've played, where their hitters hit it, and where to shade your defense. It needs their half scored in Scorekeeper mode.</li></ul>`],
   ["Sounds and walk-up songs", `
     <ul><li>The speaker button turns sound on and off. Built-in ballpark organ sounds play for hits, runs, strikeouts and big moments.</li>
@@ -3414,9 +3427,21 @@ document.addEventListener("click", ev => {
     case "posskip": push({ t: "pa", r: ui.sheet.r }); break;
     case "bbtype": ui.bb = ui.bb === v ? null : v; renderSheet(); break;
     case "fieldopen": ui.sheet = { type: "field", r: ui.sheet.r, from: ui.sheet.type }; renderSheet(); break;
-    case "fieldback": ui.sheet = { type: ui.sheet.from, r: ui.sheet.r }; renderSheet(); break;
+    case "fieldback": if (ui.sheet.edit) closeSheet(); else { ui.sheet = { type: ui.sheet.from, r: ui.sheet.r }; renderSheet(); } break;
+    case "spot": {   // a dot on a spray chart: move it
+      const g = store.games.find(x => x.id === el.dataset.g), e = g && g.events[+v]; if (!e || e.t !== "pa") break;
+      ui.ip = !!e.ip; ui.bb = e.bb || null;
+      const start = e.loc ? inPark(e.ip ? "1B" : e.r, e.loc[0], e.loc[1]) : (ZONE[e.p] || [100, 90]).slice();
+      ui.sheet = { type: "field", r: e.r, edit: { gid: g.id, i: +v }, loc: start, p: e.p || nearestFielder(start[0], start[1]) };
+      renderSheet(); break;
+    }
     case "fieldsave": {
       const sh = ui.sheet; if (!sh.loc) break;
+      if (sh.edit) {   // moving a ball that was already saved
+        const g = store.games.find(x => x.id === sh.edit.gid), old = g && g.events[sh.edit.i];
+        if (old) { old.loc = sh.loc; old.p = sh.p; if (HIT_CODES.includes(old.r) && ui.bb) old.bb = ui.bb; }
+        ui.sheet = null; save(); render(); break;
+      }
       const e = { t: "pa", r: sh.r, p: sh.p, loc: sh.loc };
       if (HIT_CODES.includes(sh.r) && ui.bb) e.bb = ui.bb;
       if (ui.ip && sh.r === "HR") e.ip = true;

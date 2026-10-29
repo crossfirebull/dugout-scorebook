@@ -321,7 +321,7 @@ test("the spray tab shows a team chart that can show only hits or only outs", as
   await page.click(".tabbar [data-v=stats]");
   await page.click("[data-act=statstab][data-v=spray]");
   await page.waitForSelector(".teamcard svg.spray");
-  const dots = async () => page.$$eval(".teamcard svg.spray circle", c => c.map(x => x.getAttribute("class")));
+  const dots = async () => page.$$eval(".teamcard svg.spray circle:not(.hit)", c => c.map(x => x.getAttribute("class")));
   const all = await dots();
   assert.ok(all.length > 0, "team chart has balls in play");
   await page.click("[data-act=sprayfilter][data-v=hits]");
@@ -903,6 +903,29 @@ test("inside-the-park home run: counts as a HR, not toward the HR limit, and sta
   await page.click(".tabbar [data-v=stats]"); await page.click("[data-act=statstab][data-v=spray]");
   const hr = await page.$$eval(".teamcard circle.hr", c => c.map(x => Math.hypot(+x.getAttribute("cx") - 100, +x.getAttribute("cy") - 166)));
   assert.equal(hr.filter(d => d < 126).length, 1, "the inside-the-park one is inside the fence");
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("spray charts: tap a dot and drag it to a better spot", async () => {
+  const { page, context, errors } = await open(393, 852, { hasTouch: true });
+  await page.click(".tabbar [data-v=stats]"); await page.click("[data-act=statstab][data-v=spray]");
+  const card = ".spraygrid .spraycard >> nth=0";
+  const before = await page.$$eval(".spraygrid .spraycard:first-child .spot", g => g.map(x => x.dataset.g + ":" + x.dataset.v + "@" + x.querySelector(".hit").getAttribute("cx")));
+  assert.ok(before.length, "dots are tappable");
+  await page.$eval(".spraygrid .spraycard:first-child .spot", g => g.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+  assert.ok(await page.$(".fieldfs"), "full-screen field opens");
+  assert.match(await text(page, ".fft small"), /Drag the ball/);
+  const to = async (x, y) => page.evaluate(([x, y]) => { const m = document.querySelector("#ffield").getScreenCTM(); return [m.a * x + m.e, m.d * y + m.f]; }, [x, y]);
+  const [ax, ay] = await to(...(await page.$eval("#ffield .fdot", c => [+c.getAttribute("cx"), +c.getAttribute("cy")])));
+  const [bx, by] = await to(40, 90);
+  await page.mouse.move(ax, ay); await page.mouse.down(); await page.mouse.move(bx, by, { steps: 8 }); await page.mouse.up();
+  const moved = await page.$eval("#ffield .fdot", c => [+c.getAttribute("cx"), +c.getAttribute("cy")]);
+  assert.ok(Math.abs(moved[0] - 40) < 2 && Math.abs(moved[1] - 90) < 2, "marker followed the drag: " + moved);
+  await page.click("[data-act=fieldsave]");
+  assert.equal(await page.$(".fieldfs"), null);
+  const after = await page.$$eval(".spraygrid .spraycard:first-child .spot .hit", c => c.map(x => [+x.getAttribute("cx"), +x.getAttribute("cy")]));
+  assert.ok(after.some(([x, y]) => Math.abs(x - 40) < 2 && Math.abs(y - 90) < 2), "the dot is in its new spot");
   assert.deepEqual(errors, []);
   await context.close();
 });
