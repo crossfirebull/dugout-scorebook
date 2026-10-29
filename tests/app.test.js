@@ -297,7 +297,7 @@ test("the FC button is off when nobody is on base", async () => {
 test("a runner who scores on the batter's play earns that batter an RBI", async () => {
   const { page, context } = await open();
   await tapResult(page, "3B");                                     // runner on third
-  const batter = (await text(page, "#atbat .now")).replace(/^#\d+\s*/, "");
+  const batter = await page.$eval("#atbat .now", n => [...n.childNodes].filter(c => c.nodeType === 3).map(c => c.textContent).join("").trim());
   await tapResult(page, "GO");                                     // ground out; runner breaks for home
   await page.click("#bug .bbase.on");
   assert.match(await text(page, ".sheet"), new RegExp("RBI to " + batter.split(" ")[0]));
@@ -797,6 +797,27 @@ test("New Game ends with the coin toss: home or visitors starts the game", async
   await page.click("[data-act=startgame][data-v='1']");
   assert.match(await text(page, "#bug .row:not(.us) .abbr"), /COI|FLI/);
   assert.ok(await page.$("#bug .row.us:last-child") || await page.$("#bug .rows .row:nth-child(2).us"), "we're the second row: home");
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("edit a play from the Book: move an RBI, change a result, delete a play", async () => {
+  const ev = [...threeOuts(), PA("3B"), PA("GO"), { t: "run", b: 2, a: "score", rbi: true }, PA("1B")];
+  const { page, context, errors } = await openGame(ruleGame({}, ev));
+  await page.click(".tabbar [data-v=book]");
+  assert.match(await page.textContent("#pbp"), /RBI: Player 2/);
+  await page.click("#pbp li.editable:has-text('scores')");
+  assert.match(await text(page, ".sheet h3"), /Edit play/);
+  await page.selectOption("#ep-rbi", { label: "Player 1" });
+  assert.match(await page.textContent("#pbp"), /RBI: Player 1/);
+  await page.click(".sheet [data-act=close]");
+  await page.click("#pbp li.editable:has-text('grounds out')");
+  await page.click("[data-act=ep-r][data-v=FO]");
+  assert.match(await page.textContent("#pbp"), /Player 2 flies out/);
+  await page.click(".sheet [data-act=close]");
+  await page.click("#pbp li.editable:has-text('Player 3 singles')");
+  await page.click("[data-act=ep-del]"); await page.click("[data-act=ep-del]");
+  assert.doesNotMatch(await page.textContent("#pbp"), /Player 3 singles/);
   assert.deepEqual(errors, []);
   await context.close();
 });

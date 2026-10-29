@@ -61,6 +61,7 @@ Nothing is locked once the game starts:
 - **Game settings** changes the opponent, date, park, **home or away**, and the league rules any time. Switching home and away mid-game moves each play to the other half of its inning, so every play stays with the team that made it.
 - **+ New player** on the lineup screens adds a late fill-in. Leave the name blank and they're "Fill-in" (rename them on the Team tab later; their stats follow).
 - **Lineups** subs players in and out once play has started, and **Undo** takes back any tap.
+- **Fix any play from the Book:** tap a line in the play-by-play (✎) to change the result or fielder, what a runner did, who gets the RBI, or delete it. Everything after it is re-scored automatically. Works on saved games too.
 
 ## Sharing a game recap
 

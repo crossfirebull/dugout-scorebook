@@ -86,7 +86,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .chip.clock.warn { background: var(--lamp); color: #1b1400; }
 .chip.clock.called { background: var(--stitch); color: #fff; }
 .topbar .spacer { flex: 1; }
-.tbtn { min-height: 40px; padding: 0 12px; font-size: 15px; border-radius: 8px; border: 1px solid var(--rule); background: var(--surface); font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+.tbtn { min-height: 42px; padding: 0 12px; font-size: 16px; border-radius: 8px; border: 1px solid var(--rule); background: var(--surface); font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
 .tbtn:disabled { opacity: .4; cursor: default; }
 .tbtn[aria-pressed="true"] { background: var(--sel-bg); color: var(--sel-ink); border-color: var(--sel-bg); }
 
@@ -132,18 +132,18 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .count .o .dot.on { background: var(--stitch); border-color: var(--stitch); }
 
 .atbat { display: grid; gap: 2px; padding: 10px 0 4px; border-top: 1px solid var(--rule-soft); margin-top: 8px; }
-.atbat .now { font-family: var(--f-display); font-weight: 800; font-size: 25px; line-height: 1.05; text-wrap: balance; }
+.atbat .now { font-family: var(--f-display); font-weight: 800; font-size: 28px; line-height: 1.05; text-wrap: balance; }
 .atbat .now small { font-family: var(--f-label); font-weight: 600; font-size: 16px; color: var(--muted); margin-right: 6px; }
-.atbat .meta { color: var(--muted); font-size: 14px; }
+.atbat .meta { color: var(--muted); font-size: 15.5px; }
 
 /* Input pad */
 .pad { display: grid; gap: 10px; margin-top: 10px; }
 .group { display: grid; gap: 5px; }
-.group .gl { font-family: var(--f-label); font-weight: 700; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.group .gl { font-family: var(--f-label); font-weight: 700; font-size: 13.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
 .keys { display: grid; gap: 5px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
-.key { min-height: 48px; border-radius: 8px; border: 1px solid var(--rule); background: var(--surface); display: grid; place-content: center; text-align: center; padding: 4px; line-height: 1.05; }
-.key b { font-family: var(--f-display); font-weight: 800; font-size: 20px; letter-spacing: .02em; }
-.key span { font-family: var(--f-label); font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: .03em; }
+.key { min-height: 52px; border-radius: 8px; border: 1px solid var(--rule); background: var(--surface); display: grid; place-content: center; text-align: center; padding: 4px; line-height: 1.05; }
+.key b { font-family: var(--f-display); font-weight: 800; font-size: 23px; letter-spacing: .02em; }
+.key span { font-family: var(--f-label); font-size: 13px; font-weight: 600; color: var(--ink); opacity: .78; letter-spacing: .03em; }
 .key:active { transform: translateY(1px); }
 .key:disabled { opacity: .35; cursor: default; }
 .key.pitch { background: var(--rule-soft); }
@@ -185,9 +185,15 @@ table.book tfoot td { font-family: var(--f-label); font-weight: 700; font-size: 
 
 .lower { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); margin-top: 14px; }
 .pbp { list-style: none; margin: 0; padding: 0; max-height: 480px; overflow-y: auto; display: grid; gap: 0; }
-.pbp li { padding: 6px 0; border-bottom: 1px solid var(--rule-soft); font-size: 15px; display: grid; grid-template-columns: 48px 1fr; gap: 8px; }
+.pbp li { padding: 8px 0; border-bottom: 1px solid var(--rule-soft); font-size: 16px; display: grid; grid-template-columns: 48px 1fr; gap: 8px; }
 .pbp li .inn { font-family: var(--f-label); font-weight: 700; color: var(--muted); font-size: 13px; padding-top: 2px; }
 .pbp li .run { color: var(--safe); font-weight: 700; }
+.pbp li.editable { grid-template-columns: 48px 1fr 28px; cursor: pointer; border-radius: 6px; }
+.pbp li.editable:active { background: var(--rule-soft); }
+.pbp li .pen { color: var(--muted); font-size: 16px; text-align: center; }
+.eprow { display: flex; flex-wrap: wrap; gap: 6px; }
+.eprow .chipbtn { min-height: 40px; font-size: 15px; }
+.epwas { margin: 0; padding: 10px 12px 10px 28px; border-radius: 8px; background: var(--paper); border: 1px solid var(--rule); font-size: 15px; }
 .legend { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 4px 12px; font-size: 14px; color: var(--muted); }
 .legend b { font-family: var(--f-display); color: var(--ink); font-size: 16px; display: inline-block; min-width: 34px; }
 
@@ -438,8 +444,20 @@ html[data-layout] .key b span.kc { font: inherit; color: inherit; letter-spacing
 
 html[data-layout="phone"] .gamebar .matchup { display: none; }
 html[data-layout="phone"] .play { gap: 8px; }
-html[data-layout="phone"] .play .panel { padding: 10px; }
-html[data-layout="phone"] .key { min-height: 44px; }
+html[data-layout="phone"] .view { gap: 8px; }
+html[data-layout="phone"] .pad .group + .group, html[data-layout="phone"] #pad .group + .group { margin-top: 2px; }
+html[data-layout="phone"] .play .panel { padding: 8px 10px; }
+html[data-layout="phone"] .key { min-height: 50px; }
+html[data-layout="phone"] .pad { gap: 6px; }
+html[data-layout="phone"] .gamebar .tbtn { min-height: 38px; }
+html[data-layout="phone"] .atbat .now { font-size: 26px; padding-right: 96px; }
+html[data-layout="phone"] .atbat .abtop { display: none; }   /* phones: the position sits next to the name instead */
+.atbat .abpos { display: none; }
+html[data-layout="phone"] .atbat .abpos { display: inline; margin-left: 8px; }
+html[data-layout="phone"] .bug .row { padding-top: 4px; padding-bottom: 4px; }
+html[data-layout="phone"] #atbat .walkup { top: 6px; min-height: 32px; }
+html[data-layout="phone"] .atbat .meta { padding-right: 0; }
+html[data-layout="phone"] .atbat .now + .meta { margin-top: 4px; }
 
 /* Tablets and computers: bigger targets and a bigger score bug */
 html[data-layout="tablet"] .extra, html[data-layout="wide"] .extra { display: block; }
@@ -975,7 +993,7 @@ function checkWalkOff(s) {
 function stat(s, t, key) { return s.stats[t][key] || (s.stats[t][key] = blankStat()); }
 function fstat(s, t, key) { return s.field[t][key] || (s.field[t][key] = { PL: 0, E: 0 }); }
 function cellOf(s, r) { return s.book[r.team][r.cell]; }
-function log(s, text) { s.log.push({ inn: (s.half ? "B" : "T") + s.inning, text }); }
+function log(s, text) { s.log.push({ inn: (s.half ? "B" : "T") + s.inning, text, ev: s.ei }); }
 
 function scoreRunner(s, g, r) {
   s.runs[r.team][s.inning - 1] = (s.runs[r.team][s.inning - 1] || 0) + 1;
@@ -1114,7 +1132,7 @@ function pitch(s, g, k) {
 
 // Plays where a run that scores can be credited to the batter as an RBI (not errors, double plays or strikeouts)
 const RBI_PLAYS = new Set(["1B", "2B", "3B", "BB", "HBP", "GO", "FO", "LO", "PO", "SF", "FC"]);
-function runnerMove(s, g, b, a, rbi) {
+function runnerMove(s, g, b, a, rbi, rbiKey) {
   const x = s.bases[b]; if (!x) return;
   const who = esc(runnerName(s, x));
   if (a === "out") {
@@ -1126,7 +1144,9 @@ function runnerMove(s, g, b, a, rbi) {
   if (a === "score" || b === 2) {
     s.bases[b] = null; scoreRunner(s, g, x);
     // Scored on the batter's play (ground out, fly ball, fielder's choice, hit): the batter gets the RBI
-    const credit = rbi && s.lastPA && s.lastPA.team === x.team ? s.lastPA : null;
+    // or, if it was fixed afterwards in the Book, the batter picked there
+    const pick = rbiKey && s.lu[x.team].map((y, i) => ({ team: x.team, key: keyOf(y, x.team, i), name: entryName(y) })).find(y => y.key === rbiKey);
+    const credit = pick || (rbi && s.lastPA && s.lastPA.team === x.team ? s.lastPA : null);
     if (credit) stat(s, credit.team, credit.key).RBI++;
     log(s, who + " scores." + ' <span class="run">1 run scores.</span>' + (credit ? ` RBI: ${esc(credit.name)}.` : ""));
   } else if (!s.bases[b + 1]) {
@@ -1168,14 +1188,15 @@ function substitute(s, e) {
 
 function derive(g, tags) {   // tags (optional): filled with [inning, half] for each event, for switching home and away
   const s = fresh(g);
-  for (const e of g.events) {
+  for (const [ei, e] of g.events.entries()) {
+    s.ei = ei;
     if (tags) tags.push(s.final ? null : [s.inning, s.half]);
     if (e.t === "sub") { substitute(s, e); continue; }
     if (s.final) break;
     s.fx = { bat: s.half };
     if (e.t === "pitch") pitch(s, g, e.k);
     else if (e.t === "pa") plateAppearance(s, g, e.r, e.p, e.bb, false, e.out, e.loc);
-    else if (e.t === "run") runnerMove(s, g, e.b, e.a, e.rbi);
+    else if (e.t === "run") runnerMove(s, g, e.b, e.a, e.rbi, e.rbiKey);
     else if (e.t === "quick") quickEvent(s, g, e.k);
     else if (e.t === "cr") courtesy(s, e);
   }
@@ -1607,7 +1628,7 @@ function render() {
   syncSoundBtn();
   renderAlert();
   const slim = ui.view === "game" && /^(phone|short)$/.test(document.documentElement.dataset.layout || "");   // keep the buttons on screen
-  const hideSample = ui.view === "game" && document.documentElement.dataset.layout === "short";   // no height to spare; shown on other tabs
+  const hideSample = ui.view === "game" && /^(short|phone)$/.test(document.documentElement.dataset.layout || "");   // no height to spare; shown on other tabs
   $("sampleBox").innerHTML = store.sample && !hideSample ? `<div class="banner ${slim ? "slim" : ""}"><span>${slim ? "<b>Sample season</b> (made-up data)" : "This is a <b>made-up sample season</b> so you can see how the stats work."}</span><span class="spacer"></span>
     <button class="tbtn ${ui.confirm === "clear" ? "danger" : ""}" data-act="clearsample">${ui.confirm === "clear" ? "Tap again to erase sample data" : "Clear sample data"}</button></div>` : "";
   if (ui.view === "game" || ui.view === "book") renderGameView();
@@ -1677,7 +1698,7 @@ function renderExtra() {
     }).join("")}</ol>`;
   }
   const plays = S.log.slice(-4).reverse();
-  el.innerHTML = `${due}<h2>Last plays</h2>${plays.length ? `<ol class="pbp">${plays.map(l => `<li><span class="inn">${l.inn}</span><span>${l.text}</span></li>`).join("")}</ol>` : `<p style="color:var(--muted);margin:0">Plays show up here as you score them.</p>`}`;
+  el.innerHTML = `${due}<h2>Last plays</h2>${plays.length ? `<ol class="pbp">${plays.map(playLi).join("")}</ol>` : `<p style="color:var(--muted);margin:0">Plays show up here as you score them.</p>`}`;
 }
 
 /* ---------- Game clock: the league time limit ----------
@@ -1720,6 +1741,9 @@ function clockRows(g) {
     </div>`;
 }
 
+// A play-by-play line; tap it to fix that play
+const playLi = l => l.ev == null ? `<li><span class="inn">${l.inn}</span><span>${l.text}</span></li>`
+  : `<li class="editable" data-act="editplay" data-v="${l.ev}" role="button" tabindex="0" aria-label="Edit this play"><span class="inn">${l.inn}</span><span>${l.text}</span><span class="pen" aria-hidden="true">✎</span></li>`;
 function renderGamebar() {
   const names = teamNames(G), peek = !!ui.peekId;
   const status = peek ? "Final" : S.final ? "Final" : (S.half ? "Bottom " : "Top ") + ordinal(S.inning);
@@ -1820,8 +1844,8 @@ function renderAtBat() {
     return;
   }
   const t = S.half, slot = curSlot(S), next = (slot + 1) % lineLen(S, t), who = occ(S, t, slot);
-  $("atbat").innerHTML = `<div class="meta">${esc(teamNames(G)[t])} batting${countOn(G) ? ` · ${S.balls}–${S.strikes} count` : ""}${who.pos ? " · plays " + esc(who.pos) : ""}</div>
-    <div class="now"><small>#${slot + 1}</small>${esc(entryName(who))}</div>
+  $("atbat").innerHTML = `<div class="meta abtop">${esc(teamNames(G)[t])} batting${countOn(G) ? ` · ${S.balls}–${S.strikes} count` : ""}${who.pos ? " · plays " + esc(who.pos) : ""}</div>
+    <div class="now"><small>#${slot + 1}</small>${esc(entryName(who))}${who.pos ? `<small class="abpos">${esc(who.pos)}</small>` : ""}</div>
     <div class="meta">${todayLine(t, slot)} · On deck: ${esc(nameAt(S, t, next))}</div>
     <div class="meta">${(() => { const on = S.bases.map((r, b) => r ? `${["1st", "2nd", "3rd"][b]} ${esc(runnerName(S, r).split(" ")[0])}` : "").filter(Boolean);
       return on.length ? `On base: ${on.join(" · ")} <span style="opacity:.75">(tap a base to move a runner)</span>` : "Bases empty"; })()}</div>
@@ -1860,9 +1884,9 @@ function renderPad() {
       ${key("pa", "BB", "BB", "Walk", "on")}${key("pa", "E", "E", "Error", "on")}${key("pa", "FC", "FC", S.bases.some(Boolean) ? "Runner out, batter safe" : "Needs a runner on base", "on wide", !S.bases.some(Boolean))}
     </div></div>
     <div class="group"><div class="gl">Batter out</div><div class="keys" style="grid-template-columns:repeat(5,minmax(0,1fr))">
-      ${key("pa", "K", "K", "Swinging", "out")}${key("pa", "KC", '<span class="kc">K</span>', "Looking", "out")}${key("pa", "GO", "GO", "Ground out", "out")}${key("pa", "FO", "F", "Fly out", "out")}
-      ${key("pa", "LO", "L", "Line out", "out")}${key("pa", "PO", "P", "Pop out", "out")}${key("pa", "SF", "SF", "Sac fly", "out")}${key("pa", "DP", "DP", "Double play", "out")}
-      ${key("pa", "HRO", "HR out", "Over HR limit", "out")}${key("pa", "FBO", "FBO", "Foul ball out", "out")}
+      ${key("pa", "K", "K", "Swinging", "out")}${key("pa", "KC", '<span class="kc">K</span>', "Looking", "out")}${key("pa", "GO", "GO", "Grounder", "out")}${key("pa", "FO", "F", "Fly out", "out")}
+      ${key("pa", "LO", "L", "Line out", "out")}${key("pa", "PO", "P", "Pop out", "out")}${key("pa", "SF", "SF", "Sac fly", "out")}${key("pa", "DP", "DP", "Dbl play", "out")}
+      ${key("pa", "HRO", "HRO", "HR out", "out")}${key("pa", "FBO", "FBO", "Foul out", "out")}
     </div></div>`;
 }
 
@@ -1900,7 +1924,7 @@ function renderBook() {
 }
 function renderLog() {
   const items = S.log.slice().reverse();
-  $("pbp").innerHTML = items.length ? items.map(l => `<li><span class="inn">${l.inn}</span><span>${l.text}</span></li>`).join("")
+  $("pbp").innerHTML = items.length ? items.map(playLi).join("")
     : `<li><span class="inn">—</span><span>Plays appear here as you score them.</span></li>`;
 }
 
@@ -2553,7 +2577,7 @@ const HELP = [
       <dt>GO F L P</dt><dd>Ground out, fly out, line out, pop out. Runners stay put; tap a base if someone moved up.</dd>
       <dt>SF</dt><dd>Sacrifice fly. The runner on third scores and the batter gets the RBI, not an at-bat.</dd>
       <dt>DP</dt><dd>Double play: the lead runner and the batter are out. No RBI.</dd>
-      <dt>HR out</dt><dd>A home run ruled an out under the HR limit. ScoreKept does this for you when the limit is set.</dd>
+      <dt>HRO</dt><dd>HR out: a home run ruled an out under the HR limit. ScoreKept does this for you when the limit is set.</dd>
       <dt>FBO</dt><dd>Foul ball out (out on a foul with two strikes). An at-bat, not a strikeout.</dd>
     </dl>
     <p>With <b>Hit location</b> on, it asks who fielded the ball or where a hit went. That feeds the spray charts and fielding stats. Every question has <b>Skip</b>.</p>
@@ -2566,6 +2590,7 @@ const HELP = [
     <li><b>Courtesy runner</b>: pick who runs instead. Once per inning for each team. If they score, the run counts for the courtesy runner.</li></ul>`],
   ["Fixing mistakes", `
     <ul><li><b>Undo</b> takes back the last tap, as many times as you need.</li>
+    <li><b>Fix a play:</b> tap any line in the play-by-play on the Book tab (it has a ✎). Change the result or fielder, what a runner did, or who gets the RBI, or delete it. Everything after it is re-scored. Works on saved games too.</li>
     <li><b>Game settings</b> changes the opponent, date, park, home or away, and league rules at any point. Switching home and away mid-game moves each play to the other half of its inning, so stats stay with the right team.</li>
     <li><b>+ New player</b> on the lineup screens adds a late fill-in. Leave the name blank and they're "Fill-in" until you rename them on the Team tab; their stats follow them.</li>
     <li><b>Lineups</b> changes the batting order or positions. Mid-game, each change is saved as a substitution.</li>
@@ -2893,6 +2918,8 @@ function renderSheet() {
       </div>
       ${colorPicker()}
       <div class="acts"><button class="tbtn primary" data-act="close">Done</button></div>`;
+  } else if (sh.type === "editplay") {
+    body = editPlayBody(sh);
   } else if (sh.type === "recap") {
     wide = true;
     body = `<h3>Game recap</h3>
@@ -3166,6 +3193,37 @@ async function shareRecap(mode) {
   renderSheet();
 }
 
+/* ---------- Edit a play from the Book ----------
+   Change a batter's result or fielder, a runner's move, who gets the RBI, or delete the play.
+   Everything after it is re-scored automatically. */
+const EDIT_RESULTS = [["1B", "Single"], ["2B", "Double"], ["3B", "Triple"], ["HR", "Home run"], ["BB", "Walk"], ["E", "Error"], ["FC", "Fielder's choice"],
+  ["K", "K swinging"], ["KC", "K looking"], ["GO", "Ground out"], ["FO", "Fly out"], ["LO", "Line out"], ["PO", "Pop out"], ["SF", "Sac fly"], ["DP", "Double play"], ["HRO", "HR out"], ["FBO", "Foul ball out"]];
+function editPlayBody(sh) {
+  const e = G.events[sh.i]; if (!e) return "<h3>Edit play</h3><p>That play is gone.</p>";
+  const tags = []; derive(G, tags); const t = tags[sh.i], bat = t ? t[1] : S.half;
+  const lines = S.log.filter(l => l.ev === sh.i).map(l => `<li>${l.text}</li>`).join("") || "<li>(no effect now)</li>";
+  let ctl = "";
+  if (e.t === "pa") {
+    ctl = `<h4>Result</h4><div class="eprow">${EDIT_RESULTS.map(([k, l]) => `<button class="chipbtn ${e.r === k ? "on" : ""}" data-act="ep-r" data-v="${k}">${l}</button>`).join("")}</div>
+      <label class="setrow" for="ep-p"><span><b>Fielded by / hit toward</b><small>Feeds fielding stats and spray charts.</small></span>
+        <select id="ep-p" data-ch="ep-p"><option value="">Not recorded</option>${POS.slice(1, 13).map((x, n) => `<option value="${n + 1}" ${e.p === n + 1 ? "selected" : ""}>${n + 1} · ${x}</option>`).join("")}</select></label>`;
+  } else if (e.t === "run") {
+    const batters = (S.lu[bat] || []).map((y, i) => ({ key: keyOf(y, bat, i), name: entryName(y) }));
+    const cur = e.rbiKey || (e.rbi ? "auto" : "");
+    ctl = `<h4>What the runner did</h4><div class="eprow">${[["adv", "Advanced a base"], ["score", "Scored"], ["out", "Out on the bases"]].map(([k, l]) => `<button class="chipbtn ${(e.a === k || (k === "adv" && e.a === "sb")) ? "on" : ""}" data-act="ep-a" data-v="${k}">${l}</button>`).join("")}</div>
+      ${e.a === "score" || e.b === 2 ? `<label class="setrow" for="ep-rbi"><span><b>RBI goes to</b><small>Pick the batter who drove the run in, or no RBI for an error or passed ball.</small></span>
+        <select id="ep-rbi" data-ch="ep-rbi"><option value="" ${cur === "" ? "selected" : ""}>No RBI</option><option value="auto" ${cur === "auto" ? "selected" : ""}>The batter at the time</option>
+        ${batters.map(b => `<option value="${esc(b.key)}" ${cur === b.key ? "selected" : ""}>${esc(b.name)}</option>`).join("")}</select></label>` : ""}`;
+  }
+  return `<h3>Edit play</h3>
+    <ul class="epwas">${lines}</ul>
+    ${ctl}
+    <p style="font-size:14px">Plays after this one are re-scored automatically.</p>
+    <div class="acts" style="justify-content:space-between"><button class="tbtn ${ui.confirm === "ep-del" ? "danger" : ""}" data-act="ep-del">${ui.confirm === "ep-del" ? "Tap again to delete this play" : "Delete this play"}</button>
+      <button class="tbtn primary" data-act="close">Done</button></div>`;
+}
+function editedPlay() { ui.confirm = null; save(); render(); }
+
 // Save a file: on iPhone/iPad this opens the share sheet (Save to Files, iCloud Drive, Mail, AirDrop);
 // elsewhere it downloads. Resolves "shared", "downloaded", "cancelled" or "failed".
 async function saveFile(name, text, type) {
@@ -3332,6 +3390,19 @@ document.addEventListener("click", ev => {
       if (ui.confirm !== "flip") { ui.confirm = "flip"; renderSheet(); break; }
       readDraftRows(); ui.confirm = null; flipHomeAway(g); save(); render(); break;
     }
+    case "editplay": ui.confirm = null; ui.sheet = { type: "editplay", i: +v }; renderSheet(); break;
+    case "ep-r": {
+      const e = G.events[ui.sheet.i]; if (!e) break;
+      e.r = v; if (v !== "FC") delete e.out;
+      if (!HIT_CODES.includes(v)) delete e.bb;
+      if (!HIT_CODES.includes(v) && !NEEDS_POS[v]) { delete e.p; delete e.loc; }
+      editedPlay(); break;
+    }
+    case "ep-a": { const e = G.events[ui.sheet.i]; if (e) { e.a = v; if (v !== "score" && e.b !== 2) { delete e.rbi; delete e.rbiKey; } } editedPlay(); break; }
+    case "ep-del": {
+      if (ui.confirm !== "ep-del") { ui.confirm = "ep-del"; renderSheet(); break; }
+      G.events.splice(ui.sheet.i, 1); ui.sheet = null; editedPlay(); break;
+    }
     case "park-rm": store.parks.splice(+v, 1); save(); renderSheet(); break;
     case "np-open": { readDraftRows(); ui.sheet.addP = true; renderSheet(); const f = $("np-name"); if (f) f.focus(); break; }
     case "np-cancel": ui.sheet.addP = false; renderSheet(); break;
@@ -3481,6 +3552,8 @@ document.addEventListener("change", ev => {
     else { readDraftRows(); const g = mode === "setting" && curGame(); if (g) Object.assign(g.settings, ruleSettings(ui.draft)); }
     save();
   }
+  else if (ch === "ep-p") { const e = G.events[ui.sheet.i]; if (e) { if (el.value) e.p = +el.value; else { delete e.p; delete e.loc; } editedPlay(); } }
+  else if (ch === "ep-rbi") { const e = G.events[ui.sheet.i]; if (e) { delete e.rbi; delete e.rbiKey; if (el.value === "auto") e.rbi = true; else if (el.value) e.rbiKey = el.value; editedPlay(); } }
   else if (ch === "ptune") { if (p) { p.tune = el.value; save(); stopClip(false); renderSheet(); } }
   else if (ch === "prefrule") { store.prefs = Object.assign({}, store.prefs, readRules("p-")); save(); render(); }
   else if (ch === "incCur") { ui.incCur = el.checked; render(); }
