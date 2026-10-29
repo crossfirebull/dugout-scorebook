@@ -213,6 +213,9 @@ table.book tfoot td { font-family: var(--f-label); font-weight: 700; font-size: 
 /* Final banner */
 .final { background: var(--lamp); color: #1b1400; border-radius: 8px; padding: 10px 14px; font-weight: 700; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .final b { font-family: var(--f-display); font-size: 24px; text-transform: uppercase; }
+/* buttons on the yellow final banner: readable in light and dark mode */
+.final .tbtn { background: rgba(255, 255, 255, .9); color: #1b1400; border-color: rgba(27, 20, 0, .25); }
+.final .tbtn.primary { background: #1b1400; color: #ffd25c; border-color: #1b1400; }
 
 /* Sheets (overlays) */
 .scrim { position: fixed; inset: 0; background: rgba(8, 14, 18, .5); z-index: 50; display: grid; place-items: end center; padding: 16px; padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
@@ -1793,7 +1796,7 @@ function renderBoard() {
     const a = total(S, 0), hm = total(S, 1), w = a > hm ? 0 : 1;
     const why = S.endWhy === "run rule" ? "Run rule. " : G.timeUp ? "Time limit. " : "";
     $("finalBox").innerHTML = `<div class="final"><b>Final</b><span>${why}${a === hm ? `Tie game, ${a}–${hm}.` : `${esc(names[w])} win ${Math.max(a, hm)}–${Math.min(a, hm)}.`}</span><span style="flex:1"></span>
-      ${S.endWhy === "run rule" ? "" : `<button class="tbtn" data-act="addinning">Play another inning</button>`}<button class="tbtn" data-act="recap" data-v="${G.id}">Share recap</button><button class="tbtn" data-act="endgame">Save to season</button></div>`;
+      ${S.endWhy === "run rule" ? "" : `<button class="tbtn" data-act="addinning">Play another inning</button>`}<button class="tbtn" data-act="recap" data-v="${G.id}">Share recap</button><button class="tbtn primary" data-act="endgame">Save to season</button></div>`;
   } else $("finalBox").innerHTML = "";
 }
 
