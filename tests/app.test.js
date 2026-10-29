@@ -821,3 +821,19 @@ test("edit a play from the Book: move an RBI, change a result, delete a play", a
   assert.deepEqual(errors, []);
   await context.close();
 });
+
+test("Book: tap a box in the scorebook grid to edit that at-bat; names stay visible when scrolled", async () => {
+  const ev = [...threeOuts(), PA("GO"), PA("1B")];
+  const { page, context, errors } = await openGame(ruleGame({}, ev));
+  await page.setViewportSize({ width: 393, height: 852 });
+  await page.click(".tabbar [data-v=book]");
+  await page.click("#book .bcell >> nth=0");
+  assert.match(await text(page, ".sheet h3"), /Edit play/);
+  await page.click("[data-act=ep-r][data-v=LO]");
+  assert.match(await page.textContent("#pbp"), /Player 1 lines out/);
+  await page.click(".sheet [data-act=close]");
+  const visible = await page.$eval("#book", t => { const sc = t.parentElement; sc.scrollLeft = 400; const n = t.querySelector("td.name").getBoundingClientRect(), box = sc.getBoundingClientRect(); return n.left >= box.left - 1; });
+  assert.ok(visible, "name column stays in view");
+  assert.deepEqual(errors, []);
+  await context.close();
+});

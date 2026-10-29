@@ -161,12 +161,25 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .tabs button { border: 0; background: transparent; min-height: 36px; font-size: 15px; padding: 0 14px; font-weight: 600; }
 .tabs button[aria-selected="true"] { background: var(--sel-bg); color: var(--sel-ink); }
 .bookscroll { overflow-x: auto; border: 1px solid var(--rule); border-radius: 6px; }
-table.book { border-collapse: collapse; font-variant-numeric: tabular-nums; min-width: 100%; }
-table.book th, table.book td { border: 1px solid var(--rule-soft); }
+table.book { border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; min-width: 100%; }   /* separate borders: no seams for scrolled boxes to show through */
+table.book th, table.book td { border-right: 1px solid var(--rule-soft); border-bottom: 1px solid var(--rule-soft); }
 table.book thead th { font-family: var(--f-label); font-weight: 700; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); background: var(--paper); padding: 6px 4px; position: sticky; top: 0; }
 table.book th.inn.now { color: var(--ink-blue); }
-table.book td.slot { font-family: var(--f-display); font-weight: 700; font-size: 18px; text-align: center; width: 30px; color: var(--muted); }
-table.book td.name { padding: 4px 10px 4px 8px; white-space: nowrap; font-weight: 600; min-width: 120px; max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
+table.book td.slot { font-family: var(--f-display); font-weight: 700; font-size: 18px; text-align: center; width: 32px; min-width: 32px; max-width: 32px; padding: 0; box-sizing: border-box; color: var(--muted); }
+table.book thead tr > th:first-child { width: 32px; min-width: 32px; max-width: 32px; box-sizing: border-box; }
+table.book .bpos { color: var(--muted); font-weight: 500; }
+table.book td.cell { overflow: hidden; }
+html[data-layout="phone"] table.book .bpos { display: none; }
+html[data-layout="phone"] table.book td.name { min-width: 84px; max-width: 104px; padding-right: 6px; }
+/* batting order and names stay put when the innings scroll sideways */
+table.book td.slot, table.book tr > th:first-child { position: sticky; left: 0; z-index: 2; background: var(--surface); }
+table.book td.name, table.book tr > th:nth-child(2) { position: sticky; left: 32px; z-index: 2; background: var(--surface); box-shadow: 2px 0 0 var(--rule-soft); }
+table.book thead tr > th:first-child, table.book thead tr > th:nth-child(2) { z-index: 3; background: var(--paper); }
+table.book tfoot tr > td:first-child, table.book tfoot tr > td:nth-child(2) { position: sticky; z-index: 2; background: var(--paper); }
+table.book tfoot tr > td:first-child { left: 0; } table.book tfoot tr > td:nth-child(2) { left: 32px; }
+.bcell { cursor: pointer; border-radius: 6px; }
+.bcell:active { background: var(--rule-soft); }
+table.book td.name { padding: 4px 10px 4px 8px; white-space: nowrap; font-weight: 600; min-width: 110px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
 table.book tr.up td.name { color: var(--ink-blue); }
 table.book tr.up td.slot { color: var(--ink-blue); }
 table.book td.cell { width: 52px; min-width: 52px; height: 52px; padding: 2px; vertical-align: top; }
@@ -1056,7 +1069,7 @@ function plateAppearance(s, g, r, p, bb, foulK, fcOut, loc) {
   if (r === "HR" && hrOver(s, s.half)) r = "HRO";   // over the league's home run limit: the batter is out
   const bt = s.half, ft = 1 - bt, slot = curSlot(s), who = occ(s, bt, slot), key = keyOf(who, bt, slot), st = stat(s, bt, key);
   const risp = !!(s.bases[1] || s.bases[2]);
-  const cell = { slot, inning: s.inning, code: codeFor(r, p), base: 0, scored: false, out: 0, looking: r === "KC", notes: [] };
+  const cell = { ev: s.ei, slot, inning: s.inning, code: codeFor(r, p), base: 0, scored: false, out: 0, looking: r === "KC", notes: [] };
   if (foulK) cell.notes.push("FOUL");
   s.book[bt].push(cell);
   const me = { team: bt, cell: s.book[bt].length - 1, slot, key };
@@ -1912,8 +1925,8 @@ function renderBook() {
   for (let slot = 0; slot < L; slot++) {
     const who = occ(S, t, slot);
     const st = S.stats[t][keyOf(who, t, slot)] || {};
-    h += `<tr class="${slot === up ? "up" : ""}"><td class="slot">${slot + 1}</td><td class="name">${esc(entryName(who))}${who.pos ? ` <span style="color:var(--muted);font-weight:500">${esc(who.pos)}</span>` : ""}</td>`;
-    for (let i = 1; i <= cols; i++) h += `<td class="cell"><div class="stack">${S.book[t].filter(c => c.slot === slot && c.inning === i).map(mini).join("")}</div></td>`;
+    h += `<tr class="${slot === up ? "up" : ""}"><td class="slot">${slot + 1}</td><td class="name">${esc(entryName(who))}${who.pos ? ` <span class="bpos">${esc(who.pos)}</span>` : ""}</td>`;
+    for (let i = 1; i <= cols; i++) h += `<td class="cell"><div class="stack">${S.book[t].filter(c => c.slot === slot && c.inning === i).map(c => c.ev == null ? mini(c) : `<div class="bcell" data-act="editplay" data-v="${c.ev}" role="button" tabindex="0" aria-label="Edit this at-bat">${mini(c)}</div>`).join("")}</div></td>`;
     ["AB", "R", "H", "RBI", "BB", "K"].forEach((k, j) => { const v = st[k] || 0; tot[k] += v; h += `<td class="st ${j === 0 ? "first" : ""}">${st.PA ? v : ""}</td>`; });
     h += "</tr>";
   }
@@ -2590,7 +2603,7 @@ const HELP = [
     <li><b>Courtesy runner</b>: pick who runs instead. Once per inning for each team. If they score, the run counts for the courtesy runner.</li></ul>`],
   ["Fixing mistakes", `
     <ul><li><b>Undo</b> takes back the last tap, as many times as you need.</li>
-    <li><b>Fix a play:</b> tap any line in the play-by-play on the Book tab (it has a ✎). Change the result or fielder, what a runner did, or who gets the RBI, or delete it. Everything after it is re-scored. Works on saved games too.</li>
+    <li><b>Fix a play:</b> on the Book tab, tap a box in the scorebook grid, or any line in the play-by-play (it has a ✎). Change the result or fielder, what a runner did, or who gets the RBI, or delete it. Everything after it is re-scored. Works on saved games too.</li>
     <li><b>Game settings</b> changes the opponent, date, park, home or away, and league rules at any point. Switching home and away mid-game moves each play to the other half of its inning, so stats stay with the right team.</li>
     <li><b>+ New player</b> on the lineup screens adds a late fill-in. Leave the name blank and they're "Fill-in" until you rename them on the Team tab; their stats follow them.</li>
     <li><b>Lineups</b> changes the batting order or positions. Mid-game, each change is saved as a substitution.</li>
