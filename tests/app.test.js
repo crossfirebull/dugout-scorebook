@@ -869,3 +869,23 @@ test("guided tours: the basics walks through with Next and Back; every tour runs
   assert.deepEqual(errors, []);
   await context.close();
 });
+
+test("Tap on the field: a hit tapped past the fence stays in the park; a home run doesn't", async () => {
+  const { page, context, errors } = await open(393, 852);
+  const tapField = async (x, y) => {
+    const [px, py] = await page.evaluate(([x, y]) => { const m = document.querySelector("#ffield").getScreenCTM(); return [m.a * x + m.e, m.d * y + m.f]; }, [x, y]);
+    await page.mouse.click(px, py);
+  };
+  const dist = ([x, y]) => Math.hypot(x - 100, y - 166);
+  await page.click("[data-act=pa][data-v='3B']"); await page.click("[data-act=fieldopen]");
+  await tapField(130, 20);   // way past the fence
+  const triple = await page.$eval("#ffield .fdot", c => [+c.getAttribute("cx"), +c.getAttribute("cy")]);
+  assert.ok(dist(triple) <= 121, "triple pulled inside the fence: " + triple);
+  await page.click("[data-act=fieldsave]");
+  await page.click("[data-act=pa][data-v=HR]"); await page.click("[data-act=fieldopen]");
+  await tapField(130, 20);
+  const hr = await page.$eval("#ffield .fdot", c => [+c.getAttribute("cx"), +c.getAttribute("cy")]);
+  assert.ok(dist(hr) > 126, "home run stays over the fence");
+  assert.deepEqual(errors, []);
+  await context.close();
+});

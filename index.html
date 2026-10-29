@@ -2048,7 +2048,8 @@ function sprayField(balls) {
   const n = {}, sz = balls.length > 60 ? .65 : 1;   // a season of team dots: smaller and tighter so they don't pile up
   const marks = balls.map(b => {
     const k = b.p + (b.r === "HR" ? "hr" : ""), i = b.loc ? 0 : n[k] = (n[k] || 0) + 1;
-    let [x, y] = b.loc ? [Math.min(197, Math.max(3, b.loc[0])), Math.min(170, Math.max(11, b.loc[1]))] : ZONE[b.p] || ZONE[8];   // tapped on the field: exactly there
+    const at = b.loc ? inPark(b.r, b.loc[0], b.loc[1]) : null;
+    let [x, y] = at ? [Math.min(197, Math.max(3, at[0])), Math.min(170, Math.max(11, at[1]))] : ZONE[b.p] || ZONE[8];   // tapped on the field: exactly there
     if (b.r === "HR" && !b.loc) { const dx = x - HOME[0], dy = y - HOME[1], len = Math.hypot(dx, dy); x = HOME[0] + dx / len * 148; y = HOME[1] + dy / len * 148; }
     if (i > 1) { const a = i * 2.4, rad = (2.5 + 3 * Math.sqrt(i)) * sz; x += Math.cos(a) * rad; y += Math.sin(a) * rad; }
     const tip = `<title>${b.r === "E" ? "Error" : b.r} to ${POS[b.p]} · ${esc(b.date)} vs ${esc(b.opp)}</title>`;
@@ -2073,6 +2074,12 @@ function nearestFielder(x, y) {
   let best = 8, d = Infinity;
   fieldChoices().forEach(({ n }) => { const z = ZONE[n]; if (!z) return; const dd = Math.hypot(z[0] - x, z[1] - y); if (dd < d) { d = dd; best = n; } });
   return best;
+}
+// Only a home run leaves the park: any other tapped spot past the fence is pulled back to the warning track
+function inPark(r, x, y) {
+  if (r === "HR" || r === "HRO") return [x, y];
+  const dx = x - 100, dy = y - 166, d = Math.hypot(dx, dy), max = 120;
+  return d > max ? [Math.round((100 + dx / d * max) * 10) / 10, Math.round((166 + dy / d * max) * 10) / 10] : [x, y];
 }
 const pastFence = (x, y) => Math.hypot(x - 100, y - 166) > 126 && 162 - y >= Math.abs(x - 100) - 4;   // beyond the fence, in fair territory
 function fieldHTML(sh) {
@@ -2104,7 +2111,7 @@ document.addEventListener("click", ev => {
   const pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
   const q = pt.matrixTransform(svg.getScreenCTM().inverse()), clamp = (v, lo, hi) => Math.round(Math.min(hi, Math.max(lo, v)) * 10) / 10;
   const x = clamp(q.x, -6, 206), y = clamp(q.y, -6, 172);   // a tap in the margin counts as the edge of the field
-  ui.sheet.loc = [x, y]; ui.sheet.p = nearestFielder(x, y);
+  ui.sheet.loc = inPark(ui.sheet.r, x, y); ui.sheet.p = nearestFielder(ui.sheet.loc[0], ui.sheet.loc[1]);
   renderSheet();
 });
 
