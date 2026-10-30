@@ -678,11 +678,12 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 .ibook .ibdigits text { font-family: var(--f-display); font-weight: 800; font-size: 96px; fill: #ffffff; text-anchor: middle; }
 .ibook.done .ibbase { fill: var(--team-lamp, #ffc93c); filter: drop-shadow(0 0 14px var(--team-lamp, #ffc93c)); }
 .ibook.done .ibroll0, .ibook.done .ibroll1 { transform: translateY(-120px); }
-.ibook.play .ibbase { animation: iblight .35s ease-out both; }
-.ibook.play .ibb0 { animation-delay: .55s; } .ibook.play .ibb1 { animation-delay: .9s; } .ibook.play .ibb2 { animation-delay: 1.25s; } .ibook.play .ibb3 { animation-delay: 1.6s; }
-@keyframes iblight { 0% { fill: #ffffff; } 50% { fill: #ffffff; filter: drop-shadow(0 0 30px #ffffff); } 100% { fill: var(--team-lamp, #ffc93c); filter: drop-shadow(0 0 14px var(--team-lamp, #ffc93c)); } }
+/* Timed to the sound: the bat at 0, then a runner's pace around the horn while the crowd swells. White, then lit. */
+.ibook.play .ibbase { animation: iblight .5s ease-out both; }
+.ibook.play .ibb0 { animation-delay: .45s; } .ibook.play .ibb1 { animation-delay: 1.05s; } .ibook.play .ibb2 { animation-delay: 1.65s; } .ibook.play .ibb3 { animation-delay: 2.25s; }
+@keyframes iblight { 0% { fill: #ffffff; } 45% { fill: var(--team-lamp, #ffc93c); filter: drop-shadow(0 0 32px var(--team-lamp, #ffc93c)); } 100% { fill: var(--team-lamp, #ffc93c); filter: drop-shadow(0 0 14px var(--team-lamp, #ffc93c)); } }
 .ibook.play .ibroll0, .ibook.play .ibroll1 { animation: ibroll .45s cubic-bezier(.3, 1.4, .5, 1) both; }
-.ibook.play .ibroll1 { animation-delay: 2.0s; } .ibook.play .ibroll0 { animation-delay: 2.35s; }
+.ibook.play .ibroll1 { animation-delay: .75s; } .ibook.play .ibroll0 { animation-delay: 2.65s; }   /* the hit counts once the runner reaches first; the run once they touch home */
 @keyframes ibroll { from { transform: translateY(0); } to { transform: translateY(-120px); } }
 .ibook.play { animation: ibhop .5s ease-out both; }
 @keyframes ibhop { 0% { transform: scale(1); } 30% { transform: scale(1.08) rotate(-2deg); } 100% { transform: scale(1); } }
@@ -694,7 +695,7 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 .onb .wrest { display: grid; gap: 12px; justify-items: center; width: 100%; }
 .onb .welcome.w-gate .wrest { visibility: hidden; }
 .onb .welcome.w-gate .wplay { align-self: start; z-index: 1; }
-.onb .welcome.w-play .wrest { animation: wrise .55s ease-out 2.7s both; }
+.onb .welcome.w-play .wrest { animation: wrise .6s ease-out 3.2s both; }
 @keyframes wrise { from { opacity: 0; transform: translateY(24px); } }
 .onb .whead { margin: 0; font-family: var(--f-display); font-weight: 800; font-size: clamp(28px, 8vw, 40px); line-height: 1.05; color: #ffffff; text-transform: uppercase; letter-spacing: .01em; }
 .onb .wfeats { list-style: none; margin: 2px 0 6px; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; width: 100%; max-width: 380px; }
@@ -3777,7 +3778,7 @@ document.addEventListener("click", ev => {
     case "onb-close": ui.sheet = null; render(); break;
     case "onb-intro": {   // the first tap: sound and the bases lighting up, then the welcome
       audio(); playIntro(); ui.introDone = "play"; renderSheet();
-      setTimeout(() => { if (ui.introDone === "play") ui.introDone = "done"; }, 4000);
+      setTimeout(() => { if (ui.introDone === "play") ui.introDone = "done"; }, 4600);
       break;
     }
     case "onb-next": {
