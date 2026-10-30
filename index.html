@@ -676,12 +676,15 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 .ibook .ibbase { fill: #ffffff; }
 .ibook .ibpanel { fill: color-mix(in srgb, var(--team-board, #14284b) 65%, #000000); }
 .ibook .ibdigits text { font-family: var(--f-display); font-weight: 800; font-size: 96px; fill: #ffffff; text-anchor: middle; }
-.ibook.done .ibbase { fill: var(--team-lamp, #ffc93c); filter: drop-shadow(0 0 14px var(--team-lamp, #ffc93c)); }
+.ibook.done .ibbase { fill: #ffffff; }   /* the logo: all bases white */
 .ibook.done .ibroll0, .ibook.done .ibroll1 { transform: translateY(-120px); }
-/* Timed to the sound: the bat at 0, then a runner's pace around the horn while the crowd swells. White, then lit. */
-.ibook.play .ibbase { animation: iblight .5s ease-out both; }
+/* Timed to the sound: the bat at 0, then a runner's pace around the horn while the crowd swells.
+   One base lit at a time, like the runner going round; home stays lit until the run goes up, then all white. */
+.ibook.play .ibbase { animation: iblight .66s ease-out both; }
+.ibook.play .ibb3 { animation-duration: .95s; }
 .ibook.play .ibb0 { animation-delay: .45s; } .ibook.play .ibb1 { animation-delay: 1.05s; } .ibook.play .ibb2 { animation-delay: 1.65s; } .ibook.play .ibb3 { animation-delay: 2.25s; }
-@keyframes iblight { 0% { fill: #ffffff; } 45% { fill: var(--team-lamp, #ffc93c); filter: drop-shadow(0 0 32px var(--team-lamp, #ffc93c)); } 100% { fill: var(--team-lamp, #ffc93c); filter: drop-shadow(0 0 14px var(--team-lamp, #ffc93c)); } }
+@keyframes iblight { 0% { fill: #ffffff; } 12% { fill: var(--team-lamp, #ffc93c); filter: drop-shadow(0 0 32px var(--team-lamp, #ffc93c)); }
+  75% { fill: var(--team-lamp, #ffc93c); filter: drop-shadow(0 0 14px var(--team-lamp, #ffc93c)); } 100% { fill: #ffffff; filter: none; } }
 .ibook.play .ibroll0, .ibook.play .ibroll1 { animation: ibroll .45s cubic-bezier(.3, 1.4, .5, 1) both; }
 .ibook.play .ibroll1 { animation-delay: .75s; } .ibook.play .ibroll0 { animation-delay: 2.65s; }   /* the hit counts once the runner reaches first; the run once they touch home */
 @keyframes ibroll { from { transform: translateY(0); } to { transform: translateY(-120px); } }
