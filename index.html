@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="ScoreKept">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Tourney:ital,wght@1,800&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Tourney:ital,wght@1,800&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=Playball&display=swap">
 <style>
 /* Layout: scoreboard band across the top; below it the live situation + input pad on the left, the scorebook grid on the right (stacked on phones). */
 :root {
@@ -37,7 +37,8 @@
   --f-display: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
   --f-body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-label: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
-  --f-varsity: "Tourney", "Arial Black", Impact, sans-serif;   /* sporty slanted lettering for the app name and team blocks (always 800 italic) */
+  --f-varsity: "Tourney", "Arial Black", Impact, sans-serif;   /* sporty slanted lettering for team chips and setup headings (always 800 italic) */
+  --f-script: "Playball", "Snell Roundhand", "Brush Script MT", cursive;   /* jersey script for the app name and your team name */
   /* Team colors: applyTeamColors() overrides these from the palette picked on the Team tab */
   --sel-bg: var(--ink); --sel-ink: var(--paper);
   --team-brand: var(--ink); --team-shadow: var(--stitch); --team-brand-d: var(--ink); --team-shadow-d: var(--stitch);
@@ -75,9 +76,9 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 
 /* Top bar */
 .topbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.brand, .teamword { font-family: var(--f-varsity); font-weight: 800; font-style: italic; letter-spacing: .02em; text-transform: uppercase; line-height: 1.1; color: var(--brand-fill); text-shadow: 2px 2px 0 var(--brand-shadow); }
-.brand { font-size: clamp(24px, 8.6vw, 42px); white-space: nowrap; margin: 0; letter-spacing: .05em; text-shadow: .08em .08em 0 var(--brand-shadow); padding: 0 .1em .08em 0; }
-.teamword { font-size: 20px; }
+.brand, .teamword { font-family: var(--f-script); font-weight: 400; font-style: normal; letter-spacing: .01em; line-height: 1.15; color: var(--brand-fill); text-shadow: 2px 2px 0 var(--brand-shadow); }
+.brand { font-size: clamp(28px, 9.6vw, 46px); white-space: nowrap; margin: 0; letter-spacing: .01em; text-shadow: .08em .08em 0 var(--brand-shadow); padding: 0 .1em .08em 0; }
+.teamword { font-size: 22px; text-shadow: 1px 1px 0 var(--brand-shadow); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --brand-fill: var(--team-brand-d); --brand-shadow: var(--team-shadow-d); } }
 :root[data-theme="dark"] { --brand-fill: var(--team-brand-d); --brand-shadow: var(--team-shadow-d); }
 .chip { font-family: var(--f-label); font-weight: 600; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; background: var(--rule-soft); color: var(--muted); }
@@ -3382,7 +3383,7 @@ function recapText(g) {
   return out.join("\n");
 }
 async function recapCanvas(g) {
-  try { await document.fonts.ready; } catch (e) {}
+  try { await document.fonts.load("34px Playball"); await document.fonts.ready; } catch (e) {}
   const r = recapData(g), W = 1080, H = 1350, cv = document.createElement("canvas"); cv.width = W; cv.height = H;
   const c = cv.getContext("2d"), st = document.documentElement.style, v = k => st.getPropertyValue(k).trim();
   const tc = teamColors(), P = COLOR[tc.primary] || "#14284b", Q = COLOR[tc.secondary] || "#c8102e";
@@ -3444,7 +3445,7 @@ async function recapCanvas(g) {
     c.fillText(ln, 165 + nw, yy);
   });
   // footer
-  c.fillStyle = "rgba(255,255,255,.4)"; c.font = font(800, 30, '"Tourney", ' + DISP); c.textAlign = "center"; c.fillText("SCOREKEPT", W / 2, H - 50);
+  c.fillStyle = "rgba(255,255,255,.4)"; c.font = font(400, 34, '"Playball", ' + DISP); c.textAlign = "center"; c.fillText("ScoreKept", W / 2, H - 50);
   return cv;
 }
 async function openRecap(id) {
