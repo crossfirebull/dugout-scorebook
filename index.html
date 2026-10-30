@@ -207,6 +207,12 @@ table.book tfoot td { font-family: var(--f-label); font-weight: 700; font-size: 
 .pbp li .pen { color: var(--muted); font-size: 16px; text-align: center; }
 .eprow { display: flex; flex-wrap: wrap; gap: 6px; }
 .eprow .chipbtn { min-height: 40px; font-size: 15px; }
+.epgrp { display: grid; gap: 4px; margin-bottom: 8px; }
+.epgrp .gl { font-family: var(--f-label); font-weight: 700; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.epfield { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); align-items: center; gap: 10px; width: 100%; padding: 8px 12px 8px 6px; border-radius: 12px; border: 2px solid var(--rule); background: var(--paper); color: var(--ink); text-align: left; font: inherit; cursor: pointer; }
+.epfield .spray { width: 100%; height: auto; display: block; }
+.epfield .spray circle { r: 7px; stroke-width: 2.5px; }   /* the one ball, big enough to spot at a glance */
+.epfcap { display: grid; gap: 2px; } .epfcap b { font-size: 17px; } .epfcap small { color: var(--muted); font-size: 14px; }
 .epwas { margin: 0; padding: 10px 12px 10px 28px; border-radius: 8px; background: var(--paper); border: 1px solid var(--rule); font-size: 15px; }
 .legend { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 4px 12px; font-size: 14px; color: var(--muted); }
 .legend b { font-family: var(--f-display); color: var(--ink); font-size: 16px; display: inline-block; min-width: 34px; }
@@ -2676,7 +2682,7 @@ const HELP = [
     <li><b>Courtesy runner</b>: pick who runs instead. Once per inning for each team. If they score, the run counts for the courtesy runner.</li></ul>`],
   ["Fixing mistakes", `
     <ul><li><b>Undo</b> takes back the last tap, as many times as you need.</li>
-    <li><b>Fix a play:</b> on the Book tab, tap a box in the scorebook grid, or any line in the play-by-play (it has a ✎). Change the result or fielder, what a runner did, or who gets the RBI, or delete it. Everything after it is re-scored. Works on saved games too.</li>
+    <li><b>Fix a play:</b> on the Book tab, tap a box in the scorebook grid, or any line in the play-by-play (it has a ✎). Change the result, what a runner did, or who gets the RBI, or delete it. For a ball in play, tap the little field to move the ball on the full-screen field. Everything after it is re-scored. Works on saved games too.</li>
     <li><b>Game settings</b> changes the opponent, date, park, home or away, and league rules at any point. Switching home and away mid-game moves each play to the other half of its inning, so stats stay with the right team.</li>
     <li><b>+ New player</b> on the lineup screens adds a late fill-in. Leave the name blank and they're "Fill-in" until you rename them on the Team tab; their stats follow them.</li>
     <li><b>Lineups</b> changes the batting order or positions. Mid-game, each change is saved as a substitution.</li>
@@ -3478,10 +3484,15 @@ function editPlayBody(sh) {
   const lines = S.log.filter(l => l.ev === sh.i).map(l => `<li>${l.text}</li>`).join("") || "<li>(no effect now)</li>";
   let ctl = "";
   if (e.t === "pa") {
-    ctl = `<h4>Result</h4><div class="eprow">${EDIT_RESULTS.map(([k, l]) => `<button class="chipbtn ${e.r === k && !(k === "HR" && e.ip) ? "on" : ""}" data-act="ep-r" data-v="${k}">${l}</button>`).join("")}
-      <button class="chipbtn ${e.r === "HR" && e.ip ? "on" : ""}" data-act="ep-r" data-v="IPHR">Inside-park HR</button></div>
-      <label class="setrow" for="ep-p"><span><b>Fielded by / hit toward</b><small>Feeds fielding stats and spray charts.</small></span>
-        <select id="ep-p" data-ch="ep-p"><option value="">Not recorded</option>${POS.slice(1, 13).map((x, n) => `<option value="${n + 1}" ${e.p === n + 1 ? "selected" : ""}>${n + 1} · ${x}</option>`).join("")}</select></label>`;
+    const pick = ([k, l]) => `<button class="chipbtn ${e.r === k && !(k === "HR" && e.ip) ? "on" : ""}" data-act="ep-r" data-v="${k}">${l}</button>`;
+    const grp = (title, keys) => `<div class="epgrp"><span class="gl">${title}</span><div class="eprow">${EDIT_RESULTS.filter(([k]) => keys.includes(k)).map(pick).join("")}${keys.includes("HR") ? `<button class="chipbtn ${e.r === "HR" && e.ip ? "on" : ""}" data-act="ep-r" data-v="IPHR">Inside-park HR</button>` : ""}</div></div>`;
+    // A ball in play: the field shows where it went, and a tap opens the full-screen field to move it
+    const inPlay = HIT_CODES.includes(e.r) || NEEDS_POS[e.r];
+    const ball = e.loc || e.p ? [{ r: e.r, p: e.p || nearestFielder(e.loc[0], e.loc[1]), loc: e.loc, ip: e.ip, date: "", opp: "" }] : [];
+    ctl = `${inPlay ? `<button class="epfield" data-act="spot" data-g="${esc(G.id)}" data-v="${sh.i}" data-back="1" aria-label="${ball.length ? "Move the ball" : "Place the ball"} on the field">${sprayField(ball)}
+        <span class="epfcap"><b>${ball.length ? "Tap to move the ball" : "Tap to place the ball"}</b><small>${ball.length && e.p ? esc(POS_NAME[e.p]) : "Where it went: for spray charts and fielding stats"}</small></span></button>` : ""}
+      <h4>Result</h4>
+      ${grp("Hit", ["1B", "2B", "3B", "HR"])}${grp("On base", ["BB", "E", "FC"])}${grp("Out", ["K", "KC", "GO", "FO", "LO", "PO", "SF", "DP", "HRO", "FBO"])}`;
   } else if (e.t === "run") {
     const batters = (S.lu[bat] || []).map((y, i) => ({ key: keyOf(y, bat, i), name: entryName(y) }));
     const cur = e.rbiKey || (e.rbi ? "auto" : "");
@@ -3549,12 +3560,12 @@ document.addEventListener("click", ev => {
     case "posskip": push({ t: "pa", r: ui.sheet.r }); break;
     case "bbtype": ui.bb = ui.bb === v ? null : v; renderSheet(); break;
     case "fieldopen": ui.sheet = { type: "field", r: ui.sheet.r, from: ui.sheet.type }; renderSheet(); break;
-    case "fieldback": if (ui.sheet.edit) closeSheet(); else { ui.sheet = { type: ui.sheet.from, r: ui.sheet.r }; renderSheet(); } break;
+    case "fieldback": if (ui.sheet.edit) { if (ui.sheet.edit.back) { ui.sheet = { type: "editplay", i: ui.sheet.edit.i }; renderSheet(); } else closeSheet(); } else { ui.sheet = { type: ui.sheet.from, r: ui.sheet.r }; renderSheet(); } break;
     case "spot": {   // a dot on a spray chart: move it
       const g = store.games.find(x => x.id === el.dataset.g), e = g && g.events[+v]; if (!e || e.t !== "pa") break;
       ui.ip = !!e.ip; ui.bb = e.bb || null;
       const start = e.loc ? inPark(e.ip ? "1B" : e.r, e.loc[0], e.loc[1]) : (ZONE[e.p] || [100, 90]).slice();
-      ui.sheet = { type: "field", r: e.r, edit: { gid: g.id, i: +v }, loc: start, p: e.p || nearestFielder(start[0], start[1]) };
+      ui.sheet = { type: "field", r: e.r, edit: { gid: g.id, i: +v, back: !!el.dataset.back }, loc: start, p: e.p || nearestFielder(start[0], start[1]) };
       renderSheet(); break;
     }
     case "fieldsave": {
@@ -3562,7 +3573,7 @@ document.addEventListener("click", ev => {
       if (sh.edit) {   // moving a ball that was already saved
         const g = store.games.find(x => x.id === sh.edit.gid), old = g && g.events[sh.edit.i];
         if (old) { old.loc = sh.loc; old.p = sh.p; if (HIT_CODES.includes(old.r) && ui.bb) old.bb = ui.bb; }
-        ui.sheet = null; save(); render(); break;
+        ui.sheet = sh.edit.back ? { type: "editplay", i: sh.edit.i } : null; save(); render(); break;   // from Edit play: back to it
       }
       const e = { t: "pa", r: sh.r, p: sh.p, loc: sh.loc };
       if (HIT_CODES.includes(sh.r) && ui.bb) e.bb = ui.bb;

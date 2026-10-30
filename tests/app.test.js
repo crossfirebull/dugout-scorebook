@@ -965,3 +965,26 @@ test("first launch intro: tap to play ball, the bases light up, the scoreboard r
   assert.deepEqual(errors, []);
   await context.close();
 });
+
+test("Edit play from the Book shows the field; tap it, move the ball, and come back to Edit play", async () => {
+  const { page, context, errors } = await open(390, 844);
+  await page.click(".tabbar button:has-text('Book')");
+  const n = (await page.$$(".bcell[data-act=editplay]")).length;
+  for (let i = 0; i < n && !(await page.$(".epfield")); i++) {
+    await page.locator(".bcell[data-act=editplay]").nth(i).click();
+    if (!(await page.$(".epfield"))) await page.click(".sheet [data-act=close]");
+  }
+  assert.ok(await page.$(".epfield"), "a ball in play shows the field in Edit play");
+  for (const g of ["Hit", "On base", "Out"]) assert.ok(await page.$(`.epgrp .gl:text-is("${g}")`), g + " group");
+  await page.click(".epfield");
+  assert.ok(await page.$("#ffield"), "full-screen field opens");
+  const r = await page.$eval("#ffield", s => { const b = s.getBoundingClientRect(); return [b.x, b.y, b.width, b.height]; });
+  await page.mouse.click(r[0] + r[2] * .82, r[1] + r[3] * .45);
+  await page.click("[data-act=fieldsave]");
+  assert.match(await text(page, ".sheet h3"), /Edit play/, "back to Edit play");
+  assert.match(await text(page, ".epwas"), /right/i, "the play now says right side");
+  await page.click(".epfield"); await page.click(".ffhead [data-act=fieldback]");
+  assert.match(await text(page, ".sheet h3"), /Edit play/, "Cancel also comes back");
+  assert.deepEqual(errors, []);
+  await context.close();
+});
