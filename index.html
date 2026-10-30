@@ -658,7 +658,45 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 .onb .preview .bug { flex: 1; min-width: 240px; max-width: 440px; }
 .onb .preview img { width: 76px; height: 76px; border-radius: 18px; box-shadow: 0 6px 16px rgba(0, 0, 0, .35); }
 .onb .welcome { justify-items: center; text-align: center; }
-.onb .welcome img { width: 128px; height: 128px; border-radius: 30px; box-shadow: 0 14px 34px rgba(0, 0, 0, .45); }
+/* First-launch welcome: the book, the logo, then the pitch */
+.onb .welcome { align-content: start; gap: 12px; padding-top: 2vh; }
+.onb .wbook { width: min(46vw, 210px); filter: drop-shadow(0 18px 30px rgba(0, 0, 0, .45)); }
+.ibook { display: block; width: 100%; height: auto; overflow: visible; }
+.ibook .ibcover { fill: color-mix(in srgb, var(--team-p, #c8102e) 92%, #000000); }
+.ibook .ibp { fill: var(--team-board, #14284b); } .ibook .ibq { fill: var(--team-q, #ffc93c); }
+.ibook .ibspine { fill: color-mix(in srgb, var(--team-p, #c8102e) 62%, #000000); }
+.ibook .ibline { fill: none; stroke: #ffffff; stroke-width: 30; stroke-linejoin: round; }
+.ibook .ibbase { fill: #ffffff; }
+.ibook .ibpanel { fill: color-mix(in srgb, var(--team-board, #14284b) 65%, #000000); }
+.ibook .ibdigits text { font-family: var(--f-display); font-weight: 800; font-size: 96px; fill: #ffffff; text-anchor: middle; }
+.ibook.done .ibbase { fill: var(--team-lamp, #ffc93c); filter: drop-shadow(0 0 14px var(--team-lamp, #ffc93c)); }
+.ibook.done .ibroll0, .ibook.done .ibroll1 { transform: translateY(-120px); }
+.ibook.play .ibbase { animation: iblight .35s ease-out both; }
+.ibook.play .ibb0 { animation-delay: .55s; } .ibook.play .ibb1 { animation-delay: .9s; } .ibook.play .ibb2 { animation-delay: 1.25s; } .ibook.play .ibb3 { animation-delay: 1.6s; }
+@keyframes iblight { 0% { fill: #ffffff; } 50% { fill: #ffffff; filter: drop-shadow(0 0 30px #ffffff); } 100% { fill: var(--team-lamp, #ffc93c); filter: drop-shadow(0 0 14px var(--team-lamp, #ffc93c)); } }
+.ibook.play .ibroll0, .ibook.play .ibroll1 { animation: ibroll .45s cubic-bezier(.3, 1.4, .5, 1) both; }
+.ibook.play .ibroll1 { animation-delay: 2.0s; } .ibook.play .ibroll0 { animation-delay: 2.35s; }
+@keyframes ibroll { from { transform: translateY(0); } to { transform: translateY(-120px); } }
+.ibook.play { animation: ibhop .5s ease-out both; }
+@keyframes ibhop { 0% { transform: scale(1); } 30% { transform: scale(1.08) rotate(-2deg); } 100% { transform: scale(1); } }
+.onb .welcome.w-gate .wplay { width: 100%; max-width: 360px; min-height: 64px; font-size: 21px; letter-spacing: .04em; text-transform: uppercase; margin-top: 40px; animation: wpulse 1.4s ease-in-out infinite; }
+@keyframes wpulse { 50% { transform: scale(1.04); box-shadow: 0 0 34px color-mix(in srgb, var(--team-lamp, #ffc93c) 70%, transparent); } }
+.onb .welcome.w-gate .brand { animation: none; }
+.onb .wstage { display: grid; width: 100%; justify-items: center; }   /* the play button and the welcome share one spot, so nothing jumps */
+.onb .wstage > * { grid-area: 1 / 1; }
+.onb .wrest { display: grid; gap: 12px; justify-items: center; width: 100%; }
+.onb .welcome.w-gate .wrest { visibility: hidden; }
+.onb .welcome.w-gate .wplay { align-self: start; z-index: 1; }
+.onb .welcome.w-play .wrest { animation: wrise .55s ease-out 2.7s both; }
+@keyframes wrise { from { opacity: 0; transform: translateY(24px); } }
+.onb .whead { margin: 0; font-family: var(--f-display); font-weight: 800; font-size: clamp(28px, 8vw, 40px); line-height: 1.05; color: #ffffff; text-transform: uppercase; letter-spacing: .01em; }
+.onb .wfeats { list-style: none; margin: 2px 0 6px; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; width: 100%; max-width: 380px; }
+.onb .wfeats li { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .14); font-weight: 600; font-size: 15px; text-align: left; }
+.onb .wfeats svg { width: 22px; height: 22px; flex: none; fill: none; stroke: var(--team-lamp, #ffc93c); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.onb .wnote { margin: 4px 0 0; font-size: 14px; color: rgba(255, 255, 255, .72); max-width: 360px; }
+.onb .wgear svg { width: 17px; height: 17px; vertical-align: -3px; fill: none; stroke: #ffffff; stroke-width: 2; }
+@media (prefers-reduced-motion: reduce) { .ibook *, .onb .wrest, .onb .wplay { animation: none !important; } }
+
 .onb .welcome .brand { font-size: clamp(36px, 10vw, 60px); color: #ffffff; text-shadow: 4px 4px 0 var(--team-q, var(--stitch)); }
 .onb .welcome .obtn { width: 100%; max-width: 360px; }
 .onb .setlist { background: rgba(255, 255, 255, .06); border-color: rgba(255, 255, 255, .2); }
@@ -943,7 +981,7 @@ function makeIcon(size, P, Q, board, lamp, cover) {
   x.strokeStyle = "rgba(255,255,255,.22)"; x.lineWidth = 6;
   x.beginPath(); x.moveTo(473, 704); x.lineTo(473, 792); x.moveTo(617, 704); x.lineTo(617, 792); x.stroke();
   x.font = "800 96px 'Big Shoulders Display', Impact, sans-serif"; x.textAlign = "center";
-  x.fillStyle = lamp; x.shadowColor = lamp; x.shadowBlur = 18;
+  x.fillStyle = "#ffffff"; x.shadowColor = "rgba(255,255,255,.6)"; x.shadowBlur = 14;   // white numbers read better than yellow
   [["6", 402], ["9", 545], ["0", 688]].forEach(([d, X]) => x.fillText(d, X, 784));
   return cv;
 }
@@ -2643,7 +2681,7 @@ const HELP = [
     <li><b>Lineups</b> changes the batting order or positions. Mid-game, each change is saved as a substitution.</li>
     <li>A saved game can be reopened from <b>Stats → Overview → View → Reopen to edit</b>.</li></ul>`],
   ["League rules", `
-    <p>Set them in <b>Game settings</b> for one game, or in <b>Settings</b> as the default for new games.</p>
+    <p>Set them in <b>Game settings</b> for one game, or in <b>Settings → New game defaults</b> as the default for new games.</p>
     <ul><li><b>Time limit:</b> the clock starts with the first play and counts down under the inning number. When time's up it shows <b>LAST</b>: the inning being played is the last one. If the next inning hadn't started, the game ends with the inning before. Match the start time to the umpire's watch, or call time by hand, in Game settings.</li>
     <li><b>Extra innings when tied:</b> how many extra innings before a tie stands. <b>Play another inning</b> on the final screen adds one anyway.</li>
     <li><b>Run rule:</b> for example 20 after 3, 15 after 4, 10 after 5. The game ends after an inning when a team is that far ahead, or right away when the home team gets there while batting.</li>
@@ -2772,6 +2810,81 @@ function tutorialsList() {
   return Object.entries(TOURS).map(([k, t]) => `<button class="setrow" data-act="tour" data-v="${k}"><span><b>${esc(t.title)}${done[k] ? ' <span class="tdone">✓</span>' : ""}</b><small>${esc(t.desc)}</small></span><span class="chev" aria-hidden="true">›</span></button>`).join("");
 }
 
+/* ---------- First-launch intro ----------
+   A title screen: tap to play ball (iPhones only allow sound after a tap). Then an aluminum bat
+   ping and a crowd cheer, the bases on the book light up around the horn, and the scoreboard on
+   the book rolls over to add a hit and a run. Reduced motion, or a return visit: shown finished. */
+const GEAR_SVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
+function batPing() {
+  const a = audio(); if (!a) return;
+  const t = a.currentTime + .02, out = a.createGain(); out.gain.value = .5; out.connect(a.destination);
+  [[1180, .55, 1.1], [2630, .4, .7], [4120, .28, .45], [5870, .18, .3], [1810, .2, .5]].forEach(([f, v, d]) => {   // metal: bright, inharmonic, ringing
+    const o = a.createOscillator(), g = a.createGain(); o.frequency.value = f; o.type = "sine";
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .002); g.gain.exponentialRampToValueAtTime(.0005, t + d);
+    o.connect(g).connect(out); o.start(t); o.stop(t + d + .05);
+  });
+  const len = Math.floor(a.sampleRate * .05), buf = a.createBuffer(1, len, a.sampleRate), d = buf.getChannelData(0);   // the crack of contact
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+  const n = a.createBufferSource(), hp = a.createBiquadFilter(), g = a.createGain(); n.buffer = buf; hp.type = "highpass"; hp.frequency.value = 2500; g.gain.value = .9;
+  n.connect(hp).connect(g).connect(out); n.start(t);
+}
+function crowdCheer(at, dur) {
+  const a = audio(); if (!a) return;
+  const t = a.currentTime + at, len = Math.floor(a.sampleRate * dur), buf = a.createBuffer(2, len, a.sampleRate);
+  for (let ch = 0; ch < 2; ch++) { const d = buf.getChannelData(ch); let b = 0; for (let i = 0; i < len; i++) { b = .97 * b + .03 * (Math.random() * 2 - 1); d[i] = (Math.random() * 2 - 1) * .5 + b * 4; } }
+  const n = a.createBufferSource(), bp = a.createBiquadFilter(), bp2 = a.createBiquadFilter(), g = a.createGain(), wob = a.createOscillator(), wg = a.createGain();
+  n.buffer = buf; bp.type = "bandpass"; bp.frequency.value = 1100; bp.Q.value = .6; bp2.type = "peaking"; bp2.frequency.value = 2600; bp2.gain.value = 6;
+  wob.frequency.value = 7; wg.gain.value = .06; wob.connect(wg).connect(g.gain); wob.start(t); wob.stop(t + dur);   // the shimmer of many voices
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.32, t + .5); g.gain.setValueAtTime(.32, t + dur - 1); g.gain.linearRampToValueAtTime(0, t + dur);
+  n.connect(bp).connect(bp2).connect(g).connect(a.destination); n.start(t); n.stop(t + dur);
+  [[.35, 880], [.8, 990], [1.3, 784]].forEach(([w, f]) => {   // a few whistles and "whoo"s on top
+    const o = a.createOscillator(), og = a.createGain(), tt = t + w; o.frequency.setValueAtTime(f, tt); o.frequency.linearRampToValueAtTime(f * 1.35, tt + .35);
+    og.gain.setValueAtTime(0, tt); og.gain.linearRampToValueAtTime(.025, tt + .08); og.gain.linearRampToValueAtTime(0, tt + .5); o.connect(og).connect(a.destination); o.start(tt); o.stop(tt + .55);
+  });
+}
+function playIntro() { batPing(); crowdCheer(.12, 2.8); }
+// The book from the Home Screen icon, drawn live so its bases and scoreboard can move
+function introBook(state) {
+  const C = [546, 400], R = 196, bases = [[C[0] + R, C[1]], [C[0], C[1] - R], [C[0] - R, C[1]]];   // first, second, third
+  const roll = (from, to, x, i) => `<g clip-path="url(#ibClip${i})"><g class="ibroll ibroll${i}"><text x="${x}" y="782">${from}</text><text x="${x}" y="902">${to}</text></g></g>`;
+  return `<svg class="ibook ${state}" viewBox="150 90 720 800" role="img" aria-label="ScoreKept scorebook">
+    <defs>${[402, 545, 688].map((x, i) => `<clipPath id="ibClip${i}"><rect x="${x - 70}" y="690" width="140" height="116" /></clipPath>`).join("")}
+      <linearGradient id="ibGloss" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".26"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+    <rect x="222" y="146" width="590" height="760" rx="36" fill="rgba(0,0,0,.3)" />
+    <rect x="268" y="150" width="560" height="740" rx="34" fill="#f4efe2" /><rect x="800" y="190" width="10" height="660" fill="#d9d2c0" />
+    <rect class="ibcover" x="210" y="124" width="580" height="760" rx="36" />
+    <rect x="210" y="124" width="580" height="760" rx="36" fill="url(#ibGloss)" />
+    <path class="ibp" d="M246 124 h364 v40 h-400 v-4 a36 36 0 0 1 36 -36z" /><path class="ibq" d="M610 124 h144 a36 36 0 0 1 36 36 v4 h-180z" />
+    <path class="ibspine" d="M246 124 h56 v760 h-56 a36 36 0 0 1 -36 -36 v-688 a36 36 0 0 1 36 -36z" />
+    <path d="M262 180 V836" stroke="rgba(255,255,255,.8)" stroke-width="7" stroke-dasharray="22 18" />
+    <path class="ibline" d="M${C[0]} ${C[1] + R} L${bases[0]} L${bases[1]} L${bases[2]} Z" />
+    ${bases.map(([x, y], i) => `<rect class="ibbase ibb${i}" x="${x - 32}" y="${y - 32}" width="64" height="64" rx="8" transform="rotate(45 ${x} ${y})" />`).join("")}
+    <path class="ibbase ibb3" d="M${C[0] - 34} ${C[1] + R - 30} h68 v34 l-34 34 l-34 -34z" />
+    <circle cx="${C[0]}" cy="${C[1]}" r="74" fill="#f3e03a" /><circle cx="${C[0] - 20}" cy="${C[1] - 24}" r="34" fill="#fff59a" opacity=".6" />
+    <path d="M500 342 C524 380 524 420 500 458 M592 342 C568 380 568 420 592 458" stroke="#c8102e" stroke-width="9" stroke-linecap="round" fill="none" />
+    <rect x="318" y="660" width="454" height="160" rx="28" fill="rgba(255,255,255,.85)" /><rect class="ibpanel" x="330" y="672" width="430" height="136" rx="22" />
+    <path d="M473 690 V792 M617 690 V792" stroke="rgba(255,255,255,.22)" stroke-width="6" />
+    <g class="ibdigits">${roll(4, 5, 402, 0)}${roll(6, 7, 545, 1)}${roll(0, 0, 688, 2)}</g>
+  </svg>`;
+}
+function welcomeHTML() {
+  const back = store.onboarded, reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const state = back || reduce || ui.introDone === "done" ? "done" : ui.introDone === "play" ? "play" : "gate";
+  const feats = [["Live scoring", '<path d="M12 3l9 9-9 9-9-9z"/><circle cx="12" cy="12" r="2.2"/>'], ["Season stats", '<path d="M3 20h18M6 20v-8M11 20V5M16 20v-11M21 20v-5"/>'],
+    ["Spray charts", '<path d="M12 21L3 12a12.7 12.7 0 0 1 18 0z"/><circle cx="9" cy="10" r="1"/><circle cx="15" cy="8" r="1"/><circle cx="13" cy="13" r="1"/>'], ["Walk-up songs", '<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>']];
+  return `<div class="inner welcome w-${state}">
+      <div class="wbook">${introBook(state)}</div>
+      <h1 class="brand">ScoreKept</h1>
+      <div class="wstage">${state === "gate" ? `<button class="obtn go wplay" data-act="onb-intro">Tap to play ball</button>` : ""}<div class="wrest" ${state === "gate" ? 'aria-hidden="true"' : ""}>
+        <p class="whead">Your dugout scorebook.</p>
+        <ul class="wfeats">${feats.map(([l, ic]) => `<li><svg viewBox="0 0 24 24" aria-hidden="true">${ic}</svg>${l}</li>`).join("")}</ul>
+        <button class="obtn go" data-act="onb-start">${back ? "Go through setup" : "Set up my team"}</button>
+        ${back ? `<button class="obtn" data-act="onb-close">Close</button>`   /* already set up: the sample season would replace your data, so it isn't offered */
+          : `<button class="obtn" data-act="onb-sample">Look around with sample data first</button>`}
+        <p class="wnote">Setup takes about a minute. Every choice can be changed later in Settings <span class="wgear" aria-label="the gear button">${GEAR_SVG}</span>.</p></div></div>
+    </div>`;
+}
+
 /* ---------- First-launch setup ---------- */
 const ONB_STEPS = ["team", "colors", "style", "rules", "roster", "done"];
 function bugPreview() {
@@ -2794,14 +2907,7 @@ function onboardHTML(sh) {
   const next = (label, extra) => `<button class="obtn" data-act="onb-back">Back</button><button class="obtn go" data-act="onb-next" ${extra || ""}>${label || "Next"}</button>`;
   let inner = "", foot = "";
   if (step === "welcome") {
-    inner = `<div class="inner welcome">
-      <img src="${iconPreview()}" alt="">
-      <h1 class="brand">ScoreKept</h1>
-      <p class="lead">Your softball scorebook for the dugout. Live scoring, season stats, spray charts and walk-up songs, all on this device.</p>
-      <button class="obtn go" data-act="onb-start">${store.onboarded ? "Go through setup" : "Set up my team"}</button>
-      ${store.onboarded ? `<button class="obtn" data-act="onb-close">Close</button>`   /* already set up: the sample season would replace your data, so it isn't offered */
-        : `<button class="obtn" data-act="onb-sample">Look around with sample data first</button>`}
-      <p class="lead" style="font-size:14px;opacity:.75">Setup takes about a minute. Every choice can be changed later under the gear.</p></div>`;
+    inner = welcomeHTML();
   } else if (step === "team") {
     inner = `<div class="inner">${head(1, "Name your team", "This goes on the scoreboard and in your stats.")}
       <div class="two2">
@@ -3084,33 +3190,47 @@ function renderSheet() {
   } else if (sh.type === "help") {
     wide = true; body = helpBody();
   } else if (sh.type === "settings") {
-    const pf = Object.assign({ mode: "dugout", askHits: true, ties: false, innings: 7 }, store.prefs);
-    const psw = (k, title, desc, on) => `<label class="setrow" for="p-${k}"><span><b>${title}</b><small>${desc}</small></span><input type="checkbox" class="switch" id="p-${k}" data-ch="pref" data-k="${k}" ${on ? "checked" : ""}></label>`;
-    const link = (act, title, desc) => `<button class="setrow" data-act="${act}"><span><b>${title}</b><small>${desc}</small></span><span class="chev" aria-hidden="true">›</span></button>`;
+    const pf = Object.assign({ mode: "dugout" }, store.prefs);
+    const link = (act, title, desc, v) => `<button class="setrow" data-act="${act}"${v ? ` data-v="${v}"` : ""}><span><b>${title}</b><small>${desc}</small></span><span class="chev" aria-hidden="true">›</span></button>`;
     const c = teamColors();
+    const done = Object.keys(TOURS).filter(k => (store.toursDone || {})[k]).length, np = (store.parks || []).length;
     body = `<h3>Settings</h3>
-      <h4 style="margin:0">Tutorials</h4>
-      <div class="setlist">${tutorialsList()}</div>
-      <div class="setlist">${link("help", "Help &amp; how to score", "Every button, moving runners, league rules, stats and backups.")}</div>
       <h4 style="margin:0">Team</h4>
-      <div class="setlist">${link("teamedit", esc(store.team.name), `Short name ${esc(store.team.abbr || abbrOf(store.team.name))} · ${esc(colorName(c.primary))} &amp; ${esc(colorName(c.secondary))}`)}</div>
-      <h4 style="margin:0">Parks &amp; fields</h4>
+      <div class="setlist">${link("teamedit", esc(store.team.name), `Short name ${esc(store.team.abbr || abbrOf(store.team.name))} · ${esc(colorName(c.primary))} &amp; ${esc(colorName(c.secondary))}`)}
+        ${link("sub", "Parks &amp; fields", np ? `${np} saved for the New Game dropdown.` : "Parks you type in New Game are saved here.", "parks")}</div>
+      <h4 style="margin:0">Games</h4>
+      <div class="setlist">${link("sub", "New game defaults", `${pf.mode === "dugout" ? "Dugout mode" : "Scorekeeper mode"} · ${prefRules().innings} innings · league rules`, "gamedefaults")}
+        ${link("sounds", "Sounds &amp; walk-up songs", "Game sounds, situation sounds, between-innings music and walk-ups.")}</div>
+      <h4 style="margin:0">Help</h4>
+      <div class="setlist">${link("help", "Help &amp; how to score", "Every button, moving runners, league rules, stats and backups.")}
+        ${link("sub", "Tutorials", `${Object.keys(TOURS).length} guided walk-throughs${done ? ` · ${done} done` : ""}.`, "tutorials")}</div>
+      <h4 style="margin:0">Your data</h4>
+      <div class="setlist">${link("backup", "Backup &amp; restore", "Save everything to a file, or bring it back on any device.")}
+        ${link("onb-again", "Run the welcome setup again", "Walk through team, colors, scoring style, rules and roster. Nothing is erased.")}</div>
+      <p style="font-size:13px">Settings for a game in progress are under the gear during that game.</p>
+      <div class="acts"><button class="tbtn primary" data-act="close">Done</button></div>`;
+  } else if (sh.type === "tutorials") {
+    body = `<h3>Tutorials</h3>
+      <p>Short guided walk-throughs. Each one points at the real buttons; skip out any time.</p>
+      <div class="setlist">${tutorialsList()}</div>
+      <div class="acts"><button class="tbtn primary" data-act="close">Done</button></div>`;
+  } else if (sh.type === "parks") {
+    body = `<h3>Parks &amp; fields</h3>
       <div class="setlist">${(store.parks || []).length ? store.parks.map((x, i) => `<div class="setrow"><span><b>${esc(x)}</b></span><button class="ibtn" data-act="park-rm" data-v="${i}" aria-label="Delete ${esc(x)}">✕</button></div>`).join("")
         : `<div class="setrow"><span><small>Parks you type in New Game show up here and in its dropdown. Delete any you don't need.</small></span></div>`}</div>
-      <h4 style="margin:0">New game defaults</h4>
+      <div class="acts"><button class="tbtn primary" data-act="close">Done</button></div>`;
+  } else if (sh.type === "gamedefaults") {
+    const pf = Object.assign({ mode: "dugout", askHits: true }, store.prefs);
+    const psw = (k, title, desc, on) => `<label class="setrow" for="p-${k}"><span><b>${title}</b><small>${desc}</small></span><input type="checkbox" class="switch" id="p-${k}" data-ch="pref" data-k="${k}" ${on ? "checked" : ""}></label>`;
+    body = `<h3>New game defaults</h3>
+      <p>Every new game starts with these. You can still change them for any game.</p>
       <div class="setlist">
         ${psw("dugout", "Dugout mode", "Score your batters one at a time; their half-innings with quick run and out buttons. Off: score every batter on both teams.", pf.mode === "dugout")}
         ${psw("askHits", "Hit location", "Ask which fielder made the play and where hits went, for spray charts and fielding stats.", pf.askHits !== false)}
-        <div class="setrow"><span><b>Innings</b><small>The usual length of a game. You can still change it for any game.</small></span>
+        <div class="setrow"><span><b>Innings</b><small>The usual length of a game.</small></span>
           <span class="stepper"><button data-act="prefinn" data-v="-1" aria-label="One fewer inning">−</button><b>${prefRules().innings}</b><button data-act="prefinn" data-v="1" aria-label="One more inning">+</button></span></div>
         ${rulesRows(prefRules(), "p-", "prefrule")}
       </div>
-      <div class="setlist">
-        ${link("sounds", "Sounds &amp; walk-up songs", "Game sounds, situation sounds, between-innings music and walk-ups.")}
-        ${link("backup", "Backup &amp; restore", "Save everything to a file, or bring it back on any device.")}
-        ${link("onb-again", "Run the welcome setup again", "Walk through team, colors, scoring style, rules and roster. Nothing is erased.")}
-      </div>
-      <p style="font-size:13px">Settings for a game in progress are under the gear during that game.</p>
       <div class="acts"><button class="tbtn primary" data-act="close">Done</button></div>`;
   } else if (sh.type === "backup") {
     body = `<h3>Export &amp; backup</h3>
@@ -3384,7 +3504,7 @@ async function saveFile(name, text, type) {
   try {
     const file = new File([text], name, { type });
     if (navigator.canShare && navigator.canShare({ files: [file] }) && /iPhone|iPad|Macintosh|Android/.test(navigator.userAgent) && "ontouchend" in document) {
-      await navigator.share({ files: [file], title: name });
+      await navigator.share({ files: [file] });   // the file alone: a title rides along as a second item, and Files saves "2 Items" with no name
       return "shared";
     }
   } catch (e) { if (e && e.name === "AbortError") return "cancelled"; }
@@ -3528,7 +3648,7 @@ document.addEventListener("click", ev => {
     case "close": {
       const t = ui.sheet && ui.sheet.type;
       if (t === "sounds") stopClip(true);
-      if ((t === "sounds" || t === "teamedit" || t === "help") && ui.returnTo && (ui.returnTo === "settings" || ui.draft)) { ui.sheet = { type: ui.returnTo }; ui.returnTo = null; render(); break; }
+      if (["sounds", "teamedit", "help", "backup", "tutorials", "parks", "gamedefaults"].includes(t) && ui.returnTo && (ui.returnTo === "settings" || ui.draft)) { ui.sheet = { type: ui.returnTo }; ui.returnTo = null; render(); break; }
       closeSheet(); break;
     }
     case "newgame": openNewGame(); break;
@@ -3653,6 +3773,11 @@ document.addEventListener("click", ev => {
       store = ensureSeasons(sampleStore()); store.onboarded = true; ui.sheet = null; ui.view = "game"; save(); render(); break;
     case "onb-again": startOnboarding("welcome"); break;
     case "onb-close": ui.sheet = null; render(); break;
+    case "onb-intro": {   // the first tap: sound and the bases lighting up, then the welcome
+      audio(); playIntro(); ui.introDone = "play"; renderSheet();
+      setTimeout(() => { if (ui.introDone === "play") ui.introDone = "done"; }, 4000);
+      break;
+    }
     case "onb-next": {
       const i = ONB_STEPS.indexOf(ui.sheet.step);
       if (ui.sheet.step === "team" && (!store.team.name.trim() || store.team.name === "My Team") && !($("onbName") && $("onbName").value.trim())) { ui.msg = "Enter your team's name to keep going."; render(); break; }
@@ -3666,7 +3791,8 @@ document.addEventListener("click", ev => {
     case "onb-addp": onbAddPlayer(); break;
     case "onb-rmp": store.team.players = store.team.players.filter(p => p.id !== v); save(); render(); break;
     case "onb-finish": finishOnboarding(v); break;
-    case "backup": ui.msg = ""; ui.sheet = { type: "backup" }; renderSheet(); break;
+    case "backup": ui.returnTo = ui.sheet && ui.sheet.type === "settings" ? "settings" : null; ui.msg = ""; ui.sheet = { type: "backup" }; renderSheet(); break;
+    case "sub": ui.returnTo = "settings"; ui.msg = ""; ui.confirm = null; ui.sheet = { type: v }; renderSheet(); break;   // a group inside Settings; Done comes back
     case "dl-backup":
       readDraftRows();
       saveFile(`scorekept-backup-${today()}.json`, JSON.stringify(store), "application/json").then(r => {

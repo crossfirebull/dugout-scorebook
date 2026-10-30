@@ -25,11 +25,11 @@ To see every layout at once, open the **screen preview**: https://crossfirebull.
 
 **Help** (in Settings and Game settings) explains every button, moving runners, league rules, stats and backups.
 
-The speaker button at the top mutes and unmutes. The gear opens **Settings** (team, colors, new-game defaults, sounds, backup, and the welcome setup again). During a game it opens that game's settings, with a link to all settings.
+The speaker button at the top mutes and unmutes. The gear opens **Settings**, grouped into short sections that each open their own screen: **Team** (name, colors, parks & fields), **Games** (new game defaults, sounds & walk-up songs), **Help** (Help and Tutorials) and **Your data** (backup & restore, the welcome setup again). The red X or Done on any of those goes back to Settings. During a game it opens that game's settings, with a link to all settings.
 
 ## First launch
 
-The first time ScoreKept opens, a short setup walks you through it like the opening screens of a video game: name your team, pick your colors (with a live preview of the score bug and Home Screen icon), choose Dugout or Scorekeeper mode, set your league's innings and tie rule, and add your players. Or tap **Look around with sample data first** to explore a made-up season. Everything you choose can be changed later in **Settings**, and **Run the welcome setup again** is there too.
+The first time ScoreKept opens, tap **Tap to play ball** (iPhones only allow sound after a tap): an aluminum bat pings, the bases on the scorebook light up around the horn while the crowd cheers, and the R·H·E board flips over to add a hit and a run. (With Reduce Motion on, or when you run the setup again, it starts at the finished welcome screen.) Then a short setup walks you through it like the opening screens of a video game: name your team, pick your colors (with a live preview of the score bug and Home Screen icon), choose Dugout or Scorekeeper mode, set your league's innings and tie rule, and add your players. Or tap **Look around with sample data first** to explore a made-up season. Everything you choose can be changed later in **Settings**, and **Run the welcome setup again** is there too.
 
 ## Tutorials
 
@@ -43,7 +43,7 @@ Right after the welcome setup, a short **Basics** tour (skippable) spotlights th
 ## Using it at the field
 
 1. Turn on your phone's hotspot and connect the iPad.
-2. On the **Team** tab, tap **Edit team** and set your team colors first, then open the link in Safari and tap **Share → Add to Home Screen**. The icon (a scorebook with a lit R·H·E box score) is drawn in your team colors at that moment.
+2. On the **Team** tab, tap **Edit team** and set your team colors first, then open the link in Safari and tap **Share → Add to Home Screen**. The icon (a scorebook with a lit R·H·E box score in white numbers) is drawn in your team colors at that moment.
 3. On the **Team** tab, add your players with their number, up to three positions (main one first) and which side they bat from.
 4. On game day, tap **New Game**. It starts with the **lineup**: your players are grouped by position (pitchers, catchers, infield, outfield) on cards with this season's stats, like picking a team in a video game. Tap them in batting order, drag the **☰** handle to move a batter, or tap **Same as last game**. Adding players on the Team tab never sets a lineup; you build it each game. Then **game details**: the opponent, park, league rules, and a pregame checklist for sound, walk-up songs and your last backup. Last comes the **coin toss**: tap **We're visitors** or **We're home** and the game starts. Pick a mode in **Game settings**:
    - **Dugout mode** scores your batters one at a time. The other team's half-inning gets quick **+1 Run** and **+1 Out** buttons, so you can coach and score at the same time.
@@ -83,7 +83,7 @@ When a game ends, tap **Share recap** on the final banner (or **Stats → Overvi
 
 ## League rules
 
-Set them for one game in **Game settings**, or as the default for new games in **Settings**. The defaults match our league:
+Set them for one game in **Game settings**, or as the default for new games in **Settings → New game defaults**. The defaults match our league:
 
 | Rule | Default | What ScoreKept does |
 | --- | --- | --- |
@@ -101,7 +101,7 @@ Everyone can bat: pick **EH · bats only** in the lineup for anyone who isn't in
 - **Saves every tap** on the device as you go, so closing the app, a dead battery or losing signal mid-inning doesn't lose anything. Tap the wrong thing? **Undo**.
 - **Protected storage.** ScoreKept asks the device to keep its data out of the browser's automatic cleanup. Using it from the Home Screen icon helps too.
 - **Never overwrites a problem.** If saved data ever can't be read, ScoreKept sets it aside and tells you rather than starting over on top of it. If a save ever fails (for example in Private Browsing), a red warning appears.
-- **Backups in one tap.** **Stats → Overview → Export & backup → Save backup** opens the share sheet on iPhone and iPad: save to Files or iCloud Drive, or email it to yourself. A reminder appears when it's been more than a week. **Restore from backup** brings everything back on any device.
+- **Backups in one tap.** **Stats → Overview → Export & backup → Save backup** opens the share sheet on iPhone and iPad with one file, named like `scorekept-backup-2026-10-30.json`: save it to Files or iCloud Drive, or email it to yourself. A reminder appears when it's been more than a week. **Restore from backup** brings everything back on any device.
 
 ## Sounds and walk-up songs
 

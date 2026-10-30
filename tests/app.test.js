@@ -29,7 +29,8 @@ after(async () => { await browser.close(); server.close(); });
 
 // Open the app in a fresh browser (fresh saved data) at a given screen size
 async function open(width = 390, height = 844, options = {}) {
-  const context = await browser.newContext({ viewport: { width, height }, acceptDownloads: true, ...options });
+  // Reduced motion skips the first-launch intro (tested on its own below)
+  const context = await browser.newContext({ viewport: { width, height }, acceptDownloads: true, reducedMotion: "reduce", ...options });
   const page = await context.newPage();
   const errors = [];
   page.on("pageerror", e => errors.push(e.message));
@@ -241,6 +242,7 @@ test("first launch walks through setup, and the choices land in Settings", async
   await page.click(".sheet [data-act=close]");
   await page.click("[data-act=settings]");
   assert.match(await text(page, ".sheet"), /Test Tigers/);
+  await page.click("[data-act=sub][data-v=gamedefaults]");
   assert.equal(await page.isChecked("#p-dugout"), false); assert.equal(await page.inputValue("#p-extras"), "0"); assert.equal(await page.inputValue("#p-hrRule"), "max1");
   await page.reload(); await page.waitForSelector(".tabbar button");
   assert.equal(await page.$(".onb"), null, "setup doesn't come back after it's done");
@@ -555,16 +557,16 @@ test("league rules are in Game settings and Settings, and lineups take bat-only 
   const { page, context, errors } = await open(1180, 820);
   await gameSettings(page);
   for (const id of ["#d-extras", "#d-timeLimit", "#d-rr0a", "#d-hrRule"]) assert.ok(await page.$(id), id + " in Game settings");
-  await page.click("[data-act=opensettings]");
+  await page.click("[data-act=opensettings]"); await page.click("[data-act=sub][data-v=gamedefaults]");
   for (const id of ["#p-extras", "#p-timeLimit", "#p-rr0a", "#p-hrRule"]) assert.ok(await page.$(id), id + " in Settings");
   await page.selectOption("#p-timeLimit", "55");
   await page.fill("#p-rr0a", "3"); await page.fill("#p-rr0l", "20"); await page.press("#p-rr0l", "Tab");
   await page.click(".sheet [data-act=close]");
   await page.reload(); await page.waitForSelector(".tabbar button");
-  await gameSettings(page); await page.click("[data-act=opensettings]");
+  await gameSettings(page); await page.click("[data-act=opensettings]"); await page.click("[data-act=sub][data-v=gamedefaults]");
   assert.equal(await page.inputValue("#p-rr0a"), "3"); assert.equal(await page.inputValue("#p-rr0l"), "20");
   assert.equal(await page.inputValue("#p-timeLimit"), "55");
-  await page.click(".sheet [data-act=close]");
+  await page.click(".sheet [data-act=close]"); await page.click(".sheet [data-act=close]");   // back to Settings, then closed
   await page.click("[data-act=lineups]");
   assert.ok(await page.$("option[value=EH]"), "EH option");
   assert.match(await page.textContent("option[value=EH]"), /bats only/);
@@ -587,6 +589,13 @@ test("Help opens from Settings and Game settings, and Done goes back", async () 
   await page.click("[data-act=help]");
   await page.click(".sheet [data-act=close]");
   assert.match(await text(page, ".sheet h3"), /Settings/, "back to Settings");
+  for (const [act, v, h] of [["sub", "tutorials", /Tutorials/], ["sub", "parks", /Parks/], ["sub", "gamedefaults", /New game defaults/], ["backup", "", /backup/i]]) {
+    await page.click(`.sheet [data-act=${act}]${v ? `[data-v=${v}]` : ""}`);
+    assert.match(await text(page, ".sheet h3"), h);
+    await page.click(".sheet [data-act=close]");
+    assert.match(await text(page, ".sheet h3"), /^Settings$/, h + " goes back to Settings");
+  }
+  assert.equal((await page.$$(".sheet [data-act=tour]")).length, 0, "tutorials are nested, not at the top of Settings");
   assert.deepEqual(errors, []);
   await context.close();
 });
@@ -718,7 +727,7 @@ test("park & field: typed once, offered next time, and deletable in Settings", a
   assert.deepEqual(await page.$$eval("#parkList option", o => o.map(x => x.value)), ["Spring Park #1", "Rolland Moore Park #3"]);
   await page.click(".sheet [data-act=close]");
   assert.match(await page.textContent("#view"), /Rolland Moore Park #3/, "shown in the games list");
-  await page.click("[data-act=settings]");
+  await page.click("[data-act=settings]"); await page.click("[data-act=sub][data-v=parks]");
   await page.click(".sheet [data-act=park-rm][data-v='1']");
   assert.doesNotMatch(await text(page, ".sheet"), /Rolland Moore/);
   assert.deepEqual(errors, []);
@@ -857,14 +866,14 @@ test("guided tours: the basics walks through with Next and Back; every tour runs
   }
   // the New Game tour, with no game in progress, opens the real lineup builder and coin toss
   await gameSettings(page); await page.click(".sheet [data-act=endgame]");
-  await page.click("[data-act=settings]"); await page.click("[data-act=tour][data-v=newgame]");
+  await page.click("[data-act=settings]"); await page.click("[data-act=sub][data-v=tutorials]"); await page.click("[data-act=tour][data-v=newgame]");
   await page.click("[data-act=tour-next]");
   assert.ok(await page.$(".lupool"), "lineup builder open behind the tour");
   for (let i = 0; i < 4; i++) await page.click("[data-act=tour-next]");
   assert.ok(await page.$(".tossbtns"), "coin toss shown");
   await page.click("[data-act=tour-next]");
   assert.equal(await page.$(".sheet"), null, "tour closes what it opened");
-  await page.click("[data-act=settings]");
+  await page.click("[data-act=settings]"); await page.click("[data-act=sub][data-v=tutorials]");
   assert.match(await text(page, ".sheet"), /Starting a game ✓/);
   assert.deepEqual(errors, []);
   await context.close();
@@ -938,6 +947,21 @@ test("Run the welcome setup again starts on the welcome screen, without the samp
   assert.equal(await page.$("[data-act=onb-sample]"), null, "no sample data offer once set up");
   await page.click("[data-act=onb-close]");
   assert.equal(await page.$(".onb"), null);
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("first launch intro: tap to play ball, the bases light up, the scoreboard rolls, then the welcome", async () => {
+  const { page, context, errors } = await open(393, 852, { keepSetup: true, reducedMotion: "no-preference" });
+  assert.ok(await page.$(".welcome.w-gate [data-act=onb-intro]"), "title screen first");
+  const bookTop = await page.$eval(".wbook", e => e.getBoundingClientRect().top);
+  await page.click("[data-act=onb-intro]", { force: true });
+  assert.ok(await page.$(".ibook.play"), "intro playing");
+  assert.equal(await page.$eval(".wbook", e => e.getBoundingClientRect().top), bookTop, "the book doesn't jump");
+  await page.waitForFunction(() => getComputedStyle(document.querySelector(".wrest")).opacity === "1", null, { timeout: 6000 });
+  assert.ok(await page.isVisible("[data-act=onb-start]"));
+  assert.match(await text(page, ".whead"), /dugout scorebook/i);
+  assert.equal((await page.$$(".wfeats li")).length, 4);
   assert.deepEqual(errors, []);
   await context.close();
 });
