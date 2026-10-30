@@ -633,7 +633,8 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 .onb .dots i { flex: 1; height: 5px; border-radius: 3px; background: rgba(255, 255, 255, .2); }
 .onb .dots i.on { background: var(--team-lamp, var(--lamp)); box-shadow: 0 0 8px var(--team-lamp, var(--lamp)); }
 .onb .skip { background: none; border: 0; color: rgba(255, 255, 255, .75); font: inherit; font-weight: 600; padding: 6px; }
-.onb .body { overflow-y: auto; display: grid; align-content: center; padding: 8px 0; }
+.onb .body { overflow-y: auto; display: grid; align-content: start; padding: 8px 0; }
+.onb .body > * { margin-block: auto; }   /* centered when it fits; when it doesn't, it starts at the top instead of being cut off */
 .onb .inner { display: grid; gap: 16px; animation: onbin .35s ease-out; }
 @keyframes onbin { from { opacity: 0; transform: translateX(28px); } }
 .onb .stepno { font-family: var(--f-label); font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--team-lamp, var(--lamp)); font-size: 13px; }
@@ -667,21 +668,26 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 .onb .welcome { justify-items: center; text-align: center; }
 /* First-launch welcome: the book, the logo, then the pitch */
 .onb .welcome { align-content: start; gap: 12px; padding-top: 2vh; }
+.onb .wbook { background: radial-gradient(closest-side, rgba(255, 255, 255, .16), rgba(255, 255, 255, 0)); }   /* a soft spotlight so the book doesn't sink into the navy */
+.ibook .ibrim { fill: #ffffff; }
 .onb .wbook { width: min(46vw, 210px); filter: drop-shadow(0 18px 30px rgba(0, 0, 0, .45)); }
 .ibook { display: block; width: 100%; height: auto; overflow: visible; }
 .ibook .ibcover { fill: color-mix(in srgb, var(--team-p, #c8102e) 92%, #000000); }
 .ibook .ibp { fill: var(--team-board, #14284b); } .ibook .ibq { fill: var(--team-q, #ffc93c); }
 .ibook .ibspine { fill: color-mix(in srgb, var(--team-p, #c8102e) 62%, #000000); }
-.ibook .ibline { fill: none; stroke: #ffffff; stroke-width: 30; stroke-linejoin: round; }
+.ibook .ibline { fill: none; stroke: #ffffff; stroke-width: 16; stroke-linejoin: round; }
 .ibook .ibbase { fill: #ffffff; }
 .ibook .ibpanel { fill: color-mix(in srgb, var(--team-board, #14284b) 65%, #000000); }
 .ibook .ibdigits text { font-family: var(--f-display); font-weight: 800; font-size: 96px; fill: #ffffff; text-anchor: middle; }
-.ibook.done .ibbase { fill: var(--team-lamp, #ffc93c); filter: drop-shadow(0 0 14px var(--team-lamp, #ffc93c)); }
+.ibook.done .ibbase { fill: #ffffff; }   /* the logo: all bases white */
 .ibook.done .ibroll0, .ibook.done .ibroll1 { transform: translateY(-120px); }
-/* Timed to the sound: the bat at 0, then a runner's pace around the horn while the crowd swells. White, then lit. */
-.ibook.play .ibbase { animation: iblight .5s ease-out both; }
+/* Timed to the sound: the bat at 0, then a runner's pace around the horn while the crowd swells.
+   One base lit at a time, like the runner going round; home stays lit until the run goes up, then all white. */
+.ibook.play .ibbase { animation: iblight .66s ease-out both; }
+.ibook.play .ibb3 { animation-duration: .95s; }
 .ibook.play .ibb0 { animation-delay: .45s; } .ibook.play .ibb1 { animation-delay: 1.05s; } .ibook.play .ibb2 { animation-delay: 1.65s; } .ibook.play .ibb3 { animation-delay: 2.25s; }
-@keyframes iblight { 0% { fill: #ffffff; } 45% { fill: var(--team-lamp, #ffc93c); filter: drop-shadow(0 0 32px var(--team-lamp, #ffc93c)); } 100% { fill: var(--team-lamp, #ffc93c); filter: drop-shadow(0 0 14px var(--team-lamp, #ffc93c)); } }
+@keyframes iblight { 0% { fill: #ffffff; } 12% { fill: var(--team-lamp, #ffc93c); filter: drop-shadow(0 0 32px var(--team-lamp, #ffc93c)); }
+  75% { fill: var(--team-lamp, #ffc93c); filter: drop-shadow(0 0 14px var(--team-lamp, #ffc93c)); } 100% { fill: #ffffff; filter: none; } }
 .ibook.play .ibroll0, .ibook.play .ibroll1 { animation: ibroll .45s cubic-bezier(.3, 1.4, .5, 1) both; }
 .ibook.play .ibroll1 { animation-delay: .75s; } .ibook.play .ibroll0 { animation-delay: 2.65s; }   /* the hit counts once the runner reaches first; the run once they touch home */
 @keyframes ibroll { from { transform: translateY(0); } to { transform: translateY(-120px); } }
@@ -955,7 +961,8 @@ function makeIcon(size, P, Q, board, lamp, cover) {
   const bg = x.createRadialGradient(512, 360, 0, 512, 360, 780);
   bg.addColorStop(0, mixHex(board, "#ffffff", .16)); bg.addColorStop(1, mixHex(board, "#000000", .42));
   x.fillStyle = bg; x.fillRect(0, 0, 1024, 1024);
-  // page edges and shadow behind the book
+  // a white outline so the book stands out from the background, then page edges and a shadow
+  x.fillStyle = "#ffffff"; rr(200, 114, 600, 780, 46); x.fill(); rr(258, 140, 580, 760, 44); x.fill();
   x.fillStyle = "rgba(0,0,0,.3)"; rr(222, 146, 590, 760, 36); x.fill();
   x.fillStyle = "#f4efe2"; rr(268, 150, 560, 740, 34); x.fill();
   x.fillStyle = "#d9d2c0"; x.fillRect(800, 190, 10, 660);
@@ -974,9 +981,11 @@ function makeIcon(size, P, Q, board, lamp, cover) {
   const ink = contrast(cover, "#ffffff") >= 2 ? "#ffffff" : "#14212c";
   x.save(); x.translate(546, 420); x.rotate(Math.PI / 4);
   x.shadowColor = "rgba(0,0,0,.3)"; x.shadowBlur = 10;
-  x.strokeStyle = ink; x.lineWidth = 30; rr(-145, -145, 290, 290, 22); x.stroke();
-  x.fillStyle = ink; [[-171, -171], [113, -171], [113, 113]].forEach(([a, b]) => { rr(a, b, 58, 58, 8); x.fill(); });
+  x.strokeStyle = ink; x.lineWidth = 16; rr(-145, -145, 290, 290, 22); x.stroke();
+  x.fillStyle = ink; [[-171, -171], [113, -171], [-171, 113]].forEach(([a, b]) => { rr(a, b, 58, 58, 8); x.fill(); });   // second, first, third
   x.restore();
+  x.save(); x.shadowColor = "rgba(0,0,0,.3)"; x.shadowBlur = 10; x.fillStyle = ink;   // home plate
+  x.fill(new Path2D("M512 595 h68 v34 l-34 34 l-34 -34z")); x.restore();
   const ball = x.createRadialGradient(520, 384, 0, 520, 384, 120);
   ball.addColorStop(0, "#fff59a"); ball.addColorStop(.6, "#f3e03a"); ball.addColorStop(1, "#cdb514");
   x.fillStyle = ball; x.beginPath(); x.arc(546, 420, 74, 0, Math.PI * 2); x.fill();
@@ -2825,7 +2834,7 @@ function tutorialsList() {
    the book rolls over to add a hit and a run. Reduced motion, or a return visit: shown finished. */
 const GEAR_SVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
 // Real recordings, kept next to the app: swap either file to change the sound. If one is missing the intro just plays silently.
-const APP_VERSION = "2026.10.30-4";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
+const APP_VERSION = "2026.10.30-5";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
 const INTRO_SOUNDS = [["sounds/intro-bat.mp3", 0], ["sounds/intro-cheer.mp3", .15]];   // file, seconds after the tap
 let introBytes = null;
 function loadIntro() {   // fetched while the title screen is up, so the tap plays right away
@@ -2849,6 +2858,7 @@ function introBook(state) {
   return `<svg class="ibook ${state}" viewBox="150 90 720 800" role="img" aria-label="ScoreKept scorebook">
     <defs>${[402, 545, 688].map((x, i) => `<clipPath id="ibClip${i}"><rect x="${x - 70}" y="690" width="140" height="116" /></clipPath>`).join("")}
       <linearGradient id="ibGloss" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".26"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+    <g class="ibrim"><rect x="200" y="114" width="600" height="780" rx="46" /><rect x="258" y="140" width="580" height="760" rx="44" /></g>   <!-- a white outline, so the book stands out on any background -->
     <rect x="222" y="146" width="590" height="760" rx="36" fill="rgba(0,0,0,.3)" />
     <rect x="268" y="150" width="560" height="740" rx="34" fill="#f4efe2" /><rect x="800" y="190" width="10" height="660" fill="#d9d2c0" />
     <rect class="ibcover" x="210" y="124" width="580" height="760" rx="36" />
