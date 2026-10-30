@@ -633,7 +633,8 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 .onb .dots i { flex: 1; height: 5px; border-radius: 3px; background: rgba(255, 255, 255, .2); }
 .onb .dots i.on { background: var(--team-lamp, var(--lamp)); box-shadow: 0 0 8px var(--team-lamp, var(--lamp)); }
 .onb .skip { background: none; border: 0; color: rgba(255, 255, 255, .75); font: inherit; font-weight: 600; padding: 6px; }
-.onb .body { overflow-y: auto; display: grid; align-content: center; padding: 8px 0; }
+.onb .body { overflow-y: auto; display: grid; align-content: start; padding: 8px 0; }
+.onb .body > * { margin-block: auto; }   /* centered when it fits; when it doesn't, it starts at the top instead of being cut off */
 .onb .inner { display: grid; gap: 16px; animation: onbin .35s ease-out; }
 @keyframes onbin { from { opacity: 0; transform: translateX(28px); } }
 .onb .stepno { font-family: var(--f-label); font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--team-lamp, var(--lamp)); font-size: 13px; }
@@ -667,12 +668,14 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 .onb .welcome { justify-items: center; text-align: center; }
 /* First-launch welcome: the book, the logo, then the pitch */
 .onb .welcome { align-content: start; gap: 12px; padding-top: 2vh; }
+.onb .wbook { background: radial-gradient(closest-side, rgba(255, 255, 255, .16), rgba(255, 255, 255, 0)); }   /* a soft spotlight so the book doesn't sink into the navy */
+.ibook .ibrim { fill: #ffffff; }
 .onb .wbook { width: min(46vw, 210px); filter: drop-shadow(0 18px 30px rgba(0, 0, 0, .45)); }
 .ibook { display: block; width: 100%; height: auto; overflow: visible; }
 .ibook .ibcover { fill: color-mix(in srgb, var(--team-p, #c8102e) 92%, #000000); }
 .ibook .ibp { fill: var(--team-board, #14284b); } .ibook .ibq { fill: var(--team-q, #ffc93c); }
 .ibook .ibspine { fill: color-mix(in srgb, var(--team-p, #c8102e) 62%, #000000); }
-.ibook .ibline { fill: none; stroke: #ffffff; stroke-width: 30; stroke-linejoin: round; }
+.ibook .ibline { fill: none; stroke: #ffffff; stroke-width: 16; stroke-linejoin: round; }
 .ibook .ibbase { fill: #ffffff; }
 .ibook .ibpanel { fill: color-mix(in srgb, var(--team-board, #14284b) 65%, #000000); }
 .ibook .ibdigits text { font-family: var(--f-display); font-weight: 800; font-size: 96px; fill: #ffffff; text-anchor: middle; }
@@ -2846,12 +2849,27 @@ function playIntro() {
   }));
 }
 // The book from the Home Screen icon, drawn live so its bases and scoreboard can move
+// The cover drawn like the Tap-on-the-field field: grass, fence, dirt, thin chalk lines, white bags
+function coverField() {
+  const bag = (x, y, i) => `<rect class="ibbase ibb${i}" x="${x - 5}" y="${y - 5}" width="10" height="10" rx="1.2" transform="rotate(45 ${x} ${y})" />`;
+  return `<g transform="translate(546 574) scale(2.55) translate(-100 -166)">
+      <path d="M100 166 L11 77 A126 126 0 0 1 189 77 Z" fill="#2e7a49" stroke="#ffffff" stroke-width="2.4" stroke-linejoin="round" />
+      <path d="M14 80 A122 122 0 0 1 186 80" fill="none" stroke="#ffd25c" stroke-width="2.6" />
+      <path d="M100 168 L146 122 Q100 66 54 122 Z" fill="#b98b5d" />
+      <path d="M100 162 L134 128 L100 94 L66 128 Z" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linejoin="round" />
+      <path d="M100 162 L13 75 M100 162 L187 75" stroke="#ffffff" stroke-width="2.2" />
+      <circle cx="100" cy="128" r="5" fill="#d8b48a" />
+      ${bag(134, 128, 0)}${bag(100, 94, 1)}${bag(66, 128, 2)}
+      <path class="ibbase ibb3" d="M95.5 157 h9 v4.5 l-4.5 4.5 l-4.5 -4.5z" />
+    </g>`;
+}
 function introBook(state) {
   const C = [546, 400], R = 196, bases = [[C[0] + R, C[1]], [C[0], C[1] - R], [C[0] - R, C[1]]];   // first, second, third
   const roll = (from, to, x, i) => `<g clip-path="url(#ibClip${i})"><g class="ibroll ibroll${i}"><text x="${x}" y="782">${from}</text><text x="${x}" y="902">${to}</text></g></g>`;
   return `<svg class="ibook ${state}" viewBox="150 90 720 800" role="img" aria-label="ScoreKept scorebook">
     <defs>${[402, 545, 688].map((x, i) => `<clipPath id="ibClip${i}"><rect x="${x - 70}" y="690" width="140" height="116" /></clipPath>`).join("")}
       <linearGradient id="ibGloss" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".26"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+    <g class="ibrim"><rect x="200" y="114" width="600" height="780" rx="46" /><rect x="258" y="140" width="580" height="760" rx="44" /></g>   <!-- a white outline, so the book stands out on any background -->
     <rect x="222" y="146" width="590" height="760" rx="36" fill="rgba(0,0,0,.3)" />
     <rect x="268" y="150" width="560" height="740" rx="34" fill="#f4efe2" /><rect x="800" y="190" width="10" height="660" fill="#d9d2c0" />
     <rect class="ibcover" x="210" y="124" width="580" height="760" rx="36" />
@@ -2859,11 +2877,11 @@ function introBook(state) {
     <path class="ibp" d="M246 124 h364 v40 h-400 v-4 a36 36 0 0 1 36 -36z" /><path class="ibq" d="M610 124 h144 a36 36 0 0 1 36 36 v4 h-180z" />
     <path class="ibspine" d="M246 124 h56 v760 h-56 a36 36 0 0 1 -36 -36 v-688 a36 36 0 0 1 36 -36z" />
     <path d="M262 180 V836" stroke="rgba(255,255,255,.8)" stroke-width="7" stroke-dasharray="22 18" />
-    <path class="ibline" d="M${C[0]} ${C[1] + R} L${bases[0]} L${bases[1]} L${bases[2]} Z" />
+    ${/field/.test(location.search) ? coverField() : `<path class="ibline" d="M${C[0]} ${C[1] + R} L${bases[0]} L${bases[1]} L${bases[2]} Z" />
     ${bases.map(([x, y], i) => `<rect class="ibbase ibb${i}" x="${x - 32}" y="${y - 32}" width="64" height="64" rx="8" transform="rotate(45 ${x} ${y})" />`).join("")}
     <path class="ibbase ibb3" d="M${C[0] - 34} ${C[1] + R - 30} h68 v34 l-34 34 l-34 -34z" />
     <circle cx="${C[0]}" cy="${C[1]}" r="74" fill="#f3e03a" /><circle cx="${C[0] - 20}" cy="${C[1] - 24}" r="34" fill="#fff59a" opacity=".6" />
-    <path d="M500 342 C524 380 524 420 500 458 M592 342 C568 380 568 420 592 458" stroke="#c8102e" stroke-width="9" stroke-linecap="round" fill="none" />
+    <path d="M500 342 C524 380 524 420 500 458 M592 342 C568 380 568 420 592 458" stroke="#c8102e" stroke-width="9" stroke-linecap="round" fill="none" />`}
     <rect x="318" y="660" width="454" height="160" rx="28" fill="rgba(255,255,255,.85)" /><rect class="ibpanel" x="330" y="672" width="430" height="136" rx="22" />
     <path d="M473 690 V792 M617 690 V792" stroke="rgba(255,255,255,.22)" stroke-width="6" />
     <g class="ibdigits">${roll(4, 5, 402, 0)}${roll(6, 7, 545, 1)}${roll(0, 0, 688, 2)}</g>
