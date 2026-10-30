@@ -961,7 +961,8 @@ function makeIcon(size, P, Q, board, lamp, cover) {
   const bg = x.createRadialGradient(512, 360, 0, 512, 360, 780);
   bg.addColorStop(0, mixHex(board, "#ffffff", .16)); bg.addColorStop(1, mixHex(board, "#000000", .42));
   x.fillStyle = bg; x.fillRect(0, 0, 1024, 1024);
-  // page edges and shadow behind the book
+  // a white outline so the book stands out from the background, then page edges and a shadow
+  x.fillStyle = "#ffffff"; rr(200, 114, 600, 780, 46); x.fill(); rr(258, 140, 580, 760, 44); x.fill();
   x.fillStyle = "rgba(0,0,0,.3)"; rr(222, 146, 590, 760, 36); x.fill();
   x.fillStyle = "#f4efe2"; rr(268, 150, 560, 740, 34); x.fill();
   x.fillStyle = "#d9d2c0"; x.fillRect(800, 190, 10, 660);
@@ -980,9 +981,11 @@ function makeIcon(size, P, Q, board, lamp, cover) {
   const ink = contrast(cover, "#ffffff") >= 2 ? "#ffffff" : "#14212c";
   x.save(); x.translate(546, 420); x.rotate(Math.PI / 4);
   x.shadowColor = "rgba(0,0,0,.3)"; x.shadowBlur = 10;
-  x.strokeStyle = ink; x.lineWidth = 30; rr(-145, -145, 290, 290, 22); x.stroke();
-  x.fillStyle = ink; [[-171, -171], [113, -171], [113, 113]].forEach(([a, b]) => { rr(a, b, 58, 58, 8); x.fill(); });
+  x.strokeStyle = ink; x.lineWidth = 16; rr(-145, -145, 290, 290, 22); x.stroke();
+  x.fillStyle = ink; [[-171, -171], [113, -171], [-171, 113]].forEach(([a, b]) => { rr(a, b, 58, 58, 8); x.fill(); });   // second, first, third
   x.restore();
+  x.save(); x.shadowColor = "rgba(0,0,0,.3)"; x.shadowBlur = 10; x.fillStyle = ink;   // home plate
+  x.fill(new Path2D("M512 595 h68 v34 l-34 34 l-34 -34z")); x.restore();
   const ball = x.createRadialGradient(520, 384, 0, 520, 384, 120);
   ball.addColorStop(0, "#fff59a"); ball.addColorStop(.6, "#f3e03a"); ball.addColorStop(1, "#cdb514");
   x.fillStyle = ball; x.beginPath(); x.arc(546, 420, 74, 0, Math.PI * 2); x.fill();
@@ -2831,7 +2834,7 @@ function tutorialsList() {
    the book rolls over to add a hit and a run. Reduced motion, or a return visit: shown finished. */
 const GEAR_SVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
 // Real recordings, kept next to the app: swap either file to change the sound. If one is missing the intro just plays silently.
-const APP_VERSION = "2026.10.30-4";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
+const APP_VERSION = "2026.10.30-5";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
 const INTRO_SOUNDS = [["sounds/intro-bat.mp3", 0], ["sounds/intro-cheer.mp3", .15]];   // file, seconds after the tap
 let introBytes = null;
 function loadIntro() {   // fetched while the title screen is up, so the tap plays right away
@@ -2849,20 +2852,6 @@ function playIntro() {
   }));
 }
 // The book from the Home Screen icon, drawn live so its bases and scoreboard can move
-// The cover drawn like the Tap-on-the-field field: grass, fence, dirt, thin chalk lines, white bags
-function coverField() {
-  const bag = (x, y, i) => `<rect class="ibbase ibb${i}" x="${x - 5}" y="${y - 5}" width="10" height="10" rx="1.2" transform="rotate(45 ${x} ${y})" />`;
-  return `<g transform="translate(546 574) scale(2.55) translate(-100 -166)">
-      <path d="M100 166 L11 77 A126 126 0 0 1 189 77 Z" fill="#2e7a49" stroke="#ffffff" stroke-width="2.4" stroke-linejoin="round" />
-      <path d="M14 80 A122 122 0 0 1 186 80" fill="none" stroke="#ffd25c" stroke-width="2.6" />
-      <path d="M100 168 L146 122 Q100 66 54 122 Z" fill="#b98b5d" />
-      <path d="M100 162 L134 128 L100 94 L66 128 Z" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linejoin="round" />
-      <path d="M100 162 L13 75 M100 162 L187 75" stroke="#ffffff" stroke-width="2.2" />
-      <circle cx="100" cy="128" r="5" fill="#d8b48a" />
-      ${bag(134, 128, 0)}${bag(100, 94, 1)}${bag(66, 128, 2)}
-      <path class="ibbase ibb3" d="M95.5 157 h9 v4.5 l-4.5 4.5 l-4.5 -4.5z" />
-    </g>`;
-}
 function introBook(state) {
   const C = [546, 400], R = 196, bases = [[C[0] + R, C[1]], [C[0], C[1] - R], [C[0] - R, C[1]]];   // first, second, third
   const roll = (from, to, x, i) => `<g clip-path="url(#ibClip${i})"><g class="ibroll ibroll${i}"><text x="${x}" y="782">${from}</text><text x="${x}" y="902">${to}</text></g></g>`;
@@ -2877,11 +2866,11 @@ function introBook(state) {
     <path class="ibp" d="M246 124 h364 v40 h-400 v-4 a36 36 0 0 1 36 -36z" /><path class="ibq" d="M610 124 h144 a36 36 0 0 1 36 36 v4 h-180z" />
     <path class="ibspine" d="M246 124 h56 v760 h-56 a36 36 0 0 1 -36 -36 v-688 a36 36 0 0 1 36 -36z" />
     <path d="M262 180 V836" stroke="rgba(255,255,255,.8)" stroke-width="7" stroke-dasharray="22 18" />
-    ${/field/.test(location.search) ? coverField() : `<path class="ibline" d="M${C[0]} ${C[1] + R} L${bases[0]} L${bases[1]} L${bases[2]} Z" />
+    <path class="ibline" d="M${C[0]} ${C[1] + R} L${bases[0]} L${bases[1]} L${bases[2]} Z" />
     ${bases.map(([x, y], i) => `<rect class="ibbase ibb${i}" x="${x - 32}" y="${y - 32}" width="64" height="64" rx="8" transform="rotate(45 ${x} ${y})" />`).join("")}
     <path class="ibbase ibb3" d="M${C[0] - 34} ${C[1] + R - 30} h68 v34 l-34 34 l-34 -34z" />
     <circle cx="${C[0]}" cy="${C[1]}" r="74" fill="#f3e03a" /><circle cx="${C[0] - 20}" cy="${C[1] - 24}" r="34" fill="#fff59a" opacity=".6" />
-    <path d="M500 342 C524 380 524 420 500 458 M592 342 C568 380 568 420 592 458" stroke="#c8102e" stroke-width="9" stroke-linecap="round" fill="none" />`}
+    <path d="M500 342 C524 380 524 420 500 458 M592 342 C568 380 568 420 592 458" stroke="#c8102e" stroke-width="9" stroke-linecap="round" fill="none" />
     <rect x="318" y="660" width="454" height="160" rx="28" fill="rgba(255,255,255,.85)" /><rect class="ibpanel" x="330" y="672" width="430" height="136" rx="22" />
     <path d="M473 690 V792 M617 690 V792" stroke="rgba(255,255,255,.22)" stroke-width="6" />
     <g class="ibdigits">${roll(4, 5, 402, 0)}${roll(6, 7, 545, 1)}${roll(0, 0, 688, 2)}</g>
