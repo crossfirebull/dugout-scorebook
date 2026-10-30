@@ -929,3 +929,15 @@ test("spray charts: tap a dot and drag it to a better spot", async () => {
   assert.deepEqual(errors, []);
   await context.close();
 });
+
+test("Run the welcome setup again starts on the welcome screen, without the sample-data option", async () => {
+  const { page, context, errors } = await open(393, 852);
+  await gameSettings(page); await page.click("[data-act=opensettings]");
+  await page.click("[data-act=onb-again]");
+  assert.ok(await page.$(".onb .welcome"), "welcome screen first");
+  assert.equal(await page.$("[data-act=onb-sample]"), null, "no sample data offer once set up");
+  await page.click("[data-act=onb-close]");
+  assert.equal(await page.$(".onb"), null);
+  assert.deepEqual(errors, []);
+  await context.close();
+});

@@ -2798,8 +2798,9 @@ function onboardHTML(sh) {
       <img src="${iconPreview()}" alt="">
       <h1 class="brand">ScoreKept</h1>
       <p class="lead">Your softball scorebook for the dugout. Live scoring, season stats, spray charts and walk-up songs, all on this device.</p>
-      <button class="obtn go" data-act="onb-start">Set up my team</button>
-      <button class="obtn" data-act="onb-sample">Look around with sample data first</button>
+      <button class="obtn go" data-act="onb-start">${store.onboarded ? "Go through setup" : "Set up my team"}</button>
+      ${store.onboarded ? `<button class="obtn" data-act="onb-close">Close</button>`   /* already set up: the sample season would replace your data, so it isn't offered */
+        : `<button class="obtn" data-act="onb-sample">Look around with sample data first</button>`}
       <p class="lead" style="font-size:14px;opacity:.75">Setup takes about a minute. Every choice can be changed later under the gear.</p></div>`;
   } else if (step === "team") {
     inner = `<div class="inner">${head(1, "Name your team", "This goes on the scoreboard and in your stats.")}
@@ -3650,7 +3651,8 @@ document.addEventListener("click", ev => {
     case "onb-start": startOnboarding("team"); break;
     case "onb-sample":
       store = ensureSeasons(sampleStore()); store.onboarded = true; ui.sheet = null; ui.view = "game"; save(); render(); break;
-    case "onb-again": startOnboarding("team"); break;
+    case "onb-again": startOnboarding("welcome"); break;
+    case "onb-close": ui.sheet = null; render(); break;
     case "onb-next": {
       const i = ONB_STEPS.indexOf(ui.sheet.step);
       if (ui.sheet.step === "team" && (!store.team.name.trim() || store.team.name === "My Team") && !($("onbName") && $("onbName").value.trim())) { ui.msg = "Enter your team's name to keep going."; render(); break; }
