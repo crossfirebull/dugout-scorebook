@@ -702,6 +702,7 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 .onb .wfeats li { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .14); font-weight: 600; font-size: 15px; text-align: left; }
 .onb .wfeats svg { width: 22px; height: 22px; flex: none; fill: none; stroke: var(--team-lamp, #ffc93c); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .onb .wnote { margin: 4px 0 0; font-size: 14px; color: rgba(255, 255, 255, .72); max-width: 360px; }
+.onb .wver { margin: 0; font-size: 12px; color: rgba(255, 255, 255, .45); }
 .onb .wgear svg { width: 17px; height: 17px; vertical-align: -3px; fill: none; stroke: #ffffff; stroke-width: 2; }
 @media (prefers-reduced-motion: reduce) { .ibook *, .onb .wrest, .onb .wplay { animation: none !important; } }
 
@@ -2824,10 +2825,11 @@ function tutorialsList() {
    the book rolls over to add a hit and a run. Reduced motion, or a return visit: shown finished. */
 const GEAR_SVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
 // Real recordings, kept next to the app: swap either file to change the sound. If one is missing the intro just plays silently.
+const APP_VERSION = "2026.10.30-4";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
 const INTRO_SOUNDS = [["sounds/intro-bat.mp3", 0], ["sounds/intro-cheer.mp3", .15]];   // file, seconds after the tap
 let introBytes = null;
 function loadIntro() {   // fetched while the title screen is up, so the tap plays right away
-  return introBytes || (introBytes = Promise.all(INTRO_SOUNDS.map(([u]) => fetch(u).then(r => r.ok ? r.arrayBuffer() : null).catch(() => null))));
+  return introBytes || (introBytes = Promise.all(INTRO_SOUNDS.map(([u]) => fetch(u + "?v=" + APP_VERSION).then(r => r.ok ? r.arrayBuffer() : null).catch(() => null))));
 }
 function playIntro() {
   const a = audio(); if (!a) return;
@@ -2879,7 +2881,8 @@ function welcomeHTML() {
         <button class="obtn go" data-act="onb-start">${back ? "Go through setup" : "Set up my team"}</button>
         ${back ? `<button class="obtn" data-act="onb-close">Close</button>`   /* already set up: the sample season would replace your data, so it isn't offered */
           : `<button class="obtn" data-act="onb-sample">Look around with sample data first</button>`}
-        <p class="wnote">Setup takes about a minute. Every choice can be changed later in Settings <span class="wgear" aria-label="the gear button">${GEAR_SVG}</span>.</p></div></div>
+        <p class="wnote">Setup takes about a minute. Every choice can be changed later in Settings <span class="wgear" aria-label="the gear button">${GEAR_SVG}</span>.</p>
+        <p class="wver">Version ${APP_VERSION}</p></div></div>
     </div>`;
 }
 
@@ -3205,7 +3208,7 @@ function renderSheet() {
       <h4 style="margin:0">Your data</h4>
       <div class="setlist">${link("backup", "Backup &amp; restore", "Save everything to a file, or bring it back on any device.")}
         ${link("onb-again", "Run the welcome setup again", "Walk through team, colors, scoring style, rules and roster. Nothing is erased.")}</div>
-      <p style="font-size:13px">Settings for a game in progress are under the gear during that game.</p>
+      <p style="font-size:13px">Settings for a game in progress are under the gear during that game. ScoreKept version ${APP_VERSION}.</p>
       <div class="acts"><button class="tbtn primary" data-act="close">Done</button></div>`;
   } else if (sh.type === "tutorials") {
     body = `<h3>Tutorials</h3>

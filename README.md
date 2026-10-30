@@ -162,7 +162,7 @@ Stats are recalculated from the play-by-play every time, so new stats added late
 
 ## Making changes
 
-Edit `index.html`, then commit and push. GitHub Pages republishes the site in about a minute. Close and reopen the app on the iPad to get the new version.
+Edit `index.html`, bump `APP_VERSION` near the top of the intro code, then commit and push. GitHub Pages republishes the site in a minute or two, and phones can keep the old copy for up to 10 more minutes. Close and reopen the app to get the new version. The version shows at the bottom of **Settings** and on the welcome screen, so you can check which one a phone has. Sound files in `sounds/` are fetched with the version tagged on, so bumping it also makes a swapped sound reach phones that saved the old one.
 
 To run the automated checks on your own computer: `npm install`, then `npm test`. GitHub runs them after every push too.
 
