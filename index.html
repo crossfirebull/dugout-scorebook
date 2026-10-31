@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="ScoreKept">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Tourney:ital,wght@1,800&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=Playball&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Tourney:ital,wght@1,800&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=Alfa+Slab+One&display=swap">
 <style>
 /* Layout: scoreboard band across the top; below it the live situation + input pad on the left, the scorebook grid on the right (stacked on phones). */
 :root {
@@ -38,7 +38,7 @@
   --f-body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-label: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
   --f-varsity: "Tourney", "Arial Black", Impact, sans-serif;   /* sporty slanted lettering for team chips and setup headings (always 800 italic) */
-  --f-script: "Playball", "Snell Roundhand", "Brush Script MT", cursive;   /* jersey script for the app name and your team name */
+  --f-title: "Alfa Slab One", "Rockwell Extra Bold", Rockwell, Georgia, serif;   /* heavy slab for the app name, your team name and titles; written in normal case, like ScoreKept */
   /* Team colors: applyTeamColors() overrides these from the palette picked on the Team tab */
   --sel-bg: var(--ink); --sel-ink: var(--paper);
   --team-brand: var(--ink); --team-shadow: var(--stitch); --team-brand-d: var(--ink); --team-shadow-d: var(--stitch);
@@ -76,8 +76,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 
 /* Top bar */
 .topbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.brand, .teamword { font-family: var(--f-script); font-weight: 400; font-style: normal; letter-spacing: .01em; line-height: 1.15; color: var(--brand-fill); text-shadow: 2px 2px 0 var(--brand-shadow); }
-.brand { font-size: clamp(28px, 9.6vw, 46px); white-space: nowrap; margin: 0; letter-spacing: .01em; text-shadow: .08em .08em 0 var(--brand-shadow); padding: 0 .1em .08em 0; }
+.brand, .teamword { font-family: var(--f-title); font-weight: 400; font-style: normal; letter-spacing: 0; line-height: 1.15; color: var(--brand-fill); text-shadow: 2px 2px 0 var(--brand-shadow); }
+.brand { font-size: clamp(24px, 7.6vw, 38px); white-space: nowrap; margin: 0; letter-spacing: 0; text-shadow: .05em .05em 0 var(--brand-shadow); padding: 0 .06em .05em 0; }
 .teamword { font-size: 22px; text-shadow: 1px 1px 0 var(--brand-shadow); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --brand-fill: var(--team-brand-d); --brand-shadow: var(--team-shadow-d); } }
 :root[data-theme="dark"] { --brand-fill: var(--team-brand-d); --brand-shadow: var(--team-shadow-d); }
@@ -219,7 +219,7 @@ table.book tfoot td { font-family: var(--f-label); font-weight: 700; font-size: 
 
 /* Final banner */
 .final { background: var(--lamp); color: #1b1400; border-radius: 8px; padding: 10px 14px; font-weight: 700; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-.final b { font-family: var(--f-display); font-size: 24px; text-transform: uppercase; }
+.final b { font-family: var(--f-title); font-weight: 400; font-size: 22px; }
 /* buttons on the yellow final banner: readable in light and dark mode */
 .final .tbtn { background: rgba(255, 255, 255, .9); color: #1b1400; border-color: rgba(27, 20, 0, .25); }
 .final .tbtn.primary { background: #1b1400; color: #ffd25c; border-color: #1b1400; }
@@ -231,7 +231,7 @@ table.book tfoot td { font-family: var(--f-label); font-weight: 700; font-size: 
 .xclose { position: relative; z-index: 3; justify-self: end; margin: -6px -6px -50px 0; width: 44px; height: 44px; border-radius: 50%; border: 0;
   background: var(--stitch); color: #ffffff; font-size: 20px; font-weight: 700; line-height: 1; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0, 0, 0, .25); cursor: pointer; }
 .sheet > h3 { padding-right: 52px; }
-.sheet h3 { margin: 0; font-family: var(--f-display); font-weight: 800; font-size: 26px; text-transform: uppercase; }
+.sheet h3 { margin: 0; font-family: var(--f-title); font-weight: 400; font-size: 24px; line-height: 1.15; }
 .sheet p { margin: 0; color: var(--muted); }
 .posgrid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
 .posgrid .key b { font-size: 22px; }
@@ -307,7 +307,7 @@ input.switch:checked::after, .check input[type=checkbox]:checked::after { transf
 .nav button[aria-selected="true"] { background: var(--sel-bg); color: var(--sel-ink); }
 .view { display: grid; gap: 14px; }
 .empty { text-align: center; padding: 40px 16px; display: grid; gap: 12px; justify-items: center; }
-.empty h2 { font-family: var(--f-display); font-weight: 800; font-size: 30px; text-transform: uppercase; color: var(--ink); letter-spacing: .02em; margin: 0; }
+.empty h2 { font-family: var(--f-title); font-weight: 400; font-size: 26px; color: var(--ink); margin: 0; }
 .empty p { margin: 0; color: var(--muted); max-width: 46ch; }
 .banner { background: var(--rule-soft); border: 1px solid var(--rule); border-radius: 8px; padding: 10px 14px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 15px; }
 .banner .spacer { flex: 1; }
@@ -435,7 +435,7 @@ table.stats.lu td:first-child, table.stats.lu th:first-child { text-align: left;
 .spray { display: block; width: 100%; height: auto; }
 .teamspray { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); margin-bottom: 4px; }
 @media (min-width: 640px) { .teamspray { grid-template-columns: minmax(0, 480px) minmax(180px, 1fr); align-items: start; } }
-.teamcard h3 { font-family: var(--f-display); font-size: 22px; text-transform: uppercase; letter-spacing: .02em; }
+.teamcard h3 { font-family: var(--f-title); font-weight: 400; font-size: 20px; }
 .teamfacts { display: grid; gap: 10px; align-content: start; }
 .teamfacts .scoutbar { margin: 0; }
 .teamfacts p { margin: 0; font-size: 15px; color: var(--muted); line-height: 1.5; }
@@ -638,7 +638,7 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 .onb .inner { display: grid; gap: 16px; animation: onbin .35s ease-out; }
 @keyframes onbin { from { opacity: 0; transform: translateX(28px); } }
 .onb .stepno { font-family: var(--f-label); font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--team-lamp, var(--lamp)); font-size: 13px; }
-.onb h2 { font-family: var(--f-varsity); font-weight: 800; font-style: italic; font-size: clamp(26px, 6.5vw, 40px); line-height: 1.05; margin: 0; text-transform: uppercase; letter-spacing: .03em; color: #ffffff; text-shadow: 3px 3px 0 var(--team-q, var(--stitch)); text-wrap: balance; }
+.onb h2 { font-family: var(--f-title); font-weight: 400; font-size: clamp(24px, 6vw, 36px); line-height: 1.1; margin: 0; color: #ffffff; text-shadow: 3px 3px 0 var(--team-q, var(--stitch)); text-wrap: balance; }
 .onb .lead { font-size: 17px; color: rgba(255, 255, 255, .82); margin: 0; }
 .onb .foot { display: flex; gap: 10px; }
 .onb .obtn { min-height: 54px; border-radius: 14px; font: inherit; font-weight: 700; font-size: 17px; padding: 0 20px; border: 2px solid rgba(255, 255, 255, .35); background: transparent; color: #ffffff; }
@@ -709,7 +709,7 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
   .onb .welcome.w-gate .wrest { display: none; }   /* sideways there's room beside the book, so the button just sits centered */
   .onb .welcome.w-gate .wstage .wplay { margin-top: 0; align-self: center; }
   .onb .welcome.w-gate .wstage { min-height: 60vh; align-items: center; }
-  .onb .whead { font-size: clamp(22px, 7vh, 30px); }
+  .onb .whead { font-size: clamp(20px, 6.5vh, 28px); }
   .onb .wfeats li { padding: 7px 10px; font-size: 14px; }
   .onb .welcome .obtn { min-height: 46px; }
   .onb .inner.welcome { max-width: 760px; }
@@ -722,7 +722,7 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 .onb .welcome.w-gate .wplay { align-self: start; z-index: 1; }
 .onb .welcome.w-play .wrest { animation: wrise .6s ease-out 3.2s both; }
 @keyframes wrise { from { opacity: 0; transform: translateY(24px); } }
-.onb .whead { margin: 0; font-family: var(--f-display); font-weight: 800; font-size: clamp(28px, 8vw, 40px); line-height: 1.05; color: #ffffff; text-transform: uppercase; letter-spacing: .01em; }
+.onb .whead { margin: 0; font-family: var(--f-title); font-weight: 400; font-size: clamp(24px, 7vw, 34px); line-height: 1.1; color: #ffffff; }
 .onb .wfeats { list-style: none; margin: 2px 0 6px; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; width: 100%; max-width: 380px; }
 .onb .wfeats li { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .14); font-weight: 600; font-size: 15px; text-align: left; }
 .onb .wfeats svg { width: 22px; height: 22px; flex: none; fill: none; stroke: var(--team-lamp, #ffc93c); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
@@ -731,7 +731,7 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 .onb .wgear svg { width: 17px; height: 17px; vertical-align: -3px; fill: none; stroke: #ffffff; stroke-width: 2; }
 @media (prefers-reduced-motion: reduce) { .ibook *, .onb .wrest, .onb .wplay { animation: none !important; } }
 
-.onb .welcome .brand { font-size: clamp(36px, 10vw, 60px); color: #ffffff; text-shadow: 4px 4px 0 var(--team-q, var(--stitch)); }
+.onb .welcome .brand { font-size: clamp(32px, 9vw, 52px); color: #ffffff; text-shadow: 4px 4px 0 var(--team-q, var(--stitch)); }
 .onb .welcome .obtn { width: 100%; max-width: 360px; }
 .onb .setlist { background: rgba(255, 255, 255, .06); border-color: rgba(255, 255, 255, .2); }
 .onb .setrow { border-top-color: rgba(255, 255, 255, .12); }
@@ -2853,7 +2853,7 @@ function tutorialsList() {
    the book rolls over to add a hit and a run. Reduced motion, or a return visit: shown finished. */
 const GEAR_SVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
 // Real recordings, kept next to the app: swap either file to change the sound. If one is missing the intro just plays silently.
-const APP_VERSION = "2026.10.30-6";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
+const APP_VERSION = "2026.10.31-1";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
 const INTRO_SOUNDS = [["sounds/intro-bat.mp3", 0], ["sounds/intro-cheer.mp3", .15]];   // file, seconds after the tap
 let introBytes = null;
 function loadIntro() {   // fetched while the title screen is up, so the tap plays right away
@@ -3412,7 +3412,7 @@ function recapText(g) {
   return out.join("\n");
 }
 async function recapCanvas(g) {
-  try { await document.fonts.load("34px Playball"); await document.fonts.ready; } catch (e) {}
+  try { await document.fonts.load("30px 'Alfa Slab One'"); await document.fonts.ready; } catch (e) {}
   const r = recapData(g), W = 1080, H = 1350, cv = document.createElement("canvas"); cv.width = W; cv.height = H;
   const c = cv.getContext("2d"), st = document.documentElement.style, v = k => st.getPropertyValue(k).trim();
   const tc = teamColors(), P = COLOR[tc.primary] || "#14284b", Q = COLOR[tc.secondary] || "#c8102e";
@@ -3474,7 +3474,7 @@ async function recapCanvas(g) {
     c.fillText(ln, 165 + nw, yy);
   });
   // footer
-  c.fillStyle = "rgba(255,255,255,.4)"; c.font = font(400, 34, '"Playball", ' + DISP); c.textAlign = "center"; c.fillText("ScoreKept", W / 2, H - 50);
+  c.fillStyle = "rgba(255,255,255,.4)"; c.font = font(400, 30, '"Alfa Slab One", ' + DISP); c.textAlign = "center"; c.fillText("ScoreKept", W / 2, H - 50);
   return cv;
 }
 async function openRecap(id) {
