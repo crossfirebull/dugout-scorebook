@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="ScoreKept">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Tourney:ital,wght@1,800&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=Playball&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Tourney:ital,wght@1,800&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=Alfa+Slab+One&display=swap">
 <style>
 /* Layout: scoreboard band across the top; below it the live situation + input pad on the left, the scorebook grid on the right (stacked on phones). */
 :root {
@@ -38,11 +38,12 @@
   --f-body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-label: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
   --f-varsity: "Tourney", "Arial Black", Impact, sans-serif;   /* sporty slanted lettering for team chips and setup headings (always 800 italic) */
-  --f-script: "Playball", "Snell Roundhand", "Brush Script MT", cursive;   /* jersey script for the app name and your team name */
-  /* Team colors: applyTeamColors() overrides these from the palette picked on the Team tab */
-  --sel-bg: var(--ink); --sel-ink: var(--paper);
-  --team-brand: var(--ink); --team-shadow: var(--stitch); --team-brand-d: var(--ink); --team-shadow-d: var(--stitch);
-  --brand-fill: var(--team-brand); --brand-shadow: var(--team-shadow);
+  --f-title: "Alfa Slab One", "Rockwell Extra Bold", Rockwell, Georgia, serif;   /* heavy slab for the app name, your team name and titles; written in normal case, like ScoreKept */
+  /* ScoreKept's own colors: fixed, so titles and buttons always read well whatever team colors are picked */
+  --app-navy: #14284b; --app-red: #c8102e; --app-gold: #ffc93c; --app-cream: #f4efe2;
+  --sel-bg: var(--app-navy); --sel-ink: #ffffff;
+  --brand-fill: var(--app-navy); --brand-shadow: var(--app-red);
+  /* Team colors: applyTeamColors() sets these from the Team tab. Used only for your team's badge and the score-bug stripe. */
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -76,11 +77,11 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 
 /* Top bar */
 .topbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.brand, .teamword { font-family: var(--f-script); font-weight: 400; font-style: normal; letter-spacing: .01em; line-height: 1.15; color: var(--brand-fill); text-shadow: 2px 2px 0 var(--brand-shadow); }
-.brand { font-size: clamp(28px, 9.6vw, 46px); white-space: nowrap; margin: 0; letter-spacing: .01em; text-shadow: .08em .08em 0 var(--brand-shadow); padding: 0 .1em .08em 0; }
+.brand, .teamword { font-family: var(--f-title); font-weight: 400; font-style: normal; letter-spacing: 0; line-height: 1.15; color: var(--brand-fill); text-shadow: 2px 2px 0 var(--brand-shadow); }
+.brand { font-size: clamp(24px, 7.6vw, 38px); white-space: nowrap; margin: 0; letter-spacing: 0; text-shadow: .05em .05em 0 var(--brand-shadow); padding: 0 .06em .05em 0; }
 .teamword { font-size: 22px; text-shadow: 1px 1px 0 var(--brand-shadow); }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --brand-fill: var(--team-brand-d); --brand-shadow: var(--team-shadow-d); } }
-:root[data-theme="dark"] { --brand-fill: var(--team-brand-d); --brand-shadow: var(--team-shadow-d); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --brand-fill: var(--app-cream); --brand-shadow: var(--app-red); --sel-bg: #2a4d86; } }
+:root[data-theme="dark"] { --brand-fill: var(--app-cream); --brand-shadow: var(--app-red); --sel-bg: #2a4d86; }
 .chip { font-family: var(--f-label); font-weight: 600; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; background: var(--rule-soft); color: var(--muted); }
 .chip.live { background: var(--stitch); color: #fff; }
 .chip.clock { font-variant-numeric: tabular-nums; background: var(--rule-soft); color: var(--ink); }
@@ -92,7 +93,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .tbtn[aria-pressed="true"] { background: var(--sel-bg); color: var(--sel-ink); border-color: var(--sel-bg); }
 
 /* Scoreboard */
-.board { background: var(--team-board, var(--board)); color: var(--board-ink); border-radius: 10px; padding: 6px 10px 8px; overflow: hidden; }
+.board { background: var(--app-navy); color: var(--board-ink); border-radius: 10px; padding: 6px 10px 8px; overflow: hidden; }
 .board table { border-collapse: collapse; width: 100%; table-layout: fixed; font-variant-numeric: tabular-nums; }
 .board th { font-family: var(--f-label); font-weight: 600; font-size: 11px; letter-spacing: .08em; color: var(--board-dim); text-transform: uppercase; padding: 2px 2px 3px; text-align: center; }
 .board th.team { width: 32%; }
@@ -100,10 +101,10 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .board th.team, .board td.team { text-align: left; }
 .board td { font-family: var(--f-display); font-weight: 700; font-size: clamp(15px, 2.4vw, 22px); line-height: 1.15; text-align: center; padding: 1px 2px; }
 .board td.team { font-family: var(--f-display); font-size: clamp(13px, 1.9vw, 17px); letter-spacing: .03em; text-transform: uppercase; white-space: nowrap; padding-right: 8px; overflow: hidden; text-overflow: ellipsis; }
-.board td.team .bat { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--team-lamp, var(--lamp)); margin-right: 6px; vertical-align: middle; visibility: hidden; }
+.board td.team .bat { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--app-gold); margin-right: 6px; vertical-align: middle; visibility: hidden; }
 .board tr.batting td.team .bat { visibility: visible; }
-.board td.now { color: var(--team-lamp, var(--lamp)); }
-.board td.tot { color: var(--team-lamp, var(--lamp)); border-left: 2px solid rgba(255,255,255,.12); }
+.board td.now { color: var(--app-gold); }
+.board td.tot { color: var(--app-gold); border-left: 2px solid rgba(255,255,255,.12); }
 .board th.tot { border-left: 2px solid rgba(255,255,255,.12); }
 .board td.blank { color: var(--board-dim); opacity: .35; }
 .board th.addinn { width: 30px; padding: 0; }
@@ -219,7 +220,7 @@ table.book tfoot td { font-family: var(--f-label); font-weight: 700; font-size: 
 
 /* Final banner */
 .final { background: var(--lamp); color: #1b1400; border-radius: 8px; padding: 10px 14px; font-weight: 700; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-.final b { font-family: var(--f-display); font-size: 24px; text-transform: uppercase; }
+.final b { font-family: var(--f-title); font-weight: 400; font-size: 22px; }
 /* buttons on the yellow final banner: readable in light and dark mode */
 .final .tbtn { background: rgba(255, 255, 255, .9); color: #1b1400; border-color: rgba(27, 20, 0, .25); }
 .final .tbtn.primary { background: #1b1400; color: #ffd25c; border-color: #1b1400; }
@@ -231,7 +232,7 @@ table.book tfoot td { font-family: var(--f-label); font-weight: 700; font-size: 
 .xclose { position: relative; z-index: 3; justify-self: end; margin: -6px -6px -50px 0; width: 44px; height: 44px; border-radius: 50%; border: 0;
   background: var(--stitch); color: #ffffff; font-size: 20px; font-weight: 700; line-height: 1; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0, 0, 0, .25); cursor: pointer; }
 .sheet > h3 { padding-right: 52px; }
-.sheet h3 { margin: 0; font-family: var(--f-display); font-weight: 800; font-size: 26px; text-transform: uppercase; }
+.sheet h3 { margin: 0; font-family: var(--f-title); font-weight: 400; font-size: 24px; line-height: 1.15; }
 .sheet p { margin: 0; color: var(--muted); }
 .posgrid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
 .posgrid .key b { font-size: 22px; }
@@ -265,7 +266,7 @@ input.switch:checked::after, .check input[type=checkbox]:checked::after { transf
 .tossbtns small { font-weight: 500; font-size: 13px; opacity: .85; }
 #tour { position: fixed; inset: 0; z-index: 200; }
 #tour .tdim { position: absolute; inset: 0; background: rgba(5, 9, 12, .62); }
-#tour .thole { position: absolute; border-radius: 12px; box-shadow: 0 0 0 9999px rgba(5, 9, 12, .62), 0 0 0 3px var(--team-lamp, #ffc93c); pointer-events: none; transition: all .2s ease; }
+#tour .thole { position: absolute; border-radius: 12px; box-shadow: 0 0 0 9999px rgba(5, 9, 12, .62), 0 0 0 3px var(--app-gold); pointer-events: none; transition: all .2s ease; }
 #tour .tcard { position: absolute; background: var(--surface); color: var(--ink); border-radius: 14px; padding: 14px 16px; box-shadow: 0 12px 32px rgba(0, 0, 0, .4); display: grid; gap: 6px; }
 #tour .tstep { font-family: var(--f-label); font-weight: 700; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 #tour .tcard b { font-family: var(--f-display); font-weight: 800; font-size: 24px; text-transform: uppercase; line-height: 1.1; }
@@ -307,7 +308,7 @@ input.switch:checked::after, .check input[type=checkbox]:checked::after { transf
 .nav button[aria-selected="true"] { background: var(--sel-bg); color: var(--sel-ink); }
 .view { display: grid; gap: 14px; }
 .empty { text-align: center; padding: 40px 16px; display: grid; gap: 12px; justify-items: center; }
-.empty h2 { font-family: var(--f-display); font-weight: 800; font-size: 30px; text-transform: uppercase; color: var(--ink); letter-spacing: .02em; margin: 0; }
+.empty h2 { font-family: var(--f-title); font-weight: 400; font-size: 26px; color: var(--ink); margin: 0; }
 .empty p { margin: 0; color: var(--muted); max-width: 46ch; }
 .banner { background: var(--rule-soft); border: 1px solid var(--rule); border-radius: 8px; padding: 10px 14px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 15px; }
 .banner .spacer { flex: 1; }
@@ -394,7 +395,7 @@ table.stats tfoot td:first-child { background: var(--paper); }
 .pgroup h5 span { font-family: var(--f-label); font-weight: 600; font-size: 12px; letter-spacing: .06em; color: var(--muted); align-self: center; }
 .pcards { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
 .pcard { position: relative; display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 4px 8px; align-items: center; text-align: left; padding: 8px; border-radius: 12px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); font: inherit; cursor: pointer; }
-.pcard .num { grid-row: span 2; width: 40px; height: 40px; border-radius: 9px; display: grid; place-items: center; background: var(--team-board, #14284b); color: #ffffff; font-family: var(--f-display); font-weight: 800; font-size: 20px; box-shadow: inset 0 -3px 0 var(--team-p, #c8102e); }
+.pcard .num { grid-row: span 2; width: 40px; height: 40px; border-radius: 9px; display: grid; place-items: center; background: var(--app-navy); color: #ffffff; font-family: var(--f-display); font-weight: 800; font-size: 20px; box-shadow: inset 0 -3px 0 var(--team-p, #c8102e); }
 .pcard .nm { min-width: 0; padding-right: 26px; }
 .pcard .nm b { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-weight: 700; font-size: 15px; line-height: 1.2; }
 .pcard .flag { position: absolute; top: 6px; right: 6px; min-width: 24px; height: 24px; padding: 0 7px; border-radius: 12px; display: grid; place-items: center; font-family: var(--f-label); font-weight: 700; font-size: 12px; letter-spacing: .02em; background: var(--rule-soft); color: var(--muted); }
@@ -435,7 +436,7 @@ table.stats.lu td:first-child, table.stats.lu th:first-child { text-align: left;
 .spray { display: block; width: 100%; height: auto; }
 .teamspray { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); margin-bottom: 4px; }
 @media (min-width: 640px) { .teamspray { grid-template-columns: minmax(0, 480px) minmax(180px, 1fr); align-items: start; } }
-.teamcard h3 { font-family: var(--f-display); font-size: 22px; text-transform: uppercase; letter-spacing: .02em; }
+.teamcard h3 { font-family: var(--f-title); font-weight: 400; font-size: 20px; }
 .teamfacts { display: grid; gap: 10px; align-content: start; }
 .teamfacts .scoutbar { margin: 0; }
 .teamfacts p { margin: 0; font-size: 15px; color: var(--muted); line-height: 1.5; }
@@ -557,12 +558,12 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 .swatch { width: 32px; height: 32px; border-radius: 50%; background: var(--sw); border: 2px solid var(--rule); padding: 0; }
 .swatch[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--paper), 0 0 0 5px var(--ink); }
 .colorpreview { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-.colorpreview .miniboard { background: var(--team-board, var(--board)); color: var(--board-ink); border-radius: 8px; padding: 6px 12px; font-family: var(--f-display); font-weight: 700; font-size: 20px; display: inline-flex; gap: 12px; align-items: center; }
-.colorpreview .miniboard b { color: var(--team-lamp, var(--lamp)); font-weight: 700; }
+.colorpreview .miniboard { background: var(--app-navy); color: var(--board-ink); border-radius: 8px; padding: 6px 12px; font-family: var(--f-display); font-weight: 700; font-size: 20px; display: inline-flex; gap: 12px; align-items: center; }
+.colorpreview .miniboard b { color: var(--app-gold); font-weight: 700; }
 .colorpreview .tbtn { pointer-events: none; }
 /* Score bug on the Game tab, in the style of a TV broadcast */
 :root { --opp-chip: #3d4b58; --opp-chip-ink: #ffffff; }
-.bug { --bg: var(--team-board, var(--board)); --glow: var(--team-lamp, var(--lamp)); position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; padding-top: 5px; color: var(--board-ink);
+.bug { --bg: var(--app-navy); --glow: var(--app-gold); position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; padding-top: 5px; color: var(--board-ink);
   background: linear-gradient(180deg, color-mix(in srgb, var(--bg) 80%, #ffffff) 0%, var(--bg) 42%, color-mix(in srgb, var(--bg) 72%, #000000) 100%);
   border: 1px solid rgba(255, 255, 255, .16); border-radius: 12px; overflow: hidden; box-shadow: 0 8px 22px rgba(0, 0, 0, .28), inset 0 1px 0 rgba(255, 255, 255, .2); }
 .bug::before { content: ""; position: absolute; inset: 0 0 auto; height: 5px; background: linear-gradient(90deg, var(--team-p, var(--ink)) 0 62%, var(--team-q, var(--stitch)) 62% 100%); }
@@ -570,7 +571,7 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 .bug .row { display: grid; grid-template-columns: 10px auto minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 6px 10px 6px 6px; }
 .bug .row.us { background: linear-gradient(90deg, color-mix(in srgb, var(--team-p, var(--ink)) 38%, transparent), transparent 72%); }
 .bug .row + .row { border-top: 1px solid rgba(255, 255, 255, .12); }
-.bug .up { width: 0; height: 0; border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-left: 8px solid var(--team-lamp, var(--lamp)); visibility: hidden; }
+.bug .up { width: 0; height: 0; border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-left: 8px solid var(--app-gold); visibility: hidden; }
 .bug .row.bat .up { visibility: visible; filter: drop-shadow(0 0 4px var(--glow)); animation: bugpulse 1.6s ease-in-out infinite; }
 @keyframes bugpulse { 50% { opacity: .45; } }
 .bug .abbr { font-family: var(--f-varsity); font-weight: 800; font-style: italic; font-size: 18px; min-width: 66px; text-align: center; padding: 5px 7px 4px; border-radius: 6px; background: linear-gradient(180deg, rgba(255, 255, 255, .22), rgba(255, 255, 255, 0) 55%), var(--opp-chip); color: var(--opp-chip-ink); text-shadow: 1px 1px 0 rgba(0, 0, 0, .35); box-shadow: 0 1px 2px rgba(0, 0, 0, .35); }
@@ -625,24 +626,24 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 
 /* ---- First-launch setup: full screen, like a game's opening menus ---- */
 .onb { position: fixed; inset: 0; z-index: 70; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 10px; color: #f3f6f9;
-  background: radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--team-board, var(--board)) 82%, #ffffff) 0%, var(--team-board, var(--board)) 48%, color-mix(in srgb, var(--team-board, var(--board)) 55%, #000000) 100%);
+  background: radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--app-navy) 82%, #ffffff) 0%, var(--app-navy) 48%, color-mix(in srgb, var(--app-navy) 55%, #000000) 100%);
   padding: calc(14px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(14px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
 .onb .top, .onb .foot, .onb .inner { width: 100%; max-width: 600px; margin: 0 auto; }
 .onb .top { display: flex; align-items: center; gap: 12px; min-height: 36px; }
 .onb .dots { display: flex; gap: 6px; flex: 1; }
 .onb .dots i { flex: 1; height: 5px; border-radius: 3px; background: rgba(255, 255, 255, .2); }
-.onb .dots i.on { background: var(--team-lamp, var(--lamp)); box-shadow: 0 0 8px var(--team-lamp, var(--lamp)); }
+.onb .dots i.on { background: var(--app-gold); box-shadow: 0 0 8px var(--app-gold); }
 .onb .skip { background: none; border: 0; color: rgba(255, 255, 255, .75); font: inherit; font-weight: 600; padding: 6px; }
 .onb .body { overflow-y: auto; display: grid; align-content: start; padding: 8px 0; }
 .onb .body > * { margin-block: auto; }   /* centered when it fits; when it doesn't, it starts at the top instead of being cut off */
 .onb .inner { display: grid; gap: 16px; animation: onbin .35s ease-out; }
 @keyframes onbin { from { opacity: 0; transform: translateX(28px); } }
-.onb .stepno { font-family: var(--f-label); font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--team-lamp, var(--lamp)); font-size: 13px; }
-.onb h2 { font-family: var(--f-varsity); font-weight: 800; font-style: italic; font-size: clamp(26px, 6.5vw, 40px); line-height: 1.05; margin: 0; text-transform: uppercase; letter-spacing: .03em; color: #ffffff; text-shadow: 3px 3px 0 var(--team-q, var(--stitch)); text-wrap: balance; }
+.onb .stepno { font-family: var(--f-label); font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--app-gold); font-size: 13px; }
+.onb h2 { font-family: var(--f-title); font-weight: 400; font-size: clamp(24px, 6vw, 36px); line-height: 1.1; margin: 0; color: #ffffff; text-shadow: 3px 3px 0 var(--app-red); text-wrap: balance; }
 .onb .lead { font-size: 17px; color: rgba(255, 255, 255, .82); margin: 0; }
 .onb .foot { display: flex; gap: 10px; }
 .onb .obtn { min-height: 54px; border-radius: 14px; font: inherit; font-weight: 700; font-size: 17px; padding: 0 20px; border: 2px solid rgba(255, 255, 255, .35); background: transparent; color: #ffffff; }
-.onb .obtn.go { flex: 1; background: var(--team-lamp, var(--lamp)); color: #111111; border-color: transparent; box-shadow: 0 6px 20px color-mix(in srgb, var(--team-lamp, var(--lamp)) 45%, transparent); }
+.onb .obtn.go { flex: 1; background: var(--app-gold); color: #111111; border-color: transparent; box-shadow: 0 6px 20px color-mix(in srgb, var(--app-gold) 45%, transparent); }
 .onb .obtn:focus-visible, .onb .ocard:focus-visible { outline: 3px solid #ffffff; outline-offset: 2px; }
 .onb .fld { display: grid; gap: 6px; }
 .onb .fld label { font-family: var(--f-label); font-weight: 700; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: rgba(255, 255, 255, .72); }
@@ -657,10 +658,10 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 .onb .ocard { text-align: left; display: grid; gap: 6px; padding: 16px; border-radius: 16px; border: 2px solid rgba(255, 255, 255, .2); background: rgba(255, 255, 255, .06); color: #ffffff; font: inherit; }
 .onb .ocard b { font-size: 19px; }
 .onb .ocard small { color: rgba(255, 255, 255, .78); font-size: 14px; line-height: 1.4; }
-.onb .ocard[aria-pressed="true"] { border-color: var(--team-lamp, var(--lamp)); background: rgba(255, 255, 255, .13); box-shadow: 0 0 0 3px color-mix(in srgb, var(--team-lamp, var(--lamp)) 35%, transparent); }
-.onb .ocard .tag { font-family: var(--f-label); font-weight: 700; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--team-lamp, var(--lamp)); }
+.onb .ocard[aria-pressed="true"] { border-color: var(--app-gold); background: rgba(255, 255, 255, .13); box-shadow: 0 0 0 3px color-mix(in srgb, var(--app-gold) 35%, transparent); }
+.onb .ocard .tag { font-family: var(--f-label); font-weight: 700; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--app-gold); }
 .onb .swatches .swatch { width: 38px; height: 38px; border-color: rgba(255, 255, 255, .35); }
-.onb .swatch[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--team-board, var(--board)), 0 0 0 5px #ffffff; }
+.onb .swatch[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--app-navy), 0 0 0 5px #ffffff; }
 .onb .clabel { font-family: var(--f-label); font-weight: 700; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: rgba(255, 255, 255, .72); }
 .onb .preview { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
 .onb .preview .bug { flex: 1; min-width: 240px; max-width: 440px; }
@@ -672,12 +673,12 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 .ibook .ibrim { fill: #ffffff; }
 .onb .wbook { width: min(46vw, 210px); filter: drop-shadow(0 18px 30px rgba(0, 0, 0, .45)); }
 .ibook { display: block; width: 100%; height: auto; overflow: visible; }
-.ibook .ibcover { fill: color-mix(in srgb, var(--team-p, #c8102e) 92%, #000000); }
-.ibook .ibp { fill: var(--team-board, #14284b); } .ibook .ibq { fill: var(--team-q, #ffc93c); }
-.ibook .ibspine { fill: color-mix(in srgb, var(--team-p, #c8102e) 62%, #000000); }
+.ibook .ibcover { fill: color-mix(in srgb, var(--app-red) 92%, #000000); }
+.ibook .ibp { fill: var(--app-navy); } .ibook .ibq { fill: var(--app-gold); }
+.ibook .ibspine { fill: color-mix(in srgb, var(--app-red) 62%, #000000); }
 .ibook .ibline { fill: none; stroke: #ffffff; stroke-width: 16; stroke-linejoin: round; }
 .ibook .ibbase { fill: #ffffff; }
-.ibook .ibpanel { fill: color-mix(in srgb, var(--team-board, #14284b) 65%, #000000); }
+.ibook .ibpanel { fill: color-mix(in srgb, var(--app-navy) 65%, #000000); }
 .ibook .ibdigits text { font-family: var(--f-display); font-weight: 800; font-size: 96px; fill: #ffffff; text-anchor: middle; }
 .ibook.done .ibbase { fill: #ffffff; }   /* the logo: all bases white */
 .ibook.done .ibroll0, .ibook.done .ibroll1 { transform: translateY(-120px); }
@@ -686,8 +687,8 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 .ibook.play .ibbase { animation: iblight .66s ease-out both; }
 .ibook.play .ibb3 { animation-duration: .95s; }
 .ibook.play .ibb0 { animation-delay: .45s; } .ibook.play .ibb1 { animation-delay: 1.05s; } .ibook.play .ibb2 { animation-delay: 1.65s; } .ibook.play .ibb3 { animation-delay: 2.25s; }
-@keyframes iblight { 0% { fill: #ffffff; } 12% { fill: var(--team-lamp, #ffc93c); filter: drop-shadow(0 0 32px var(--team-lamp, #ffc93c)); }
-  75% { fill: var(--team-lamp, #ffc93c); filter: drop-shadow(0 0 14px var(--team-lamp, #ffc93c)); } 100% { fill: #ffffff; filter: none; } }
+@keyframes iblight { 0% { fill: #ffffff; } 12% { fill: var(--app-gold); filter: drop-shadow(0 0 32px var(--app-gold)); }
+  75% { fill: var(--app-gold); filter: drop-shadow(0 0 14px var(--app-gold)); } 100% { fill: #ffffff; filter: none; } }
 .ibook.play .ibroll0, .ibook.play .ibroll1 { animation: ibroll .45s cubic-bezier(.3, 1.4, .5, 1) both; }
 .ibook.play .ibroll1 { animation-delay: .75s; } .ibook.play .ibroll0 { animation-delay: 2.65s; }   /* the hit counts once the runner reaches first; the run once they touch home */
 @keyframes ibroll { from { transform: translateY(0); } to { transform: translateY(-120px); } }
@@ -697,19 +698,20 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
   font-size: 26px; letter-spacing: .06em; text-transform: uppercase; margin-top: 40px; animation: wpulse 1.1s ease-in-out infinite; }
 /* on each beat the button swells and glows, and a ring ripples out from its edge */
 @keyframes wpulse {
-  0% { transform: scale(1); box-shadow: 0 0 0 0 color-mix(in srgb, var(--team-lamp, #ffc93c) 80%, transparent), 0 0 12px color-mix(in srgb, var(--team-lamp, #ffc93c) 40%, transparent); }
-  45% { transform: scale(1.06); box-shadow: 0 0 0 12px color-mix(in srgb, var(--team-lamp, #ffc93c) 35%, transparent), 0 0 46px color-mix(in srgb, var(--team-lamp, #ffc93c) 85%, transparent); }
-  100% { transform: scale(1); box-shadow: 0 0 0 22px color-mix(in srgb, var(--team-lamp, #ffc93c) 0%, transparent), 0 0 12px color-mix(in srgb, var(--team-lamp, #ffc93c) 40%, transparent); } }
+  0% { transform: scale(1); box-shadow: 0 0 0 0 color-mix(in srgb, var(--app-gold) 80%, transparent), 0 0 12px color-mix(in srgb, var(--app-gold) 40%, transparent); }
+  45% { transform: scale(1.06); box-shadow: 0 0 0 12px color-mix(in srgb, var(--app-gold) 35%, transparent), 0 0 46px color-mix(in srgb, var(--app-gold) 85%, transparent); }
+  100% { transform: scale(1); box-shadow: 0 0 0 22px color-mix(in srgb, var(--app-gold) 0%, transparent), 0 0 12px color-mix(in srgb, var(--app-gold) 40%, transparent); } }
 /* iPhone on its side: Safari can't lock rotation, so the welcome lays out in two columns, book on the left */
 @media (orientation: landscape) and (max-height: 500px) {
   .onb .welcome { grid-template-columns: minmax(0, .75fr) minmax(0, 1.25fr); grid-template-rows: auto auto 1fr; grid-template-areas: "book stage" "brand stage" ". stage"; column-gap: 28px; row-gap: 2px; padding-top: 0; max-width: 760px; }
   .onb .welcome .wbook { grid-area: book; width: min(26vw, 50vh, 180px); }
   .onb .welcome .brand { grid-area: brand; font-size: clamp(28px, 9vh, 42px); }
+  .onb .welcome .wlogo { width: min(34vw, 260px); }
   .onb .welcome .wstage { grid-area: stage; align-self: center; }
   .onb .welcome.w-gate .wrest { display: none; }   /* sideways there's room beside the book, so the button just sits centered */
   .onb .welcome.w-gate .wstage .wplay { margin-top: 0; align-self: center; }
   .onb .welcome.w-gate .wstage { min-height: 60vh; align-items: center; }
-  .onb .whead { font-size: clamp(22px, 7vh, 30px); }
+  .onb .whead { font-size: clamp(20px, 6.5vh, 28px); }
   .onb .wfeats li { padding: 7px 10px; font-size: 14px; }
   .onb .welcome .obtn { min-height: 46px; }
   .onb .inner.welcome { max-width: 760px; }
@@ -722,16 +724,21 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 .onb .welcome.w-gate .wplay { align-self: start; z-index: 1; }
 .onb .welcome.w-play .wrest { animation: wrise .6s ease-out 3.2s both; }
 @keyframes wrise { from { opacity: 0; transform: translateY(24px); } }
-.onb .whead { margin: 0; font-family: var(--f-display); font-weight: 800; font-size: clamp(28px, 8vw, 40px); line-height: 1.05; color: #ffffff; text-transform: uppercase; letter-spacing: .01em; }
+.onb .whead { margin: 0; font-family: var(--f-title); font-weight: 400; font-size: clamp(24px, 7vw, 34px); line-height: 1.1; color: #ffffff; }
 .onb .wfeats { list-style: none; margin: 2px 0 6px; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; width: 100%; max-width: 380px; }
 .onb .wfeats li { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .14); font-weight: 600; font-size: 15px; text-align: left; }
-.onb .wfeats svg { width: 22px; height: 22px; flex: none; fill: none; stroke: var(--team-lamp, #ffc93c); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.onb .wfeats svg { width: 22px; height: 22px; flex: none; fill: none; stroke: var(--app-gold); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .onb .wnote { margin: 4px 0 0; font-size: 14px; color: rgba(255, 255, 255, .72); max-width: 360px; }
 .onb .wver { margin: 0; font-size: 12px; color: rgba(255, 255, 255, .45); }
 .onb .wgear svg { width: 17px; height: 17px; vertical-align: -3px; fill: none; stroke: #ffffff; stroke-width: 2; }
 @media (prefers-reduced-motion: reduce) { .ibook *, .onb .wrest, .onb .wplay { animation: none !important; } }
 
-.onb .welcome .brand { font-size: clamp(36px, 10vw, 60px); color: #ffffff; text-shadow: 4px 4px 0 var(--team-q, var(--stitch)); }
+.onb .welcome .brand { font-size: clamp(32px, 9vw, 52px); color: #ffffff; text-shadow: 4px 4px 0 var(--app-red); }
+.onb .welcome .wlogo { width: min(84vw, 360px); margin: -6px 0 -10px; text-shadow: none; line-height: 0; }
+.wlsvg { display: block; width: 100%; height: auto; overflow: visible; }
+.wlsvg text { font-family: var(--f-title); font-size: 58px; }
+.wlsvg .wlfill { fill: #ffffff; stroke: var(--app-navy); stroke-width: 3px; paint-order: stroke; stroke-linejoin: round; }
+.wlsvg .wlshadow { fill: var(--app-red); }
 .onb .welcome .obtn { width: 100%; max-width: 360px; }
 .onb .setlist { background: rgba(255, 255, 255, .06); border-color: rgba(255, 255, 255, .2); }
 .onb .setrow { border-top-color: rgba(255, 255, 255, .12); }
@@ -742,7 +749,7 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 .onb .qadd .obtn { min-height: 52px; padding: 0 16px; }
 .onb .qlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .onb .qlist li { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; background: rgba(255, 255, 255, .08); }
-.onb .qlist .n { font-family: var(--f-display); font-weight: 800; font-size: 20px; min-width: 32px; text-align: center; color: var(--team-lamp, var(--lamp)); }
+.onb .qlist .n { font-family: var(--f-display); font-weight: 800; font-size: 20px; min-width: 32px; text-align: center; color: var(--app-gold); }
 .onb .qlist span.nm { flex: 1; min-width: 0; }
 .onb .qlist button { background: none; border: 0; color: rgba(255, 255, 255, .7); font-size: 18px; padding: 4px 8px; }
 .onb .summary { display: grid; gap: 8px; padding: 16px; border-radius: 16px; background: rgba(255, 255, 255, .08); }
@@ -755,7 +762,7 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 .bbrow { display: flex; gap: 6px; flex-wrap: wrap; }
 .fieldbtn { display: grid; justify-items: center; gap: 2px; width: 100%; min-height: 54px; padding: 8px; font-size: 16px; border-style: dashed; }
 .fieldbtn small { font-weight: 500; font-size: 12px; color: var(--muted); }
-.fieldfs { position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; gap: 8px; background: var(--team-board, #0d1b2a); color: #ffffff;
+.fieldfs { position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; gap: 8px; background: var(--app-navy); color: #ffffff;
   padding: max(10px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); }
 .ffhead { display: flex; align-items: center; gap: 12px; }
 .fft b { display: block; font-family: var(--f-display); font-weight: 800; font-size: 24px; text-transform: uppercase; line-height: 1.1; }
@@ -764,7 +771,7 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 .fieldfs .bbrow button { background: rgba(255, 255, 255, .08); color: #ffffff; border-color: rgba(255, 255, 255, .3); }
 .fieldfs .bbrow button[aria-pressed="true"] { background: #ffffff; color: #111111; border-color: #ffffff; }
 .fieldfs .tbtn { background: rgba(255, 255, 255, .08); color: #ffffff; border-color: rgba(255, 255, 255, .3); }
-.fieldfs .tbtn.primary { background: var(--team-lamp, #ffc93c); color: #1b1400; border-color: transparent; }
+.fieldfs .tbtn.primary { background: var(--app-gold); color: #1b1400; border-color: transparent; }
 .fieldfs .tbtn.primary:disabled { opacity: .45; }
 #ffield { flex: 1; min-height: 0; width: 100%; touch-action: none; cursor: crosshair; }
 .spray .spot { cursor: pointer; }
@@ -950,21 +957,18 @@ const contrast = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - 
 const mixHex = (a, b, t) => "#" + rgbOf(a).map((c, i) => Math.round((c * (1 - t) + rgbOf(b)[i] * t) * 255).toString(16).padStart(2, "0")).join("");
 const textOn = h => contrast(h, "#ffffff") >= contrast(h, "#111111") ? "#ffffff" : "#111111";
 // Turn the two picked colors into the app's accent tokens, keeping every pairing readable.
-function applyTeamColors() {
-  const c = teamColors(), P = COLOR[c.primary] || COLOR.navy, Q = COLOR[c.secondary] || COLOR.red;
-  let board = P;                                                    // scoreboard: primary, darkened until white numbers read well
+// The Home Screen icon stays in your team's colors: primary darkened until white numbers read well, and a lit color that shows on it
+function iconColors(P, Q) {
+  let board = P;
   for (let t = .15; contrast(board, "#ffffff") < 7 && t < .9; t += .1) board = mixHex(P, "#000000", t);
-  const lamp = [Q, P, "#ffc93c"].find(x => contrast(x, board) >= 3.5) || "#ffc93c";
-  const sel = lum(P) < .6 ? P : lum(Q) < .6 ? Q : "#14212c";      // selected tabs and main buttons
-  const fill = bg => [P, Q].find(x => contrast(x, bg) >= 3) || (lum(bg) > .5 ? "#14212c" : "#eef2f5");
-  const fl = fill("#f4f7f9"), fd = fill("#0e1418");
+  return { board, lamp: [Q, P, "#ffc93c"].find(x => contrast(x, board) >= 3.5) || "#ffc93c" };
+}
+function applyTeamColors() {
+  const c = teamColors(), P = COLOR[c.primary] || COLOR.navy, Q = COLOR[c.secondary] || COLOR.red, { board, lamp } = iconColors(P, Q);
   const set = (k, v) => document.documentElement.style.setProperty(k, v);
-  // Score-bug team block: primary, unless it blends into the scoreboard; then secondary
-  const chip = [P, Q].find(x => contrast(x, board) >= 1.6) || mixHex(P, "#ffffff", .3);
+  // Your team's badge on the app's navy scoreboard: primary, unless it blends in; then secondary
+  const chip = [P, Q].find(x => contrast(x, "#14284b") >= 1.6) || mixHex(P, "#ffffff", .3);
   set("--team-p", chip); set("--team-p-ink", textOn(chip)); set("--team-q", chip === P ? Q : P);
-  set("--team-board", board); set("--team-lamp", lamp); set("--sel-bg", sel); set("--sel-ink", textOn(sel));
-  set("--team-brand", fl); set("--team-shadow", fl === P ? Q : P);
-  set("--team-brand-d", fd); set("--team-shadow-d", fd === P ? Q : P);
   updateHomeIcon(P, Q, board, lamp, chip);
 }
 
@@ -2853,7 +2857,7 @@ function tutorialsList() {
    the book rolls over to add a hit and a run. Reduced motion, or a return visit: shown finished. */
 const GEAR_SVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
 // Real recordings, kept next to the app: swap either file to change the sound. If one is missing the intro just plays silently.
-const APP_VERSION = "2026.10.30-6";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
+const APP_VERSION = "2026.10.31-2";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
 const INTRO_SOUNDS = [["sounds/intro-bat.mp3", 0], ["sounds/intro-cheer.mp3", .15]];   // file, seconds after the tap
 let introBytes = null;
 function loadIntro() {   // fetched while the title screen is up, so the tap plays right away
@@ -2895,6 +2899,16 @@ function introBook(state) {
     <g class="ibdigits">${roll(4, 5, 402, 0)}${roll(6, 7, 545, 1)}${roll(0, 0, 688, 2)}</g>
   </svg>`;
 }
+// The ScoreKept logo: the name on a gentle arch with a swoosh tail sweeping back under it from the t, like a jersey script
+function logoSVG() {
+  const word = (dx, dy, cls) => `<text class="${cls}" transform="translate(${dx} ${dy})"><textPath href="#wlArc" startOffset="50%" text-anchor="middle">ScoreKept</textPath></text>`;
+  const tail = "M360 98 C326 150 170 152 46 128 C172 139 310 134 360 98 Z";
+  return `<svg class="wlsvg" viewBox="0 0 400 150" aria-hidden="true">
+    <defs><path id="wlArc" d="M24 108 Q200 54 376 108" /></defs>
+    <path class="wlshadow" d="${tail}" transform="translate(4 4)" />${word(4, 4, "wlshadow")}
+    <path class="wlfill" d="${tail}" />${word(0, 0, "wlfill")}
+  </svg>`;
+}
 function welcomeHTML() {
   const back = store.onboarded, reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const state = back || reduce || ui.introDone === "done" ? "done" : ui.introDone === "play" ? "play" : "gate";
@@ -2903,7 +2917,7 @@ function welcomeHTML() {
     ["Spray charts", '<path d="M12 21L3 12a12.7 12.7 0 0 1 18 0z"/><circle cx="9" cy="10" r="1"/><circle cx="15" cy="8" r="1"/><circle cx="13" cy="13" r="1"/>'], ["Walk-up songs", '<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>']];
   return `<div class="inner welcome w-${state}">
       <div class="wbook">${introBook(state)}</div>
-      <h1 class="brand">ScoreKept</h1>
+      <h1 class="brand wlogo" aria-label="ScoreKept">${logoSVG()}</h1>
       <div class="wstage">${state === "gate" ? `<button class="obtn go wplay" data-act="onb-intro">Play Ball!</button>` : ""}<div class="wrest" ${state === "gate" ? 'aria-hidden="true"' : ""}>
         <p class="whead">Your dugout scorebook.</p>
         <ul class="wfeats">${feats.map(([l, ic]) => `<li><svg viewBox="0 0 24 24" aria-hidden="true">${ic}</svg>${l}</li>`).join("")}</ul>
@@ -2928,7 +2942,8 @@ function bugPreview() {
 }
 function iconPreview() {
   try { const st = document.documentElement.style, v = k => st.getPropertyValue(k).trim(), c = teamColors();
-    return makeIcon(180, COLOR[c.primary], COLOR[c.secondary], v("--team-board"), v("--team-lamp"), v("--team-p")).toDataURL("image/png"); } catch (e) { return "icons/apple-touch-icon.png"; }
+    const { board, lamp } = iconColors(COLOR[c.primary], COLOR[c.secondary]);
+    return makeIcon(180, COLOR[c.primary], COLOR[c.secondary], board, lamp, v("--team-p")).toDataURL("image/png"); } catch (e) { return "icons/apple-touch-icon.png"; }
 }
 function onboardHTML(sh) {
   const step = sh.step, i = ONB_STEPS.indexOf(step), pf = Object.assign({ mode: "dugout", askHits: true, ties: false, innings: 7 }, store.prefs);
@@ -2945,7 +2960,7 @@ function onboardHTML(sh) {
         <div class="fld"><label for="onbAbbr">Short name</label><input id="onbAbbr" data-onb="abbr" maxlength="5" value="${esc(store.team.abbr || "")}" placeholder="${esc(abbrOf(store.team.name))}" autocomplete="off" style="text-transform:uppercase"></div>
       </div>
       <div class="preview" id="onbPreview">${bugPreview()}</div>
-      ${ui.msg ? `<p class="lead" style="color:var(--team-lamp,var(--lamp))"><b>${esc(ui.msg)}</b></p>` : ""}</div>`;
+      ${ui.msg ? `<p class="lead" style="color:var(--app-gold)"><b>${esc(ui.msg)}</b></p>` : ""}</div>`;
     foot = next();
   } else if (step === "colors") {
     const c = teamColors();
@@ -3412,11 +3427,11 @@ function recapText(g) {
   return out.join("\n");
 }
 async function recapCanvas(g) {
-  try { await document.fonts.load("34px Playball"); await document.fonts.ready; } catch (e) {}
+  try { await document.fonts.load("30px 'Alfa Slab One'"); await document.fonts.ready; } catch (e) {}
   const r = recapData(g), W = 1080, H = 1350, cv = document.createElement("canvas"); cv.width = W; cv.height = H;
   const c = cv.getContext("2d"), st = document.documentElement.style, v = k => st.getPropertyValue(k).trim();
   const tc = teamColors(), P = COLOR[tc.primary] || "#14284b", Q = COLOR[tc.secondary] || "#c8102e";
-  const board = v("--team-board") || "#14284b", lamp = v("--team-lamp") || "#ffc93c", chip = v("--team-p") || Q;
+  const board = "#14284b", lamp = "#ffc93c", chip = v("--team-p") || Q;   // ScoreKept's navy and gold; your team shows in its badge and stripe
   const font = (w, size, fam) => `${w} ${size}px ${fam}`, DISP = '"Big Shoulders Display", Impact, sans-serif', LAB = '"Barlow Condensed", "Arial Narrow", sans-serif', BODY = '"Barlow", system-ui, sans-serif';
   // background: scoreboard color with a two-color stripe
   const bg = c.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, board); bg.addColorStop(1, "#0b1016");
@@ -3474,7 +3489,7 @@ async function recapCanvas(g) {
     c.fillText(ln, 165 + nw, yy);
   });
   // footer
-  c.fillStyle = "rgba(255,255,255,.4)"; c.font = font(400, 34, '"Playball", ' + DISP); c.textAlign = "center"; c.fillText("ScoreKept", W / 2, H - 50);
+  c.fillStyle = "rgba(255,255,255,.4)"; c.font = font(400, 30, '"Alfa Slab One", ' + DISP); c.textAlign = "center"; c.fillText("ScoreKept", W / 2, H - 50);
   return cv;
 }
 async function openRecap(id) {
