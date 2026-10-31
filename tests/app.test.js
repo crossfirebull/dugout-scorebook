@@ -703,7 +703,7 @@ test("built-in walk-up tunes: every player has one by default, it plays, and it 
   await page.click("[data-act=walkup]");
   assert.match(await text(page, "[data-act=walkup]"), /Walk-up/);
   await page.click(".tabbar [data-v=roster]");
-  await page.click("[data-act=editplayer]");
+  await page.click(".plist [data-act=pcard]"); await page.click(".sheet [data-act=editplayer]");
   const sel = "select[data-ch=ptune]";
   assert.equal((await page.$$(sel + " option")).length, 9, "8 tunes and None");
   await page.selectOption(sel, "bigleague");
@@ -1056,6 +1056,37 @@ test("phone on its side: main screens fit with no sideways scrolling, key button
   for (const tab of ["book", "stats", "scout", "roster"]) { await page.click(`.tabbar [data-v=${tab}]`); await fits(tab, ".tabbar"); }
   await page.click(".tabbar [data-v=book]"); await page.locator(".bcell[data-act=editplay]").first().click();
   await fits("Edit play", ".sheet [data-act=close]");
+  await page.click(".sheet [data-act=close]"); await page.locator("table.book [data-act=pcard]").first().click();
+  await fits("player card", ".sheet .pchead");
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("player card: tap a name on Team, Stats or Book; add a photo; edit from the card", async () => {
+  const { page, context, errors } = await open(390, 844);
+  await page.click(".tabbar [data-v=roster]");
+  await page.click(".plist [data-act=pcard]");
+  assert.ok(await page.$(".sheet .pchead"), "card opens from the Team tab");
+  assert.equal((await page.$$(".pcbig div")).length, 5, "AVG, OBP, OPS, HR, RBI up top");
+  assert.ok(await page.$(".sheet .pctable"), "season table");
+  const [chooser] = await Promise.all([page.waitForEvent("filechooser"), page.click(".sheet [data-act=photo-choose]")]);
+  await chooser.setFiles(require("path").join(__dirname, "..", "icons", "icon-512.png"));
+  await page.waitForSelector(".pcphoto img");
+  const photo = await page.evaluate(() => JSON.parse(localStorage.getItem("dugout-scorebook.v2")).team.players[0].photo || "");
+  assert.match(photo, /^data:image\/jpeg/, "saved as a small JPEG with the player");
+  assert.ok(photo.length < 60000, "kept small: " + photo.length);
+  await page.click(".sheet [data-act=editplayer]");
+  assert.ok(await page.$("#pl-name"), "Edit player opens the editor");
+  await page.click(".sheet [data-act=close]");
+  assert.ok(await page.$(".sheet .pchead"), "Done goes back to the card");
+  await page.click(".sheet [data-act=close]");
+  await page.click(".tabbar [data-v=stats]"); await page.click("[data-act=statstab][data-v=batting]");
+  await page.locator("table.stats [data-act=pcard]").first().click();
+  assert.ok(await page.$(".sheet .pchead"), "card opens from the Stats table");
+  await page.click(".sheet [data-act=close]");
+  await page.click(".tabbar [data-v=book]");
+  await page.locator("table.book [data-act=pcard]").first().click();
+  assert.ok(await page.$(".sheet .pchead"), "card opens from the Book");
   assert.deepEqual(errors, []);
   await context.close();
 });

@@ -842,6 +842,27 @@ html[data-layout="phone"] #atbat .walkup, html[data-layout="short"] #atbat .walk
 @media (prefers-reduced-motion: reduce) { #install .ipoint { animation: none; } }
 #install .obtn { border-radius: 14px; font: inherit; font-weight: 700; font-size: 17px; padding: 0 20px; border: 2px solid rgba(255, 255, 255, .35); background: transparent; color: #ffffff; }
 #install .obtn.go { background: var(--app-gold); color: #111111; border-color: transparent; }
+/* Player card: tap a name on the Book, Stats or Team page */
+.plink { all: unset; cursor: pointer; color: inherit; text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 30%, transparent); text-underline-offset: 3px; }
+.plink:focus-visible { outline: 2px solid var(--ink-blue); border-radius: 3px; }
+.pchead { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 14px; align-items: center; margin: -4px 44px 4px 0;
+  padding: 12px; border-radius: 14px; background: linear-gradient(135deg, var(--app-navy), color-mix(in srgb, var(--app-navy) 70%, #000000)); color: #ffffff; box-shadow: inset 0 4px 0 var(--team-p, var(--app-red)); }
+.pcphoto { width: 96px; height: 96px; border-radius: 12px; overflow: hidden; background: rgba(255, 255, 255, .1); border: 3px solid #ffffff; display: grid; place-items: center; }
+.pcphoto img { width: 100%; height: 100%; object-fit: cover; }
+.pcphoto span { font-family: var(--f-title); font-size: 38px; color: #ffffff; }
+.pcwho h3 { color: #ffffff; padding-right: 0; } .pcnum { color: var(--app-gold); white-space: nowrap; }
+.pcwho p { margin: 2px 0 8px; color: rgba(255, 255, 255, .8); font-size: 15px; }
+.pcbtns { display: flex; gap: 6px; flex-wrap: wrap; }
+.pcbtns .tbtn { min-height: 36px; padding: 0 10px; font-size: 14px; background: rgba(255, 255, 255, .12); color: #ffffff; border: 1px solid rgba(255, 255, 255, .45); }
+.pcbig { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin: 4px 0; }
+.pcbig div { display: grid; justify-items: center; padding: 8px 4px; border-radius: 10px; background: var(--paper); border: 1px solid var(--rule); }
+.pcbig b { font-family: var(--f-display); font-weight: 800; font-size: 28px; line-height: 1.05; } .pcbig span { font-family: var(--f-label); font-weight: 700; font-size: 12px; letter-spacing: .1em; color: var(--muted); }
+.pctable th:first-child, .pctable tbody th { text-align: left; white-space: nowrap; font-family: var(--f-label); font-weight: 700; }
+.pctable td, .pctable thead th { padding-left: 4px; padding-right: 4px; }
+.pcsplit { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.pcpos { margin: 4px 0 0; font-size: 15px; }
+.pcspray { max-width: 360px; }
+@media (max-width: 420px) { .pchead { grid-template-columns: 76px minmax(0, 1fr); } .pcphoto { width: 76px; height: 76px; } .pcbig b { font-size: 24px; } }
 </style>
 </head>
 <body>
@@ -862,6 +883,7 @@ html[data-layout="phone"] #atbat .walkup, html[data-layout="short"] #atbat .walk
 <div id="overlay"></div>
 <input type="file" id="restoreFile" accept="application/json,.json" hidden>
 <input type="file" id="audioFile" accept="audio/*,.mp3,.m4a,.wav,.aac" hidden>
+<input type="file" id="photoFile" accept="image/*" hidden>
 
 <script>
 (function () {
@@ -1373,6 +1395,21 @@ function season() {
     return withRates(Object.assign(r, { name: p ? p.name : snap[r.pid] || "Former player", num: p ? p.num : "" }));
   });
   return { list, games, rec };
+}
+// One player's card: season and career totals, a game log, recent form, positions played
+function playerCardData(pid) {
+  const games = [], key = "p:" + pid;
+  store.games.filter(g => g.done || g.id === store.currentId).sort((a, b) => a.date.localeCompare(b.date)).forEach(g => {
+    const t = g.ourSide, s = derive(g), st = s.stats[t][key];
+    const pos = []; g.lineups[t].forEach(x => { if (x.pid === pid && x.pos && x.pos !== "Bench") pos.push(x.pos); });
+    g.events.forEach(e => { if (e.t === "sub" && e.team === t && e.pid === pid && e.pos && !pos.includes(e.pos)) pos.push(e.pos); });
+    if ((st && st.PA) || pos.length) games.push({ g, st: st || blankStat(), pos, live: !g.done, season: inSeason(g) });
+  });
+  const sum = list => { const t = Object.assign({ G: 0 }, blankStat()); list.forEach(x => { if (x.st.PA) t.G++; for (const f in blankStat()) t[f] += x.st[f]; }); return withRates(t); };
+  const done = games.filter(x => !x.live), seasonGames = done.filter(x => x.season);
+  const posCount = {}; seasonGames.forEach(x => x.pos.forEach(p => { posCount[p] = (posCount[p] || 0) + 1; }));
+  return { games, season: sum(seasonGames), career: sum(done), seasons: new Set(done.map(x => x.g.seasonId)).size,
+    last: n => sum(done.slice(-n)), recent: done.slice(-3).reverse(), n: done.length, posCount };
 }
 function withRates(t) {
   const d = (a, b) => b > 0 ? a / b : null;
@@ -2073,7 +2110,7 @@ function renderBook() {
   for (let slot = 0; slot < L; slot++) {
     const who = occ(S, t, slot);
     const st = S.stats[t][keyOf(who, t, slot)] || {};
-    h += `<tr class="${slot === up ? "up" : ""}"><td class="slot">${slot + 1}</td><td class="name">${esc(entryName(who))}${who.pos ? ` <span class="bpos">${esc(who.pos)}</span>` : ""}</td>`;
+    h += `<tr class="${slot === up ? "up" : ""}"><td class="slot">${slot + 1}</td><td class="name">${who.pid && t === G.ourSide ? `<button class="plink" data-act="pcard" data-v="${esc(who.pid)}">${esc(entryName(who))}</button>` : esc(entryName(who))}${who.pos ? ` <span class="bpos">${esc(who.pos)}</span>` : ""}</td>`;
     for (let i = 1; i <= cols; i++) h += `<td class="cell"><div class="stack">${S.book[t].filter(c => c.slot === slot && c.inning === i).map(c => c.ev == null ? mini(c) : `<div class="bcell" data-act="editplay" data-v="${c.ev}" role="button" tabindex="0" aria-label="Edit this at-bat">${mini(c)}</div>`).join("")}</div></td>`;
     ["AB", "R", "H", "RBI", "BB", "K"].forEach((k, j) => { const v = st[k] || 0; tot[k] += v; h += `<td class="st ${j === 0 ? "first" : ""}">${st.PA ? v : ""}</td>`; });
     h += "</tr>";
@@ -2113,7 +2150,7 @@ function renderStats() {
 
   const th = (k, label) => `<th class="${sk === k ? "sorted" : ""}"><button data-act="sort" data-v="${k}">${label}${sk === k ? (dir < 0 ? " ▼" : " ▲") : ""}</button></th>`;
   let h = `<thead><tr>${th("name", "Player")}${tdef.cols.map(([k, , , label]) => th(k, label || k)).join("")}</tr></thead><tbody>`;
-  h += qualified.map(r => `<tr><td><span style="color:var(--muted);font-family:var(--f-label);font-weight:600;margin-right:6px">${esc(r.num)}</span>${esc(r.name)}</td>` +
+  h += qualified.map(r => `<tr><td><button class="plink" data-act="pcard" data-v="${esc(r.pid)}" data-name="${esc(r.name)}"><span style="color:var(--muted);font-family:var(--f-label);font-weight:600;margin-right:6px">${esc(r.num)}</span>${esc(r.name)}</button></td>` +
     tdef.cols.map(([k, f]) => `<td class="${best[k] != null && r[k] === best[k] ? "best" : ""}">${fmt[f](r[k])}</td>`).join("") + "</tr>").join("");
   if (!qualified.length && list.length) h += `<tr><td colspan="${tdef.cols.length + 1}" style="text-align:left;color:var(--muted)">Nobody has ${ui.minPA} plate appearances yet. Lower Min. PA to see everyone.</td></tr>`;
   h += `</tbody><tfoot><tr><td>Team</td>${tdef.cols.map(([k, f]) => `<td>${k === "POS" ? "" : fmt[f](teamTot[k])}</td>`).join("")}</tr></tfoot>`;
@@ -2124,7 +2161,7 @@ function renderStats() {
   const leaders = leaderCats.map(([k, f]) => {
     const pool = list.filter(r => r[k] != null && (f === "int" || r.PA >= minQual)).sort((a, b) => b[k] - a[k]);
     const top = pool[0];
-    return `<li><span class="res" style="width:auto;min-width:56px;font-size:16px">${k}</span><span class="who">${top && top[k] > 0 ? esc(top.name) : "—"}</span><b>${top && top[k] > 0 ? fmt[f](top[k]) : ""}</b></li>`;
+    return `<li><span class="res" style="width:auto;min-width:56px;font-size:16px">${k}</span><span class="who">${top && top[k] > 0 ? `<button class="plink" data-act="pcard" data-v="${esc(top.pid)}" data-name="${esc(top.name)}">${esc(top.name)}</button>` : "—"}</span><b>${top && top[k] > 0 ? fmt[f](top[k]) : ""}</b></li>`;
   }).join("");
 
   const gameItems = store.games.filter(g => inSeason(g) || g.id === store.currentId).sort((a, b) => b.date.localeCompare(a.date)).map(g => {
@@ -2425,6 +2462,21 @@ function colorPicker() {
   </div>`;
 }
 const colorName = id => (PALETTE.find(x => x[0] === id) || [])[1] || "";
+// A player photo from the camera or library, center-cropped to a small square so it stays light
+function setPhoto(file) {
+  const p = player(ui.photoFor); if (!p || !file) return;
+  const img = new Image(), url = URL.createObjectURL(file);
+  img.onload = () => {
+    const n = 320, cv = document.createElement("canvas"); cv.width = cv.height = n;
+    const side = Math.min(img.width, img.height), sx = (img.width - side) / 2, sy = Math.max(0, (img.height - side) * .3);   // keep faces: a bit above center
+    cv.getContext("2d").drawImage(img, sx, sy, side, side, 0, 0, n, n);
+    URL.revokeObjectURL(url);
+    try { p.photo = cv.toDataURL("image/jpeg", .82); save(); } catch (e) {}
+    renderSheet();
+  };
+  img.onerror = () => URL.revokeObjectURL(url);
+  img.src = url;
+}
 function renderRoster() {
   const ps = store.team.players, c = teamColors();
   const flash = ui.flash; ui.flash = "";
@@ -2437,13 +2489,13 @@ function renderRoster() {
   </section>
   <section class="panel">
     <div class="rosterhead"><h2>Roster</h2><span class="spacer" style="flex:1"></span><button class="tbtn" data-act="sounds">Walk-up songs</button></div>
-    ${ps.length ? `<ul class="plist">${ps.map(p => `<li><button class="prow2" data-act="editplayer" data-v="${p.id}">
+    ${ps.length ? `<ul class="plist">${ps.map(p => `<li><button class="prow2" data-act="pcard" data-v="${p.id}">
         <span class="pnum">${esc(p.num || "–")}</span>
         <span><b>${esc(p.name || "Unnamed player")}</b><small>${esc(posList(p).join(" / ") || "No position yet")} · ${p.bats ? "Bats " + esc(p.bats) : "Batting side not set"}${clips["walkup:" + p.id] ? " · ♪ walk-up" : ""}</small></span>
         <span class="chev" aria-hidden="true">›</span></button></li>`).join("")}</ul>`
       : `<p style="color:var(--muted);margin:6px 0 0">No players yet. Add your first player below.</p>`}
     <button class="tbtn primary addbtn" data-act="addplayer">+ Add player</button>
-    <p style="color:var(--muted);font-size:14px;margin:12px 0 0">Tap a player to edit their number, positions, batting side and walk-up song. Removing a player keeps their past games in the season totals.</p>
+    <p style="color:var(--muted);font-size:14px;margin:12px 0 0">Tap a player for their card: stats, photo, and Edit player for number, positions, batting side and walk-up song. Removing a player keeps their past games in the season totals.</p>
   </section>`;
 }
 
@@ -2769,6 +2821,7 @@ const HELP = [
     <li><b>Courtesy runner</b>: pick who runs instead. Once per inning for each team. If they score, the run counts for the courtesy runner.</li></ul>`],
   ["Fixing mistakes", `
     <ul><li><b>Undo</b> takes back the last tap, as many times as you need.</li>
+    <li><b>Player cards:</b> tap a player's name on the Book, Stats or Team tab for their card: AVG, OBP and OPS, season (and career) totals, their last 3 games, recent form, positions played and spray chart. <b>Add photo</b> uses the camera or your photo library; <b>Edit player</b> changes their details.</li>
     <li><b>Fix a play:</b> on the Book tab, tap a box in the scorebook grid, or any line in the play-by-play (it has a ✎). Change the result, what a runner did, or who gets the RBI, or delete it. For a ball in play, tap the little field to move the ball on the full-screen field. Everything after it is re-scored. Works on saved games too.</li>
     <li><b>Game settings</b> changes the opponent, date, park, home or away, and league rules at any point. Switching home and away mid-game moves each play to the other half of its inning, so stats stay with the right team.</li>
     <li><b>+ New player</b> on the lineup screens adds a late fill-in. Leave the name blank and they're "Fill-in" until you rename them on the Team tab; their stats follow them.</li>
@@ -2914,7 +2967,7 @@ function tutorialsList() {
    the book rolls over to add a hit and a run. Reduced motion, or a return visit: shown finished. */
 const GEAR_SVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
 // Real recordings, kept next to the app: swap either file to change the sound. If one is missing the intro just plays silently.
-const APP_VERSION = "2026.10.31-10";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
+const APP_VERSION = "2026.10.31-11";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
 const INTRO_SOUNDS = [["sounds/intro-bat.mp3", 0], ["sounds/intro-cheer.mp3", .15]];   // file, seconds after the tap
 let introBytes = null;
 function loadIntro() {   // fetched while the title screen is up, so the tap plays right away
@@ -3238,6 +3291,36 @@ function renderSheet() {
         <button class="key on" data-act="fcout" data-v="-1"><b>Nobody</b><span>Everyone safe</span></button></div>
       <p style="font-size:13px">Was the batter out at first while a runner moved up instead? That's a ground out: tap GO, then tap the runner's base to move them.</p>
       <div class="acts"><button class="tbtn" data-act="close">Cancel</button></div>`;
+  } else if (sh.type === "pcard") {
+    wide = true;
+    const pl = player(sh.id), d = playerCardData(sh.id), S0 = d.season, C0 = d.career;
+    const name = pl ? pl.name || "Unnamed player" : (sh.name || "Former player");
+    const cols = ["G", "AB", "R", "H", "2B", "3B", "HR", "RBI", "BB", "K"];   // the rates are in the big numbers above
+    const box = (t, label) => `<tr><th>${label}</th>${cols.map(k => `<td>${t[k]}</td>`).join("")}</tr>`;
+    const head = `<tr><th></th>${cols.map(k => `<th>${k}</th>`).join("")}</tr>`;
+    const balls = (sprayData()[sh.id] || []);
+    const posLine = Object.entries(d.posCount).sort((a, b) => b[1] - a[1]).map(([p, n]) => `${esc(p)} (${n})`).join(" · ");
+    const song = pl && clips["walkup:" + pl.id], tune = pl && tuneOf(pl);
+    body = `<div class="pchead">
+        <div class="pcphoto">${pl && pl.photo ? `<img src="${pl.photo}" alt="">` : `<span>${esc(name.split(/\s+/).map(w => w[0] || "").join("").slice(0, 2).toUpperCase() || "#")}</span>`}</div>
+        <div class="pcwho"><h3>${esc(name)}${pl && pl.num ? ` <span class="pcnum">#${esc(pl.num)}</span>` : ""}</h3>
+          <p>${pl ? [posList(pl).join(" / ") || "No position set", pl.bats ? "Bats " + esc(pl.bats) : ""].filter(Boolean).join(" · ") : "No longer on the roster"}</p>
+          ${pl ? `<div class="pcbtns"><button class="tbtn" data-act="photo-choose" data-v="${pl.id}">${pl.photo ? "Change photo" : "Add photo"}</button>${pl.photo ? `<button class="tbtn" data-act="photo-rm" data-v="${pl.id}">Remove photo</button>` : ""}<button class="tbtn" data-act="editplayer" data-v="${pl.id}" data-back="1">Edit player</button></div>` : ""}</div></div>
+      <div class="pcbig">${[["AVG", S0.AVG], ["OBP", S0.OBP], ["OPS", S0.OPS]].map(([k, v]) => `<div><b>${fmt.avg(v)}</b><span>${k}</span></div>`).join("")}<div><b>${S0.HR}</b><span>HR</span></div><div><b>${S0.RBI}</b><span>RBI</span></div></div>
+      ${d.n ? `<h4>${esc(viewSeason() === "all" ? "All seasons" : ((store.seasons || []).find(x => x.id === viewSeason()) || {}).name || "This season")}${d.seasons > 1 ? " and career" : ""}</h4>
+      <div class="tscroll"><table class="stats pctable"><thead>${head}</thead><tbody>${box(S0, "Season")}${d.seasons > 1 ? box(C0, "Career") : ""}</tbody></table></div>
+      <div class="pcsplit">
+        <div><h4>Last ${Math.min(3, d.recent.length)} game${d.recent.length === 1 ? "" : "s"}</h4>
+          <div class="tscroll"><table class="stats pctable"><thead><tr><th></th>${["AB", "R", "H", "HR", "RBI", "BB", "K"].map(k => `<th>${k}</th>`).join("")}</tr></thead><tbody>
+          ${d.recent.map(x => `<tr><th>${+x.g.date.slice(5, 7)}/${+x.g.date.slice(8, 10)} vs ${esc(x.g.opponentAbbr || abbrOf(x.g.opponent))}</th>${["AB", "R", "H", "HR", "RBI", "BB", "K"].map(k => `<td>${x.st[k]}</td>`).join("")}</tr>`).join("")}</tbody></table></div></div>
+        ${d.n > 3 ? `<div><h4>Recent form</h4><div class="tscroll"><table class="stats pctable"><thead><tr><th></th>${["AB", "H", "HR", "RBI", "AVG", "OPS"].map(k => `<th>${k}</th>`).join("")}</tr></thead><tbody>
+          ${[5, 10].filter(n => d.n >= n || n === 5).map(n => { const t = d.last(n); return `<tr><th>Last ${Math.min(n, d.n)}</th>${["AB", "H", "HR", "RBI"].map(k => `<td>${t[k]}</td>`).join("")}<td>${fmt.avg(t.AVG)}</td><td>${fmt.avg(t.OPS)}</td></tr>`; }).join("")}</tbody></table></div></div>` : ""}
+      </div>
+      ${posLine ? `<p class="pcpos"><b>Games by position:</b> ${posLine}</p>` : ""}
+      ${balls.length ? `<h4>Spray chart</h4><div class="pcspray">${sprayField(balls)}</div>` : ""}`
+      : `<p class="nostats">No games yet. Stats show up here after the first game is saved to the season.</p>`}
+      ${pl ? `<p class="pcpos"><b>Walk-up:</b> ${song ? "♪ " + esc(song.name) : tune ? esc(tuneName(tune)) + " (built-in)" : "None"}</p>` : ""}
+      <div class="acts"><button class="tbtn primary" data-act="close">Done</button></div>`;
   } else if (sh.type === "player") {
     const pl = player(sh.id);
     if (!pl) { ui.sheet = null; o.innerHTML = ""; return; }
@@ -3758,6 +3841,7 @@ document.addEventListener("click", ev => {
     case "close": {
       const t = ui.sheet && ui.sheet.type;
       if (t === "sounds") stopClip(true);
+      if (t === "player" && ui.sheet.back === "pcard" && player(ui.sheet.id)) { ui.sheet = { type: "pcard", id: ui.sheet.id }; render(); break; }
       if (["sounds", "teamedit", "help", "backup", "tutorials", "parks", "gamedefaults"].includes(t) && ui.returnTo && (ui.returnTo === "settings" || ui.draft)) { ui.sheet = { type: ui.returnTo }; ui.returnTo = null; render(); break; }
       closeSheet(); break;
     }
@@ -3855,7 +3939,10 @@ document.addEventListener("click", ev => {
       break;
     case "opensettings": ui.msg = ""; ui.returnTo = null; ui.draft = null; ui.sheet = { type: "settings" }; render(); break;
     case "teamedit": ui.returnTo = ui.sheet && ui.sheet.type === "settings" ? "settings" : null; ui.sheet = { type: "teamedit" }; render(); break;
-    case "editplayer": ui.confirm = null; ui.sheet = { type: "player", id: v }; render(); break;
+    case "editplayer": ui.confirm = null; ui.sheet = { type: "player", id: v, back: el.dataset.back ? "pcard" : null }; render(); break;
+    case "pcard": ui.confirm = null; ui.sheet = { type: "pcard", id: v, name: el.dataset.name || "" }; renderSheet(); break;
+    case "photo-choose": ui.photoFor = v; $("photoFile").click(); break;
+    case "photo-rm": { const p = player(v); if (p) { delete p.photo; save(); renderSheet(); } break; }
     case "addplayer": {
       const np = { id: uid(), name: "", num: "", pos: "", alt: [], bats: "" };
       store.team.players.push(np); save();
@@ -4007,6 +4094,7 @@ document.addEventListener("change", ev => {
   }
 });
 
+$("photoFile").addEventListener("change", ev => { setPhoto(ev.target.files && ev.target.files[0]); ev.target.value = ""; });
 $("audioFile").addEventListener("change", ev => {
   const f = ev.target.files && ev.target.files[0], slot = ui.audioSlot; ev.target.value = "";
   if (!f || !slot) return;

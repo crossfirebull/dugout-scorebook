@@ -12,7 +12,7 @@ A tab bar along the bottom has five pages, so there's little scrolling:
 - **Book**: the full inning-by-inning line score, the scorebook grid and play-by-play.
 - **Stats**: Overview (games and leaders), Batting tables, Charts (spray charts: a whole-team chart with All / Hits / Outs filters, then one per player) and Lineups, for any season.
 - **Scout**: every team you've played, with a spray chart for the team and each of its hitters, and where to shade your defense.
-- **Team**: your team name and colors up top (**Edit team** changes them), then the roster. ScoreKept keeps its own navy, red and gold look everywhere so titles always read well; your team colors show on your team's badge, the score-bug stripe and your Home Screen icon. Tap a player to edit their number, up to three positions, batting side and walk-up song. **+ Add player** sits right under the list.
+- **Team**: your team name and colors up top (**Edit team** changes them), then the roster. ScoreKept keeps its own navy, red and gold look everywhere so titles always read well; your team colors show on your team's badge, the score-bug stripe and your Home Screen icon. Tap a player for their **player card**: a photo (add one from the camera or photo library), AVG, OBP and OPS, season and career totals, the last 3 games, recent form, games by position and their spray chart. Names on the Book and Stats tabs open the card too. **Edit player** on the card changes their number, up to three positions, batting side and walk-up song. **+ Add player** sits right under the list. Photos stay on the device and are included in backups.
 
 ScoreKept picks a layout for the screen it's on, and switches when you rotate the device:
 
