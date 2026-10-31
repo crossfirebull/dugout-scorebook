@@ -867,6 +867,21 @@ table.book td.name .plink { display: inline; }
 .pcspray { max-width: 360px; }
 @media (max-width: 420px) { .pchead { grid-template-columns: 76px minmax(0, 1fr); } .pcphoto { width: 76px; height: 76px; } .pcbig b { font-size: 24px; } }
 .pthumb { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; flex: none; box-shadow: 0 0 0 2px var(--rule); }
+/* Season schedule: Up next on the Game tab, and the schedule list */
+.upnext { display: grid; gap: 4px; justify-items: start; }
+.upnext .unlabel { font-family: var(--f-label); font-weight: 700; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--stitch); }
+.upnext .unwhen { font-family: var(--f-title); font-weight: 400; font-size: 22px; line-height: 1.15; }
+.upnext .unopp { font-size: 18px; font-weight: 600; } .upnext small { color: var(--muted); font-size: 15px; }
+.upnext .unbtns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.offsched { display: flex; align-items: center; gap: 10px; justify-content: space-between; color: var(--muted); }
+.offsched .tbtn { white-space: nowrap; flex: none; }
+.upnext.none { grid-template-columns: minmax(0, 1fr) auto; align-items: center; } .upnext.none small { display: block; }
+.slist { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.srow { all: unset; box-sizing: border-box; width: 100%; cursor: pointer; display: grid; grid-template-columns: 84px minmax(0, 1fr) auto auto; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 12px; background: var(--paper); border: 1px solid var(--rule); }
+.srow.past { opacity: .55; } .srow small { display: block; color: var(--muted); font-size: 13px; }
+.srow .sopp b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
+.sres { font-family: var(--f-display); font-weight: 800; font-size: 17px; padding: 2px 8px; border-radius: 6px; background: var(--rule-soft); }
+.sres.w { background: var(--safe-soft); color: var(--safe); } .sres.l { background: var(--stitch-soft); color: var(--stitch); } .sres.live { color: var(--stitch); }
 </style>
 </head>
 <body>
@@ -1530,6 +1545,10 @@ function sampleStore() {
   const live = { id: "g7", date: today(), opponent: "Oak Hollow Sluggers", ourSide: 0, settings: settings(), lineups, events: [], done: false };
   sim(live, 3);
   s0.games.push(live); s0.currentId = live.id;
+  // the season's schedule: every game played so far (with results), tonight's, and two still to come
+  const PARKS = ["Rolland Moore Park #3", "Spring Park #1", "Fossil Creek Park #2"], plus = n => { const d = new Date(today() + "T12:00:00"); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
+  s0.seasons[0].schedule = s0.games.map((g, i) => ({ id: "sg" + (i + 1), date: g.date, time: i % 2 ? "19:30" : "18:30", opp: g.opponent, park: PARKS[i % 3], home: g.ourSide === 1, gid: g.id }))
+    .concat([["Lakeside Lightning", 7, "18:30", true], ["Riverbend Rebels", 14, "19:30", false]].map(([opp, n, time, home], i) => ({ id: "sgn" + i, date: plus(n), time, opp, park: PARKS[i], home })));
   return s0;
 }
 
@@ -1874,9 +1893,13 @@ function renderGameView() {
   if (!G) {
     shellKey = "";
     const noRoster = !store.team.players.length;
+    const nx = ui.view === "game" && !noRoster && nextScheduled();
+    if (nx) { $("view").innerHTML = `<section class="panel">${upNextCard()}</section>
+      <section class="panel offsched"><span>Playing a game that's not on the schedule?</span><button class="tbtn" data-act="newgame">New Game</button></section>`; return; }
     $("view").innerHTML = `<section class="panel empty"><h2>No game in progress</h2>${ui.view === "book" ? `<p>The scorebook for the game you're scoring shows up here. Past games are under Stats → Overview.</p>` : ""}
       <p>${noRoster ? "Add your players on the Team tab first. Then start a game and pick the batting order." : "New Game walks you through a pregame checklist: opponent, lineup, settings and sound."}</p>
-      ${noRoster ? `<button class="tbtn primary" data-act="view" data-v="roster">Go to Team</button>` : `<button class="tbtn primary" data-act="newgame">New Game</button>`}</section>`;
+      ${noRoster ? `<button class="tbtn primary" data-act="view" data-v="roster">Go to Team</button>` : `<button class="tbtn primary" data-act="newgame">New Game</button>`}</section>
+      ${ui.view === "game" && !noRoster ? `<section class="panel">${upNextCard()}</section>` : ""}`;
     return;
   }
   S = derive(G);
@@ -2231,7 +2254,7 @@ function renderStats() {
           <select class="seasonsel" id="seasonSel" data-ch="seasonSel" aria-label="Season">${store.seasons.map(x => `<option value="${x.id}" ${x.id === viewSeason() ? "selected" : ""}>${esc(x.name)}${x.id === store.currentSeasonId ? " (current)" : ""}</option>`).join("")}<option value="all" ${viewSeason() === "all" ? "selected" : ""}>All seasons</option></select>
           <span>${games} game${games === 1 ? "" : "s"} · ${rec.T ? `${rec.W}–${rec.L}–${rec.T} (W–L–T)` : `${rec.W}–${rec.L}`}</span></h2>
         <span class="spacer"></span>
-        <button class="tbtn" data-act="newseason">New Season</button>
+        <button class="tbtn" data-act="schedule">Schedule</button><button class="tbtn" data-act="newseason">New Season</button>
       </div>
       <div class="tabs seg" role="tablist">${[["overview", "Overview"], ["batting", "Batting"], ["spray", "Charts"], ["lineups", "Lineups"]].map(([k, l]) => `<button role="tab" aria-selected="${seg === k}" data-act="statstab" data-v="${k}">${l}</button>`).join("")}</div>
     </section>
@@ -2862,6 +2885,7 @@ const HELP = [
     <li><b>Walk-offs:</b> the game ends the moment the home team takes the lead in the last inning. Only the winning run counts, unless it's a home run.</li></ul>`],
   ["Ending a game and seasons", `
     <ul><li>When the game is over, tap <b>Save to season</b> to add it to everyone's stats. <b>End game now</b> in Game settings ends it early.</li>
+    <li><b>Schedule:</b> Stats → <b>Schedule</b> holds this season's games: date, time, opponent, field, and home or away if you know it. Between games the Game tab shows <b>Up next</b>; <b>Start this game</b> fills in New Game. Played games show their result.</li>
     <li>Start a new season (Spring, Summer or Fall) with <b>New Season</b> on the Stats tab. Your roster carries over and old seasons stay saved. The season menu switches between them or shows all seasons together.</li></ul>`],
   ["Stats, spray charts and scouting", `
     <ul><li><b>Stats → Batting</b> has Standard, Advanced, Contact (grounders, liners, fly balls, pull and opposite field) and Fielding tables. Tap a column to sort. Each table explains its stats underneath.</li>
@@ -2993,7 +3017,7 @@ function tutorialsList() {
    the book rolls over to add a hit and a run. Reduced motion, or a return visit: shown finished. */
 const GEAR_SVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
 // Real recordings, kept next to the app: swap either file to change the sound. If one is missing the intro just plays silently.
-const APP_VERSION = "2026.10.31-14";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
+const APP_VERSION = "2026.10.31-15";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
 const INTRO_SOUNDS = [["sounds/intro-bat.mp3", 0], ["sounds/intro-cheer.mp3", .15]];   // file, seconds after the tap
 let introBytes = null;
 function loadIntro() {   // fetched while the title screen is up, so the tap plays right away
@@ -3220,7 +3244,7 @@ function renderSheet() {
       ${rulesFields(d, false)}
       ${ui.msg ? `<p style="color:var(--stitch)">${ui.msg}</p>` : ""}
       <h4>Coin toss</h4>
-      <p>Last step: who bats first? Tap one to start the game.</p>
+      <p>Last step: who bats first? Tap one to start the game.${d.schedHome === true ? " <b>The schedule has you at home.</b>" : d.schedHome === false ? " <b>The schedule has you as visitors.</b>" : ""}</p>
       <div class="tossbtns"><button class="tbtn primary" data-act="startgame" data-v="0"><b>We're visitors</b><small>We bat first</small></button>
         <button class="tbtn primary" data-act="startgame" data-v="1"><b>We're home</b><small>We bat second</small></button></div>
       <div class="acts"><button class="tbtn" data-act="close">Cancel</button><button class="tbtn" data-act="ng-back">Back to lineup</button></div>`;
@@ -3292,6 +3316,30 @@ function renderSheet() {
       <label class="check"><input type="checkbox" data-ch="autoWalkup" ${audioPrefs().autoWalkup ? "checked" : ""}><span>Play a batter's walk-up song automatically, right after the previous play's sound finishes. Otherwise there's a button under the batter's name. The song fades out when you score the first pitch.</span></label>
       <div>${ps.length ? ps.map(p => row("walkup:" + p.id, (p.num ? "#" + p.num + " " : "") + (p.name || "Unnamed player"), null)).join("") : `<p>Add players on the Team tab to give them walk-up songs.</p>`}</div>
       <div class="acts"><button class="tbtn primary" data-act="close">Done</button></div>`;
+  } else if (sh.type === "schedule") {
+    const list = schedule().slice().sort(schedSort), cs = curSeason();
+    const row = x => { const g = schedGame(x); let res = "";
+      if (g) { const st = derive(g), us = total(st, g.ourSide), them = total(st, 1 - g.ourSide); res = g.done ? `<span class="sres ${us > them ? "w" : us < them ? "l" : "t"}">${us > them ? "W" : us < them ? "L" : "T"} ${us}–${them}</span>` : `<span class="sres live">Live</span>`; }
+      return `<li><button class="srow ${x.date < today() && !g ? "past" : ""}" data-act="sched-edit" data-v="${x.id}">
+        <span class="swhen"><b>${esc(x.date === today() ? "Today" : prettyDate(x.date))}</b><small>${esc(prettyTime(x.time) || "")}</small></span>
+        <span class="sopp"><b>${x.home === false ? "at" : "vs"} ${esc(x.opp || "TBD")}</b><small>${esc(x.park || "")}</small></span>${res}<span class="chev" aria-hidden="true">›</span></button></li>`; };
+    body = `<h3>${esc(cs ? cs.name : "Season")} schedule</h3>
+      ${list.length ? `<ul class="slist">${list.map(row).join("")}</ul>` : `<p>No games yet. Add each game on your league's schedule: date, time, opponent and field. On game day, the Game tab shows it and <b>Start this game</b> fills in New Game.</p>`}
+      <div class="acts" style="justify-content:space-between"><button class="tbtn primary" data-act="sched-edit" data-v="">+ Add game</button><button class="tbtn" data-act="close">Done</button></div>`;
+  } else if (sh.type === "schedgame") {
+    const x = schedule().find(y => y.id === sh.id) || { date: sh.date || today(), time: "", opp: "", park: "", home: null };
+    const opps = [...new Set(store.games.map(g => g.opponent).concat(schedule().map(y => y.opp)).filter(Boolean))];
+    body = `<h3>${sh.id ? "Edit game" : "Add game"}</h3>
+      <div class="two"><div class="field"><label for="sg-date">Date</label><input id="sg-date" type="date" value="${esc(x.date)}"></div>
+        <div class="field"><label for="sg-time">Time</label><input id="sg-time" type="time" value="${esc(x.time || "")}"></div></div>
+      <div class="field"><label for="sg-opp">Opponent</label><input id="sg-opp" list="oppList" value="${esc(x.opp || "")}" placeholder="e.g. Oak Hollow Sluggers" autocomplete="off">
+        <datalist id="oppList">${opps.map(o => `<option value="${esc(o)}"></option>`).join("")}</datalist></div>
+      <div class="field"><label for="sg-park">Park &amp; field</label><input id="sg-park" list="parkList" value="${esc(x.park || "")}" placeholder="e.g. Rolland Moore Park #3" autocomplete="off">
+        <datalist id="parkList">${(store.parks || []).map(p => `<option value="${esc(p)}"></option>`).join("")}</datalist></div>
+      <div class="field"><label for="sg-home">Home or away</label><select id="sg-home"><option value="" ${x.home == null ? "selected" : ""}>Not sure yet (coin toss)</option><option value="1" ${x.home === true ? "selected" : ""}>We're home</option><option value="0" ${x.home === false ? "selected" : ""}>We're visitors</option></select></div>
+      ${ui.msg ? `<p style="color:var(--stitch)">${esc(ui.msg)}</p>` : ""}
+      <div class="acts" style="justify-content:space-between">${sh.id ? `<button class="tbtn ${ui.confirm === "sg-del" ? "danger" : ""}" data-act="sched-del">${ui.confirm === "sg-del" ? "Tap again to delete" : "Delete"}</button>` : "<span></span>"}
+        <span style="display:flex;gap:8px"><button class="tbtn" data-act="schedule">Cancel</button><button class="tbtn primary" data-act="sched-save">Save</button></span></div>`;
   } else if (sh.type === "newseason") {
     const cur = store.seasons.find(x => x.id === store.currentSeasonId);
     body = `<h3>New Season</h3>
@@ -3487,10 +3535,31 @@ function syncSoundBtn() {
 }
 function closeSheet() { ui.sheet = null; ui.draft = null; ui.confirm = null; ui.msg = ""; ui.bb = null; render(); }
 
-function openNewGame() {
+/* ---------- Season schedule ----------
+   Each season keeps its own list of upcoming games. The Game tab shows the next one, and starting it
+   fills in New Game (opponent, park, date). A game played from the schedule links back to it. */
+const curSeason = () => store.seasons.find(x => x.id === store.currentSeasonId) || store.seasons[store.seasons.length - 1];
+const schedule = () => { const c = curSeason(); return c ? (c.schedule || (c.schedule = [])) : []; };
+const schedSort = (a, b) => (a.date + (a.time || "99")).localeCompare(b.date + (b.time || "99"));
+const schedGame = x => x.gid && store.games.find(g => g.id === x.gid);
+function nextScheduled() { return schedule().filter(x => !schedGame(x) && x.date >= today()).sort(schedSort)[0] || null; }
+const prettyTime = t => { if (!t) return ""; const [h, m] = t.split(":").map(Number); return `${(h % 12) || 12}:${String(m).padStart(2, "0")} ${h < 12 ? "AM" : "PM"}`; };
+const whenText = x => [x.date === today() ? "Today" : prettyDate(x.date), prettyTime(x.time)].filter(Boolean).join(" · ");
+function upNextCard() {
+  const x = nextScheduled(), n = schedule().length;
+  if (!x) return `<div class="upnext none"><span><b>Schedule</b><small>${n ? "No more games on the schedule." : "Add your season's games and New Game fills itself in."}</small></span><button class="tbtn" data-act="schedule">${n ? "Schedule" : "Add schedule"}</button></div>`;
+  return `<div class="upnext"><span class="unlabel">Up next</span>
+      <b class="unwhen">${esc(whenText(x))}</b>
+      <span class="unopp">${x.home === true ? "vs" : x.home === false ? "at" : "vs"} ${esc(x.opp || "Opponent TBD")}</span>
+      ${x.park ? `<small>${esc(x.park)}</small>` : ""}
+      <span class="unbtns"><button class="tbtn primary" data-act="newgame" data-v="${x.id}">Start this game</button><button class="tbtn" data-act="schedule">Schedule (${n})</button></span></div>`;
+}
+function openNewGame(schedId) {
+  const sg = schedId && schedule().find(x => x.id === schedId);
   ui.draft = { opponent: "", oppAbbr: "", date: today(), ourSide: 0, innings: (store.prefs && store.prefs.innings) || 7, startCount: false, foulOut: false, askHits: !(store.prefs && store.prefs.askHits === false),
     mode: (store.prefs && store.prefs.mode) || "dugout", trackCount: !(store.prefs && store.prefs.trackCount === false), rows: [], opp: "" };   // the lineup starts empty: you build it each game
   Object.assign(ui.draft, prefRules());
+  if (sg) Object.assign(ui.draft, { schedId: sg.id, opponent: sg.opp || "", park: sg.park || "", date: sg.date || today(), schedHome: sg.home });   // from the schedule
   ui.msg = ""; ui.sheet = { type: "newgame", step: "lineup" }; renderSheet();
 }
 function startGame() {
@@ -3506,6 +3575,7 @@ function startGame() {
   const g = { id: uid(), seasonId: store.currentSeasonId, date: d.date || today(), opponent: d.opponent.trim(), opponentAbbr: d.oppAbbr || "", park: (d.park || "").trim(), ourSide: d.ourSide,
               settings: Object.assign({ innings: d.innings, startCount: d.startCount, foulOut: d.foulOut, askHits: d.askHits, mode: d.mode, trackCount: d.trackCount }, ruleSettings(d)), lineups, events: [], done: false };
   store.prefs = Object.assign({}, store.prefs, { askHits: d.askHits, mode: d.mode, trackCount: d.trackCount }, ruleSettings(d));
+  const sg = d.schedId && schedule().find(x => x.id === d.schedId); if (sg) { sg.gid = g.id; g.schedId = sg.id; }
   store.games.push(g); store.currentId = g.id;
   save(); ui.sheet = null; ui.draft = null; ui.view = "game"; ui.peekId = null; render();
 }
@@ -3811,6 +3881,19 @@ document.addEventListener("click", ev => {
       if (ui.sound) { audio(); SFX.hit(); }
       renderSheet(); break;
     case "testsound": audio(); SFX.charge(); break;
+    case "schedule": ui.msg = ""; ui.confirm = null; ui.sheet = { type: "schedule" }; renderSheet(); break;
+    case "sched-edit": ui.msg = ""; ui.confirm = null; ui.sheet = { type: "schedgame", id: v || null }; renderSheet(); break;
+    case "sched-save": {
+      const date = $("sg-date").value, opp = $("sg-opp").value.trim(), park = $("sg-park").value.trim(), hv = $("sg-home").value;
+      if (!date) { ui.msg = "Pick a date."; renderSheet(); break; }
+      const list = schedule(), x = list.find(y => y.id === ui.sheet.id) || (list.push({ id: uid() }), list[list.length - 1]);
+      Object.assign(x, { date, time: $("sg-time").value, opp, park, home: hv === "" ? null : hv === "1" });
+      rememberPark(park); save(); ui.msg = ""; ui.sheet = { type: "schedule" }; render(); break;
+    }
+    case "sched-del": {
+      if (ui.confirm !== "sg-del") { ui.confirm = "sg-del"; renderSheet(); break; }
+      const c = curSeason(); c.schedule = schedule().filter(y => y.id !== ui.sheet.id); ui.confirm = null; save(); ui.sheet = { type: "schedule" }; render(); break;
+    }
     case "newseason": ui.msg = ""; ui.sheet = { type: "newseason" }; renderSheet(); break;
     case "startseason": {
       if (store.currentId) { ui.msg = "Finish or save the game in progress first."; renderSheet(); break; }
@@ -3866,7 +3949,7 @@ document.addEventListener("click", ev => {
       if (["sounds", "teamedit", "help", "backup", "tutorials", "parks", "gamedefaults"].includes(t) && ui.returnTo && (ui.returnTo === "settings" || ui.draft)) { ui.sheet = { type: ui.returnTo }; ui.returnTo = null; render(); break; }
       closeSheet(); break;
     }
-    case "newgame": openNewGame(); break;
+    case "newgame": openNewGame(v); break;
     case "startgame": readDraftRows(); if (v === "0" || v === "1") ui.draft.ourSide = +v; startGame(); break;
     case "lineups": openLineups(); break;
     case "savelineups": saveLineups(); break;

@@ -1090,3 +1090,27 @@ test("player card: tap a name on Team, Stats or Book; add a photo; edit from the
   assert.deepEqual(errors, []);
   await context.close();
 });
+
+test("season schedule: add a game, see it as Up next, and Start this game fills in New Game", async () => {
+  const { page, context, errors } = await open(390, 844);
+  await page.click(".tabbar [data-v=stats]"); await page.click("[data-act=schedule]");
+  assert.match(await text(page, ".sheet h3"), /schedule/i);
+  assert.ok((await page.$$(".slist .sres.w, .slist .sres.l")).length >= 6, "games already played show their results");
+  await page.click(".sheet [data-act=sched-edit][data-v='']");
+  await page.fill("#sg-date", "2099-05-01"); await page.fill("#sg-time", "18:45");
+  await page.fill("#sg-opp", "Test Titans"); await page.fill("#sg-park", "Test Field #9"); await page.selectOption("#sg-home", "1");
+  await page.click(".sheet [data-act=sched-save]");
+  assert.match(await text(page, ".slist"), /Test Titans/);
+  await page.click(".sheet [data-act=close]");
+  // finish the game in progress, then the Game tab shows what's next
+  await page.click("[data-act=settings]"); await page.click(".sheet [data-act=endgame]");
+  if (await page.$(".sheet [data-act=close]")) await page.click(".sheet [data-act=close]");
+  await page.click(".tabbar [data-v=game]");
+  assert.match(await text(page, ".upnext"), /Up next/i);
+  await page.click(".upnext [data-act=newgame][data-v]");
+  await page.click("[data-act=ng-next]");
+  assert.ok((await page.inputValue("#d-park")).length > 0, "park filled in from the schedule");
+  assert.match(await text(page, ".sheet"), /The schedule has you (at home|as visitors)/);
+  assert.deepEqual(errors, []);
+  await context.close();
+});

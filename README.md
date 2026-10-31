@@ -45,12 +45,13 @@ Right after the welcome setup, a short **Basics** tour (skippable) spotlights th
 1. Turn on your phone's hotspot and connect the iPad.
 2. Open the link in Safari and tap **Share → Add to Home Screen**. The icon is the standard ScoreKept book (a red scorebook with a diamond and a lit R·H·E box score), the same for every team.
 3. On the **Team** tab, add your players with their number, up to three positions (main one first) and which side they bat from.
-4. On game day, tap **New Game**. It starts with the **lineup**: your players are grouped by position (pitchers, catchers, infield, outfield) on cards with this season's stats, like picking a team in a video game. Tap them in batting order, drag the **☰** handle to move a batter, or tap **Same as last game**. Adding players on the Team tab never sets a lineup; you build it each game. Then **game details**: the opponent, park, league rules, and a pregame checklist for sound, walk-up songs and your last backup. Last comes the **coin toss**: tap **We're visitors** or **We're home** and the game starts. Pick a mode in **Game settings**:
+4. **Schedule (optional):** on the Stats tab, tap **Schedule** and add the season's games: date, time, opponent, field, and home or away if you know it. Between games the Game tab shows **Up next**, and **Start this game** fills in New Game for you. Played games show their result on the schedule.
+5. On game day, tap **New Game** (or **Start this game**). It starts with the **lineup**: your players are grouped by position (pitchers, catchers, infield, outfield) on cards with this season's stats, like picking a team in a video game. Tap them in batting order, drag the **☰** handle to move a batter, or tap **Same as last game**. Adding players on the Team tab never sets a lineup; you build it each game. Then **game details**: the opponent, park, league rules, and a pregame checklist for sound, walk-up songs and your last backup. Last comes the **coin toss**: tap **We're visitors** or **We're home** and the game starts. Pick a mode in **Game settings**:
    - **Dugout mode** scores your batters one at a time. The other team's half-inning gets quick **+1 Run** and **+1 Out** buttons, so you can coach and score at the same time.
    - **Scorekeeper mode** scores every batter on both teams.
    **Park & field** (for example "Rolland Moore Park #3") is typed once on Game details, then offered in a dropdown next time. Delete old ones in **Settings → Parks & fields**.
-5. After the last inning, tap **Save to season** (or **Play another inning** for extras; the **+** next to the line score adds one any time). A game cut short by a time limit can be ended from Game settings with **End game now**. If your league allows ties, a tie counts as a tie in the record.
-6. Saved games add to everyone's stats on the **Stats** tab. Start a fresh season (Spring, Summer or Fall) with **New Season** on the Stats tab; past seasons stay saved, and the season menu switches between them or shows all seasons together. **Stats → Lineups** shows who batted where and played which position in every game.
+6. After the last inning, tap **Save to season** (or **Play another inning** for extras; the **+** next to the line score adds one any time). A game cut short by a time limit can be ended from Game settings with **End game now**. If your league allows ties, a tie counts as a tie in the record.
+7. Saved games add to everyone's stats on the **Stats** tab. Start a fresh season (Spring, Summer or Fall) with **New Season** on the Stats tab; past seasons stay saved, and the season menu switches between them or shows all seasons together. **Stats → Lineups** shows who batted where and played which position in every game.
 
 ## Scoring a play
 
@@ -176,7 +177,7 @@ The checks include simulated seasons: `tests/season-sim.js` plays random five-ga
 - **Who's coming tonight:** mark players in or out before a game; the lineup builder shows only who's there.
 - **Defensive lineup card by inning:** who plays where and who sits each inning, with a count so playing time stays fair.
 - **Discord live updates:** runs and the final post to your team channel as they happen.
-- **Season schedule:** upcoming games (date, time, field, opponent) that fill in New Game; import from your league's schedule page if it can be read.
+- **Schedule import:** bring in your league's schedule from its web page (send the link).
 - **Bigger text and better use of space:** a large-text switch, and more grouping so screens hold more.
 
 **Planned**
