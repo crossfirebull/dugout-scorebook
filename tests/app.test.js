@@ -1141,3 +1141,36 @@ test("who's here tonight: mark someone out and they leave the lineup; Auto-fill 
   assert.deepEqual(errors, []);
   await context.close();
 });
+
+test("defense by inning: auto-rotate evens out playing time, and swaps never double up a position", async () => {
+  const store = ruleGame({ mode: "scorekeeper" }, []);
+  const { page, context, errors } = await openGame(store);
+  await page.click("[data-act=defense]");
+  assert.match(await text(page, ".sheet h3"), /Defense by inning/);
+  await page.click("[data-act=def-auto]");
+  const counts = await page.$$eval(".dgrid tbody tr", rows => rows.map(r => ({ pos1: r.querySelector("td select").value, field: +r.querySelector(".dname small").textContent.match(/(\d+) field/)[1] })));
+  const movable = counts.filter(c => !["P", "C"].includes(c.pos1)).map(c => c.field);
+  assert.ok(Math.max(...movable) - Math.min(...movable) <= 1, "fair: " + movable.join(","));
+  assert.ok(counts.filter(c => ["P", "C"].includes(c.pos1)).every(c => c.field === 7), "pitcher and catcher stay in");
+  // taking someone's position swaps them: every inning still has one of each
+  await page.selectOption(".dgrid tbody tr:nth-child(1) td:nth-child(4) select", "SS");
+  const dupes = await page.$$eval(".dgrid tbody tr", rows => [2, 3, 4, 5, 6, 7, 8].some(c => { const v = rows.map(r => r.children[c - 1].querySelector("select").value).filter(x => x !== "EH"); return new Set(v).size !== v.length; }));
+  assert.equal(dupes, false, "no inning has two players at one position");
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("defense by inning: a play in an inning credits whoever the card has at that position", async () => {
+  const ev = [PA("GO", { p: 6 }), PA("GO", { p: 6 }), PA("GO", { p: 6 }), ...ourOuts(), PA("GO", { p: 6 }), PA("GO", { p: 6 }), PA("GO", { p: 6 })];
+  const store = ruleGame({ mode: "scorekeeper" }, ev, { game: { done: true, defense: { 2: { r5: "EH", r10: "SS" } } } });
+  store.currentId = null;
+  const { page, context, errors } = await open(1180, 820, { keepSetup: true });
+  await loadSeason(page, store);
+  await page.click(".tabbar [data-v=stats]"); await page.click("[data-act=statstab][data-v=batting]");
+  const fld = await readTable(page, "fld");
+  const plays = n => +fld.rows.find(r => r.Player.includes(n)).Plays;
+  assert.equal(plays("Player 6"), 3, "the lineup's shortstop gets inning 1");
+  assert.equal(plays("Player 11"), 3, "the card's shortstop gets inning 2");
+  assert.deepEqual(errors, []);
+  await context.close();
+});
