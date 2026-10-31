@@ -1030,3 +1030,32 @@ test("a phone opening the link in Safari sees how to add ScoreKept to the Home S
   assert.deepEqual(errors, []);
   await context.close();
 });
+
+test("phone on its side: main screens fit with no sideways scrolling, key buttons on screen", async () => {
+  const iphone = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1";
+  const context = await browser.newContext({ viewport: { width: 844, height: 390 }, userAgent: iphone, hasTouch: true, reducedMotion: "reduce" });
+  const page = await context.newPage(); const errors = []; page.on("pageerror", e => errors.push(e.message));
+  const fits = async (where, sel) => {
+    const r = await page.evaluate(s => {
+      const wide = [document.documentElement, document.body, ...document.querySelectorAll("#install, .onb, .sheet, #view")].some(e => e && e.scrollWidth > e.clientWidth + 1 && getComputedStyle(e).overflowX !== "hidden");
+      const b = s && document.querySelector(s); const rb = b && b.getBoundingClientRect();
+      return { wide, off: !!(rb && (rb.left < 0 || rb.right > innerWidth + 1)) };
+    }, sel);
+    assert.equal(r.wide, false, where + ": no sideways scrolling");
+    assert.equal(r.off, false, where + ": " + sel + " fits across the screen");
+  };
+  await page.goto(base); await page.waitForSelector("#install");
+  await fits("Home Screen guide", "#install .isteps");
+  const steps = await page.$eval("#install .isteps", e => e.getBoundingClientRect().bottom);
+  assert.ok(steps <= 390 + 1, "all three steps show without scrolling");
+  await page.click("[data-act=install-later]");
+  await fits("welcome", ".onb .wstage");
+  await page.click(".onb [data-act=onb-sample]");
+  if (await page.$("[data-act=tour-skip]")) await page.click("[data-act=tour-skip]");
+  await fits("game", ".bug");
+  for (const tab of ["book", "stats", "scout", "roster"]) { await page.click(`.tabbar [data-v=${tab}]`); await fits(tab, ".tabbar"); }
+  await page.click(".tabbar [data-v=book]"); await page.locator(".bcell[data-act=editplay]").first().click();
+  await fits("Edit play", ".sheet [data-act=close]");
+  assert.deepEqual(errors, []);
+  await context.close();
+});

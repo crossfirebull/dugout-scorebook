@@ -181,9 +181,9 @@ The checks include simulated seasons: `tests/season-sim.js` plays random five-ga
 
 **Planned**
 - **More rulesets built in:** baseball (with stolen bases), men's, women's and co-ed slow-pitch, fastpitch, and custom.
-- **Cloud backup:** copies of your season in Google Drive (needs a Google sign-in set up once).
+- **Cloud backup** (nice to have, not urgent): copies of your season in Google Drive; needs a one-time Google setup.
 - **Live sync between devices**, so a second phone or a parent can follow the score.
-- **App Store version** (needs a Mac and Apple's $99/year developer account).
+- **App Store version** (to do once there's a Mac to build on, plus Apple's $99/year developer account).
 - Keep refining each screen on phones, phones on their side and iPads; the tutorials; and the Help screen.
 
 **Someday**
