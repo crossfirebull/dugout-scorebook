@@ -25,7 +25,7 @@ To see every layout at once, open the **screen preview**: https://crossfirebull.
 
 **Help** (in Settings and Game settings) explains every button, moving runners, league rules, stats and backups.
 
-The speaker button at the top mutes and unmutes. The gear opens **Settings**, grouped into short sections that each open their own screen: **Team** (name, colors, parks & fields), **Games** (new game defaults, sounds & walk-up songs), **Help** (Help and Tutorials) and **Your data** (backup & restore, the welcome setup again). The red X or Done on any of those goes back to Settings. During a game it opens that game's settings, with a link to all settings.
+The speaker button at the top mutes and unmutes. **Settings ⚙️** opens Settings, grouped into short sections that each open their own screen: **Team** (name, colors, parks & fields), **Games** (new game defaults, sounds & walk-up songs), **Help** (Help and Tutorials) and **Your data** (backup & restore, the welcome setup again). The red X or Done on any of those goes back to Settings. During a game it opens that game's settings, with a link to all settings.
 
 ## First launch
 
@@ -127,7 +127,7 @@ Every player starts with one of 8 original organ walk-ups (Charge Up, Stomp & Cl
 ### Adding your own sound or walk-up song (3 steps)
 
 1. **Get the file onto the iPad.** Save it to the **Files** app: download it in Safari (it lands in *Downloads*), AirDrop it from a computer or phone, or put it in iCloud Drive. MP3, M4A and WAV all work.
-2. **Pick it in ScoreKept.** For a walk-up song, open the **Team** tab, tap the player, and tap **Choose file** next to Walk-up song. For a game sound, tap the gear, open **Sounds & walk-up songs**, and tap **Choose file** next to that sound.
+2. **Pick it in ScoreKept.** For a walk-up song, open the **Team** tab, tap the player, and tap **Choose file** next to Walk-up song. For a game sound, tap **Settings ⚙️**, open **Sounds & walk-up songs**, and tap **Choose file** next to that sound.
 3. **Trim it.** Set **Start at** to the part you want (the chorus, say) and **Play for** to how many seconds. Tap **▶** to hear it. A whole song can supply a 10-second walk-up without editing the file.
 
 The files stay on the iPad. They aren't uploaded anywhere and aren't in the backup file, so after restoring a backup on a new iPad, pick them again.

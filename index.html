@@ -3089,7 +3089,7 @@ const TOURS = {
     { tab: "game", sel: "#bug .inn", title: "Clock and innings", text: "With a time limit, the clock counts down under the inning. LAST means time's up and this inning is the last one." },
     { tab: "game", sel: "[data-act=defense]", optional: true, title: "Defense by inning", text: "Who plays where each inning. Tap a box to move someone or sit them, and Auto-rotate evens out playing time." },
     { sel: ".tabbar [data-v=book]", title: "Fix anything", text: "On the Book tab, tap any box in the scorebook or any play to change the result, the fielder, who got the RBI, or delete it." },
-    { sel: "[data-act=settings]", title: "Game settings", text: "During a game the gear opens Game settings: opponent, park, home or away, league rules, the clock, and End game now." }] },
+    { sel: "[data-act=settings]", title: "Game settings", text: "During a game, Settings ⚙️ opens Game settings: opponent, park, home or away, league rules, the clock, and End game now." }] },
   stats: { title: "Stats and sharing", desc: "Batting tables, charts, scouting, recaps and backups.", steps: [
     { tab: "stats", sel: ".tabs.seg", before: statsTab("overview"), title: "Stats", text: "Overview, Batting, Charts and Lineups for this season. The season menu switches seasons, or shows all of them." },
     { tab: "stats", sel: ".games", optional: true, before: statsTab("overview"), title: "Your games", text: "Every saved game. View opens it: fix plays in the Book, or Share recap to send the team a picture and text for Discord." },
@@ -3163,7 +3163,7 @@ function tutorialsList() {
    the book rolls over to add a hit and a run. Reduced motion, or a return visit: shown finished. */
 const GEAR_SVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
 // Real recordings, kept next to the app: swap either file to change the sound. If one is missing the intro just plays silently.
-const APP_VERSION = "2026.10.31-23";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
+const APP_VERSION = "2026.10.31-24";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
 const INTRO_SOUNDS = [["sounds/intro-bat.mp3", 0], ["sounds/intro-cheer.mp3", .15]];   // file, seconds after the tap
 let introBytes = null;
 function loadIntro() {   // fetched while the title screen is up, so the tap plays right away
@@ -3301,7 +3301,7 @@ function onboardHTML(sh) {
         <div><span>Games</span><b>${esc(rulesSummary(rulesOf(prefRules())))}</b></div>
         <div><span>Roster</span><b>${store.team.players.length} player${store.team.players.length === 1 ? "" : "s"}</b></div>
       </div>
-      <p class="lead" style="font-size:15px">Tip: add ScoreKept to your Home Screen (Share → Add to Home Screen) so the icon has your colors, and save a backup after each game day. Everything here is under the gear if you want to change it.</p></div>`;
+      <p class="lead" style="font-size:15px">Tip: add ScoreKept to your Home Screen (≡ in Safari's address bar → Share → Add to Home Screen) and save a backup after each game day. Everything here can be changed in Settings <span class="wgear" aria-label="the Settings button">${GEAR_SVG}</span>.</p></div>`;
     foot = `<button class="obtn" data-act="onb-finish" data-v="team">Go to my team</button><button class="obtn go" data-act="onb-finish" data-v="game" ${store.team.players.length ? "" : "disabled"}>Start a game</button>`;
   }
   return `<div class="onb" role="dialog" aria-modal="true" aria-label="ScoreKept setup">
@@ -3767,7 +3767,7 @@ function renderSheet() {
       <h4 style="margin:0">Your data</h4>
       <div class="setlist">${link("backup", "Backup &amp; restore", "Save everything to a file, or bring it back on any device.")}
         ${link("onb-again", "Run the welcome setup again", "Walk through team, colors, scoring style, rules and roster. Nothing is erased.")}</div>
-      <p style="font-size:13px">Settings for a game in progress are under the gear during that game. ScoreKept version ${APP_VERSION}.</p>
+      <p style="font-size:13px">Settings for a game in progress are in Settings ⚙️ during that game. ScoreKept version ${APP_VERSION}.</p>
       <div class="acts"><button class="tbtn primary" data-act="close">Done</button></div>`;
   } else if (sh.type === "saved") {
     const g = store.games.find(x => x.id === sh.gid), r = g && recapData(g);
