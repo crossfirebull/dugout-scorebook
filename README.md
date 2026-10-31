@@ -46,7 +46,7 @@ Right after the welcome setup, a short **Basics** tour (skippable) spotlights th
 2. Open the link in Safari and tap **Share → Add to Home Screen**. The icon is the standard ScoreKept book (a red scorebook with a diamond and a lit R·H·E box score), the same for every team.
 3. On the **Team** tab, add your players with their number, up to three positions (main one first) and which side they bat from.
 4. **Schedule (optional):** on the Stats tab, tap **Schedule** and add the season's games: date, time, opponent, field, and home or away if you know it. Between games the Game tab shows **Up next**, and **Start this game** fills in New Game for you. Played games show their result on the schedule.
-5. On game day, tap **New Game** (or **Start this game**). It starts with the **lineup**: your players are grouped by position (pitchers, catchers, infield, outfield) on cards with this season's stats, like picking a team in a video game. Tap them in batting order, drag the **☰** handle to move a batter, or tap **Same as last game**. Adding players on the Team tab never sets a lineup; you build it each game. Then **game details**: the opponent, park, league rules, and a pregame checklist for sound, walk-up songs and your last backup. Last comes the **coin toss**: tap **We're visitors** or **We're home** and the game starts. Pick a mode in **Game settings**:
+5. On game day, tap **New Game** (or **Start this game**). It starts with **who's here**: everyone starts in, and one tap marks anyone who isn't coming. Then the **lineup**: tonight's players, grouped by position (pitchers, catchers, infield, outfield), each on one slim row with their photo, AVG and OPS. Tap them in batting order, drag the **☰** handle to move a batter, or tap **Auto-fill** (last game's order for whoever's here, then everyone else) or **Same as last game**. Adding players on the Team tab never sets a lineup; you build it each game. Then **game details**: the opponent, park, league rules, and a pregame checklist for sound, walk-up songs and your last backup. Last comes the **coin toss**: tap **We're visitors** or **We're home** and the game starts. Pick a mode in **Game settings**:
    - **Dugout mode** scores your batters one at a time. The other team's half-inning gets quick **+1 Run** and **+1 Out** buttons, so you can coach and score at the same time.
    - **Scorekeeper mode** scores every batter on both teams.
    **Park & field** (for example "Rolland Moore Park #3") is typed once on Game details, then offered in a dropdown next time. Delete old ones in **Settings → Parks & fields**.
@@ -174,7 +174,6 @@ The checks include simulated seasons: `tests/season-sim.js` plays random five-ga
 ## On the list
 
 **Next up** (approved, in this order)
-- **Who's coming tonight:** mark players in or out before a game; the lineup builder shows only who's there.
 - **Defensive lineup card by inning:** who plays where and who sits each inning, with a count so playing time stays fair.
 - **Discord live updates:** runs and the final post to your team channel as they happen.
 - **Schedule import:** bring in your league's schedule from its web page (send the link).

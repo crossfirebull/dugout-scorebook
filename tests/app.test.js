@@ -118,7 +118,7 @@ test("a game tied after the last inning ends as a tie when there are no extra in
 test("New Game will not start with two players at the same position", async () => {
   const { page, context } = await open();
   await gameSettings(page); await page.click(".sheet [data-act=endgame]");
-  await page.click("[data-act=newgame]");
+  await page.click("[data-act=newgame]"); await page.click("[data-act=ng-lineup]");
   const cards = await page.$$(".pcard");
   await cards[0].click(); await (await page.$$(".pcard"))[1].click();
   // put the second batter at the first batter's position
@@ -235,6 +235,8 @@ test("first launch walks through setup, and the choices land in Settings", async
   assert.ok(await page.$("#tour .tcard"), "the basics tour starts after setup");
   await page.click("[data-act=tour-skip]");
   assert.match(await text(page, ".sheet h3"), /New Game/, "Start a game opens New Game");
+  assert.ok(await page.$(".hlist"), "New Game starts with who's here");
+  await page.click("[data-act=ng-lineup]");
   assert.ok(await page.$(".luempty"), "New Game starts with the lineup, and the roster doesn't fill it in");
   assert.equal(await page.$$eval(".pgroup h5", h => h.map(x => x.firstChild.textContent).join(",")), "Catchers,Infield", "players grouped by position");
   await page.click("[data-act=ng-next]");
@@ -603,7 +605,7 @@ test("Help opens from Settings and Game settings, and Done goes back", async () 
 test("New Game: build the lineup from player cards, drag to reorder, then game details", async () => {
   const { page, context, errors } = await open(1180, 820);
   await gameSettings(page); await page.click(".sheet [data-act=endgame]");
-  await page.click("[data-act=newgame]");
+  await page.click("[data-act=newgame]"); await page.click("[data-act=ng-lineup]");
   assert.ok(await page.$(".luempty"), "starts empty");
   const names = await page.$$eval(".pcard .nm b", b => b.map(x => x.textContent));
   assert.ok(names.length >= 10);
@@ -635,7 +637,7 @@ test("New Game: build the lineup from player cards, drag to reorder, then game d
 test("New Game: Same as last game copies the last lineup", async () => {
   const { page, context, errors } = await open(390, 844);
   await gameSettings(page); await page.click(".sheet [data-act=endgame]");
-  await page.click("[data-act=newgame]");
+  await page.click("[data-act=newgame]"); await page.click("[data-act=ng-lineup]");
   await page.click("[data-act=lu-last]");
   assert.ok((await page.$$(".lurow")).length >= 9);
   assert.deepEqual(errors, []);
@@ -718,12 +720,12 @@ test("park & field: typed once, offered next time, and deletable in Settings", a
   const { page, context, errors } = await open(393, 852);
   await gameSettings(page); await page.click(".sheet [data-act=endgame]");
   for (const park of ["Rolland Moore Park #3", "Spring Park #1"]) {
-    await page.click("[data-act=newgame]"); await page.click("[data-act=lu-last]"); await page.click("[data-act=ng-next]");
+    await page.click("[data-act=newgame]"); await page.click("[data-act=ng-lineup]"); await page.click("[data-act=lu-last]"); await page.click("[data-act=ng-next]");
     await page.fill("#d-opponent", "Park Testers"); await page.fill("#d-park", park);
     await page.click("[data-act=startgame]");
     await gameSettings(page); await page.click(".sheet [data-act=endgame]");
   }
-  await page.click("[data-act=newgame]"); await page.click("[data-act=ng-next]");
+  await page.click("[data-act=newgame]"); await page.click("[data-act=ng-lineup]"); await page.click("[data-act=ng-next]");
   assert.deepEqual(await page.$$eval("#parkList option", o => o.map(x => x.value)), ["Spring Park #1", "Rolland Moore Park #3"]);
   await page.click(".sheet [data-act=close]");
   assert.match(await page.textContent("#view"), /Rolland Moore Park #3/, "shown in the games list");
@@ -754,7 +756,7 @@ test("game recap: a picture and Discord-ready text for a finished game", async (
 test("panels only close with the red X (or their own buttons), never by tapping outside", async () => {
   const { page, context, errors } = await open(393, 852);
   await gameSettings(page); await page.click(".sheet [data-act=endgame]");
-  await page.click("[data-act=newgame]");
+  await page.click("[data-act=newgame]"); await page.click("[data-act=ng-lineup]");
   await (await page.$$(".pcard"))[0].click();
   await page.mouse.click(5, 5);   // outside the panel
   assert.ok(await page.$(".lubuild"), "still open");
@@ -788,7 +790,7 @@ test("switch home and away mid-game: every play stays with the team that made it
 test("add a fill-in player on the fly while building the lineup", async () => {
   const { page, context, errors } = await open(393, 852);
   await gameSettings(page); await page.click(".sheet [data-act=endgame]");
-  await page.click("[data-act=newgame]");
+  await page.click("[data-act=newgame]"); await page.click("[data-act=ng-lineup]");
   await page.click("[data-act=np-open]");
   await page.click("[data-act=np-save]");   // no name yet
   assert.deepEqual(await page.$$eval(".lurow .who b", b => b.map(x => x.textContent)), ["Fill-in"]);
@@ -802,7 +804,7 @@ test("add a fill-in player on the fly while building the lineup", async () => {
 test("New Game ends with the coin toss: home or visitors starts the game", async () => {
   const { page, context, errors } = await open(393, 852);
   await gameSettings(page); await page.click(".sheet [data-act=endgame]");
-  await page.click("[data-act=newgame]"); await page.click("[data-act=lu-last]"); await page.click("[data-act=ng-next]");
+  await page.click("[data-act=newgame]"); await page.click("[data-act=ng-lineup]"); await page.click("[data-act=lu-last]"); await page.click("[data-act=ng-next]");
   assert.equal(await page.$("#d-side"), null, "no home/away choice before the end");
   await page.fill("#d-opponent", "Coin Flippers");
   await page.click("[data-act=startgame][data-v='1']");
@@ -867,6 +869,8 @@ test("guided tours: the basics walks through with Next and Back; every tour runs
   // the New Game tour, with no game in progress, opens the real lineup builder and coin toss
   await gameSettings(page); await page.click(".sheet [data-act=endgame]");
   await page.click("[data-act=settings]"); await page.click("[data-act=sub][data-v=tutorials]"); await page.click("[data-act=tour][data-v=newgame]");
+  await page.click("[data-act=tour-next]");
+  assert.ok(await page.$(".hlist"), "who's here open behind the tour");
   await page.click("[data-act=tour-next]");
   assert.ok(await page.$(".lupool"), "lineup builder open behind the tour");
   for (let i = 0; i < 4; i++) await page.click("[data-act=tour-next]");
@@ -1107,10 +1111,33 @@ test("season schedule: add a game, see it as Up next, and Start this game fills 
   if (await page.$(".sheet [data-act=close]")) await page.click(".sheet [data-act=close]");
   await page.click(".tabbar [data-v=game]");
   assert.match(await text(page, ".upnext"), /Up next/i);
-  await page.click(".upnext [data-act=newgame][data-v]");
+  await page.click(".upnext [data-act=newgame][data-v]"); await page.click("[data-act=ng-lineup]");
   await page.click("[data-act=ng-next]");
   assert.ok((await page.inputValue("#d-park")).length > 0, "park filled in from the schedule");
   assert.match(await text(page, ".sheet"), /The schedule has you (at home|as visitors)/);
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("who's here tonight: mark someone out and they leave the lineup; Auto-fill uses only who's here", async () => {
+  const { page, context, errors } = await open(390, 844);
+  await page.click("[data-act=settings]"); await page.click(".sheet [data-act=endgame]");
+  if (await page.$(".sheet [data-act=close]")) await page.click(".sheet [data-act=close]");
+  await page.click(".tabbar [data-v=game]"); await page.click(".offsched [data-act=newgame]");
+  const total = (await page.$$(".hrow")).length;
+  assert.equal((await page.$$(".hrow.in")).length, total, "everyone starts in");
+  const out = await page.$eval(".hrow >> nth=1", b => b.querySelector(".hwho b").textContent);
+  await page.click(".hrow >> nth=1");
+  assert.match(await text(page, ".luhead h4"), new RegExp(`${total - 1} of ${total}`));
+  await page.click("[data-act=ng-lineup]");
+  assert.equal(await page.$(`.lupool .pcard:has-text("${out}")`), null, "not in tonight's player list");
+  assert.ok(await page.$(`.luout:has-text("${out}")`), "listed as not here, with a way to add them back");
+  await page.click("[data-act=lu-auto]");
+  const order = await page.$$eval(".lurow .who b", b => b.map(x => x.textContent));
+  assert.equal(order.length, total - 1, "Auto-fill puts everyone who's here in the order");
+  assert.ok(!order.includes(out), "and leaves out who isn't");
+  await page.click(`.luout [data-act=here]`);
+  assert.ok(await page.$(`.lupool .pcard:has-text("${out}")`), "added back");
   assert.deepEqual(errors, []);
   await context.close();
 });
