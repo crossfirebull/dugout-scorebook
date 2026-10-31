@@ -825,7 +825,7 @@ html[data-layout="phone"] #atbat .walkup, html[data-layout="short"] #atbat .walk
 #install .iic img { width: 48px; height: 48px; border-radius: 12px; }
 #install .it { display: block; font-size: 17px; font-weight: 600; } #install .it b { font-weight: 800; }
 #install small { display: block; color: rgba(255, 255, 255, .7); font-size: 14px; margin-top: 2px; }
-#install svg.inl { width: 18px; height: 18px; vertical-align: -4px; fill: currentColor; }
+#install svg.inl { width: 18px; height: 18px; vertical-align: -4px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 #install .ibig { width: 100%; min-height: 56px; font-size: 19px; }
 #install .ix { position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); right: 14px; width: 36px; height: 36px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, .12); color: rgba(255, 255, 255, .7); font-size: 16px; }   /* quiet: the way on is adding it to the Home Screen */
 /* phone on its side: the title on the left, the steps on the right */
@@ -2908,7 +2908,7 @@ function tutorialsList() {
    the book rolls over to add a hit and a run. Reduced motion, or a return visit: shown finished. */
 const GEAR_SVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
 // Real recordings, kept next to the app: swap either file to change the sound. If one is missing the intro just plays silently.
-const APP_VERSION = "2026.10.31-5";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
+const APP_VERSION = "2026.10.31-6";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
 const INTRO_SOUNDS = [["sounds/intro-bat.mp3", 0], ["sounds/intro-cheer.mp3", .15]];   // file, seconds after the tap
 let introBytes = null;
 function loadIntro() {   // fetched while the title screen is up, so the tap plays right away
@@ -4066,14 +4066,15 @@ addEventListener("beforeinstallprompt", e => { e.preventDefault(); installPrompt
 function installSkipped() { try { return localStorage.getItem("scorekept.install") === "skip"; } catch (e) { return false; } }
 const SHARE_ICON = '<svg viewBox="0 0 24 24"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5"/><path d="M8 10H6a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-9a1 1 0 0 0-1-1h-2"/></svg>';
 const ADD_ICON = '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3.5"/><path d="M12 8.5v7M8.5 12h7"/></svg>';
+const MENU_ICON = '<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h13M4 17h9"/></svg>';   // Safari's address-bar menu (iOS 26)
 const DOTS_ICON = '<svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18" cy="12" r="1.6"/></svg>';
 function showInstall(force) {
   if (installedApp() || (!force && (installSkipped() || !(onIOS || onAndroid)))) return;
   let o = $("install"); if (!o) { o = document.createElement("div"); o.id = "install"; o.setAttribute("role", "dialog"); o.setAttribute("aria-modal", "true"); o.setAttribute("aria-label", "Add ScoreKept to your Home Screen"); document.body.appendChild(o); }
   const safari = onIOS && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(UA);
   const steps = onIOS ? [
-      [SHARE_ICON, safari ? "Tap the <b>Share</b> button" : "Open this page in <b>Safari</b>, then tap <b>Share</b>", `Bottom of Safari. Or tap ${DOTS_ICON.replace("<svg", '<svg class="inl"')} first.`],
-      [ADD_ICON, "Tap <b>Add to Home Screen</b>", "You may need to scroll down."],
+      [MENU_ICON, safari ? `Tap ${MENU_ICON.replace("<svg", '<svg class="inl"')} in the address bar, then <b>Share</b>` : "Open this page in <b>Safari</b>", safari ? `Older iPhones: tap ${SHARE_ICON.replace("<svg", '<svg class="inl"')} Share at the bottom.` : "Then tap Share."],
+      [ADD_ICON, "Scroll down, tap <b>Add to Home Screen</b>", "Tap View More if you don't see it."],
       ['<img src="icons/apple-touch-icon.png" alt="">', "Tap <b>Add</b>", "Then open ScoreKept from your Home Screen."]]
     : [[DOTS_ICON.replace("<svg", '<svg style="transform:rotate(90deg)"'), "Tap the <b>⋮</b> menu", "Top right of Chrome."], [ADD_ICON, "Tap <b>Install app</b>", "Or Add to Home screen."], ['<img src="icons/icon-192.png" alt="">', "Open <b>ScoreKept</b>", "From your Home Screen."]];
   o.innerHTML = `<div class="ibox">
@@ -4082,7 +4083,7 @@ function showInstall(force) {
       <p class="iwhy">It opens like an app and keeps your season safe.</p>
       ${onAndroid && installPrompt ? `<button class="obtn go ibig" data-act="install-now">Install ScoreKept</button>` : ""}
       <ol class="isteps">${steps.map(([ic, t, sub], i) => `<li><span class="inum">${i + 1}</span><span class="iic">${ic}</span><span><b class="it">${t}</b><small>${sub}</small></span></li>`).join("")}</ol>
-      ${onIOS && safari ? `<div class="ipoint" aria-hidden="true">${SHARE_ICON}</div>` : ""}
+      ${onIOS && safari ? `<div class="ipoint" aria-hidden="true">${MENU_ICON}</div>` : ""}
     </div>
     <button class="ix" data-act="install-later" aria-label="Close">✕</button>`;
 }

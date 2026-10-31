@@ -1021,7 +1021,7 @@ test("a phone opening the link in Safari sees how to add ScoreKept to the Home S
   await page.goto(base); await page.waitForSelector("#install");
   assert.match(await text(page, "#install h2"), /Home Screen/);
   assert.equal((await page.$$("#install .isteps li")).length, 3);
-  assert.match(await text(page, "#install .isteps"), /Share[\s\S]*Add to Home Screen[\s\S]*Add/);
+  assert.match(await text(page, "#install .isteps"), /address bar, then Share[\s\S]*Add to Home Screen[\s\S]*Add/);
   await page.click("[data-act=install-later]");
   assert.equal(await page.$("#install"), null, "Not now goes on to the app");
   assert.ok(await page.$(".onb .welcome"), "and the welcome screen is there");
