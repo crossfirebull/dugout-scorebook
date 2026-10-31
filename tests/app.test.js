@@ -1223,3 +1223,23 @@ test("Who's in? poll: set up a Discord webhook, then post a real In/Out poll for
   assert.deepEqual(errors, []);
   await context.close();
 });
+
+test("Discord: polls and recaps go to their own channels; the recap posts with its picture", async () => {
+  const { page, context, errors } = await open(393, 852);
+  const sent = [];
+  await page.route("https://discord.com/api/webhooks/**", r => { sent.push({ url: r.request().url(), type: r.request().headers()["content-type"] || "", body: r.request().postData() || "" }); r.fulfill({ status: 200, body: "{}", headers: { "access-control-allow-origin": "*" } }); });
+  await page.click("[data-act=settings]"); if (await page.$("[data-act=opensettings]")) await page.click("[data-act=opensettings]");
+  await page.click(".sheet [data-act=discord]");
+  await page.fill("#dc-url", "https://discord.com/api/webhooks/111/polls"); await page.fill("#dc-game", "https://discord.com/api/webhooks/222/game");
+  await page.click(".sheet [data-act=dc-test]"); await page.waitForSelector(".sheet .okmsg:has-text('Connected')");
+  assert.ok(sent.some(x => x.url.includes("/111/") && /polls here/.test(x.body)) && sent.some(x => x.url.includes("/222/") && /recaps here/.test(x.body)), "a test message in each channel");
+  await page.click(".sheet [data-act=close]"); if (await page.$(".sheet [data-act=close]")) await page.click(".sheet [data-act=close]");
+  sent.length = 0;
+  await page.click(".tabbar [data-v=stats]"); await page.click("[data-act=peek]"); await page.click("[data-act=recap]");
+  await page.waitForSelector(".recapimg img"); await page.click("[data-act=recap-discord]");
+  await page.waitForFunction(() => /Posted to your game channel/.test(document.querySelector(".sheet").textContent));
+  assert.equal(sent.length, 1); assert.match(sent[0].url, /\/222\//, "recap goes to the game channel");
+  assert.match(sent[0].type, /multipart\/form-data/); assert.match(sent[0].body, /payload_json/); assert.match(sent[0].body, /scorekept-recap\.png/);
+  assert.deepEqual(errors, []);
+  await context.close();
+});

@@ -2932,7 +2932,7 @@ const HELP = [
     <li><b>Walk-offs:</b> the game ends the moment the home team takes the lead in the last inning. Only the winning run counts, unless it's a home run.</li></ul>`],
   ["Ending a game and seasons", `
     <ul><li>When the game is over, tap <b>Save to season</b> to add it to everyone's stats. <b>End game now</b> in Game settings ends it early.</li>
-    <li><b>Who's in? poll:</b> on the Game tab's Up next card (or any game on the schedule), <b>Who's in? poll</b> posts a real Discord poll to your team channel: "Who's in? Wed 11/5 @ 9:15 PM vs …" with ✅ In and ❌ Out, closing at game time. Set it up once in Settings → Discord with a channel webhook. <b>Copy text</b> works for a group chat instead.</li>
+    <li><b>Who's in? poll:</b> on the Game tab's Up next card (or any game on the schedule), <b>Who's in? poll</b> posts a real Discord poll to your team channel: "Who's in? Wed 11/5 @ 9:15 PM vs …" with ✅ In and ❌ Out, closing at game time. Set it up once in Settings → Discord: a webhook for a polls channel, and one for a game channel where <b>Share recap → Post to Discord</b> sends the recap. <b>Copy text</b> works for a group chat instead.</li>
     <li><b>Schedule:</b> Stats → <b>Schedule</b> holds this season's games: date, time, opponent, field, and home or away if you know it. Between games the Game tab shows <b>Up next</b>; <b>Start this game</b> fills in New Game. Played games show their result.</li>
     <li>Start a new season (Spring, Summer or Fall) with <b>New Season</b> on the Stats tab. Your roster carries over and old seasons stay saved. The season menu switches between them or shows all seasons together.</li></ul>`],
   ["Stats, spray charts and scouting", `
@@ -3067,7 +3067,7 @@ function tutorialsList() {
    the book rolls over to add a hit and a run. Reduced motion, or a return visit: shown finished. */
 const GEAR_SVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
 // Real recordings, kept next to the app: swap either file to change the sound. If one is missing the intro just plays silently.
-const APP_VERSION = "2026.10.31-19";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
+const APP_VERSION = "2026.10.31-20";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
 const INTRO_SOUNDS = [["sounds/intro-bat.mp3", 0], ["sounds/intro-cheer.mp3", .15]];   // file, seconds after the tap
 let introBytes = null;
 function loadIntro() {   // fetched while the title screen is up, so the tap plays right away
@@ -3469,12 +3469,13 @@ function renderSheet() {
   } else if (sh.type === "discord") {
     const hook = discordHook();
     body = `<h3>Discord</h3>
-      <p>ScoreKept posts to one channel in your team's Discord: the weekly <b>Who's in?</b> poll, and later live game updates. It uses a webhook, a link Discord makes for posting to a channel.</p>
-      <ol class="dsteps"><li>In Discord, open your team channel's settings (<b>Edit Channel</b>).</li><li><b>Integrations → Webhooks → New Webhook</b>. Name it ScoreKept if you like.</li><li>Tap <b>Copy Webhook URL</b> and paste it below.</li></ol>
-      <div class="field"><label for="dc-url">Webhook link</label><input id="dc-url" type="url" inputmode="url" autocomplete="off" placeholder="https://discord.com/api/webhooks/…" value="${esc(hook)}"></div>
+      <p>ScoreKept posts to your team's Discord through webhooks: a link Discord makes for posting to one channel. Use a separate channel for each so your general chat stays clear: one for the weekly <b>Who's in?</b> poll, one for game recaps (and live play-by-play soon).</p>
+      <ol class="dsteps"><li>In Discord, make the channels if you need them (say <b>#whos-in</b> and <b>#game-day</b>).</li><li>Open a channel's settings (<b>Edit Channel</b>) → <b>Integrations → Webhooks → New Webhook</b>.</li><li>Tap <b>Copy Webhook URL</b> and paste it in the matching box below. Repeat for the other channel.</li></ol>
+      <div class="field"><label for="dc-url">Polls channel (e.g. #whos-in)</label><input id="dc-url" type="url" inputmode="url" autocomplete="off" placeholder="https://discord.com/api/webhooks/…" value="${esc(hook)}"></div>
+      <div class="field"><label for="dc-game">Game updates channel (e.g. #game-day): recaps now, live play-by-play soon</label><input id="dc-game" type="url" inputmode="url" autocomplete="off" placeholder="Optional: a webhook for a second channel" value="${esc(discordHook("game"))}"></div>
       <p class="dnote">Only server admins (or people allowed to manage webhooks) can make one. The link stays on this phone and isn't in backups. Anyone with it can post to that channel, so don't share it.</p>
       ${sh.msg ? `<p class="${sh.ok ? "okmsg" : "errmsg"}"><b>${esc(sh.msg)}</b></p>` : ""}
-      <div class="acts" style="justify-content:space-between">${hook ? `<button class="tbtn" data-act="dc-clear">Remove</button>` : "<span></span>"}
+      <div class="acts" style="justify-content:space-between">${hook || discordHook("game") ? `<button class="tbtn" data-act="dc-clear">Remove</button>` : "<span></span>"}
         <span style="display:flex;gap:8px"><button class="tbtn" data-act="dc-test">Save &amp; test</button><button class="tbtn primary" data-act="dc-save">Save</button></span></div>`;
   } else if (sh.type === "newseason") {
     const cur = store.seasons.find(x => x.id === store.currentSeasonId);
@@ -3563,7 +3564,8 @@ function renderSheet() {
       <p>Share the picture, the text, or both. In Discord the text keeps its bold and the line score lines up.</p>
       <div class="recapimg">${sh.img ? `<img src="${sh.img}" alt="Game recap">` : `<div class="luempty">Making the recap…</div>`}</div>
       <div class="recapacts"><button class="tbtn primary" data-act="recap-share" data-v="image" ${sh.img ? "" : "disabled"}>Share picture</button>
-        <button class="tbtn" data-act="recap-share" data-v="text">Share text</button><button class="tbtn" data-act="recap-copy">Copy text</button></div>
+        <button class="tbtn" data-act="recap-share" data-v="text">Share text</button><button class="tbtn" data-act="recap-copy">Copy text</button>
+        ${discordHook("game") ? `<button class="tbtn" data-act="recap-discord" ${sh.img && !sh.busy ? "" : "disabled"}>${sh.busy ? "Posting…" : "Post to Discord"}</button>` : ""}</div>
       ${sh.msg ? `<p style="color:var(--safe)">${esc(sh.msg)}</p>` : ""}
       <details class="recaptext"><summary>Text version</summary><pre>${esc(sh.text)}</pre></details>
       <div class="acts"><button class="tbtn" data-act="close">Done</button></div>`;
@@ -3581,7 +3583,7 @@ function renderSheet() {
       <h4 style="margin:0">Games</h4>
       <div class="setlist">${link("sub", "New game defaults", `${pf.mode === "dugout" ? "Dugout mode" : "Scorekeeper mode"} · ${prefRules().innings} innings · league rules`, "gamedefaults")}
         ${link("sounds", "Sounds &amp; walk-up songs", "Game sounds, situation sounds, between-innings music and walk-ups.")}
-        ${link("discord", "Discord", discordHook() ? "Connected: Who's in? polls post to your team channel." : "Post the weekly Who's in? poll to your team's channel.")}</div>
+        ${link("discord", "Discord", discordHook() || discordHook("game") ? `Connected: ${[discordHook() && "polls", discordHook("game") && "game recaps"].filter(Boolean).join(" and ")} post to their own channels.` : "Post the weekly Who's in? poll and game recaps to your team's channels.")}</div>
       <h4 style="margin:0">Help</h4>
       <div class="setlist">${link("help", "Help &amp; how to score", "Every button, moving runners, league rules, stats and backups.")}
         ${link("sub", "Tutorials", `${Object.keys(TOURS).length} guided walk-throughs${done ? ` · ${done} done` : ""}.`, "tutorials")}
@@ -3693,12 +3695,17 @@ function upNextCard() {
 }
 /* ---------- Discord: post the weekly "Who's in?" poll through a channel webhook ----------
    The webhook link stays on this device (not in backups). Discord shows the votes; a webhook can't read them back. */
-const discordHook = () => { try { return localStorage.getItem("scorekept.discord") || ""; } catch (e) { return ""; } };
+// Two channels, so the team's general chat stays clear: polls go to one, game updates and recaps to another
+const DC_KEYS = { poll: "scorekept.discord", game: "scorekept.discord.game" };
+const discordHook = (k = "poll") => { try { return localStorage.getItem(DC_KEYS[k]) || ""; } catch (e) { return ""; } };
 const okHook = u => /^https:\/\/(canary\.|ptb\.)?(discord|discordapp)\.com\/api\/webhooks\/\d+\/[\w-]+/.test(u);
-async function discordPost(body) {
-  const url = discordHook(); if (!url) return "Set up Discord first.";
+async function discordPost(body, k = "poll", file) {   // file: a picture to attach (the recap)
+  const url = discordHook(k); if (!url) return "Set up Discord first.";
   try {
-    const r = await fetch(url + (url.includes("?") ? "&" : "?") + "wait=true", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(Object.assign({ username: "ScoreKept" }, body)) });
+    const payload = JSON.stringify(Object.assign({ username: "ScoreKept" }, body));
+    let opts = { method: "POST", headers: { "Content-Type": "application/json" }, body: payload };
+    if (file) { const f = new FormData(); f.append("payload_json", payload); f.append("files[0]", file, file.name); opts = { method: "POST", body: f }; }
+    const r = await fetch(url + (url.includes("?") ? "&" : "?") + "wait=true", opts);
     return r.ok ? "" : r.status === 404 ? "Discord doesn't know that webhook. It may have been deleted; paste a new link in Settings → Discord." : `Discord said no (error ${r.status}).`;
   } catch (e) { return navigator.onLine === false ? "No signal. Try again when you're online." : "Couldn't reach Discord. Check the webhook link in Settings → Discord."; }
 }
@@ -4062,6 +4069,15 @@ document.addEventListener("click", ev => {
       const pins = Object.assign({}, defPins()); if (pins[v]) delete pins[v]; else pins[v] = true;
       G.pins = pins; ui.msg = G.autoRot ? autoRotate() : ""; save(); render(); break;
     }
+    case "recap-discord": {
+      const sh = ui.sheet; if (!sh.canvas || sh.busy) break;
+      sh.busy = true; sh.msg = ""; renderSheet();
+      sh.canvas.toBlob(blob => {
+        const file = new File([blob], "scorekept-recap.png", { type: "image/png" });
+        discordPost({ content: sh.text.slice(0, 1990) }, "game", file).then(err => { sh.busy = false; sh.msg = err || "Posted to your game channel ✅"; renderSheet(); });
+      }, "image/png");
+      break;
+    }
     case "poll": ui.sheet = { type: "poll", id: v }; renderSheet(); break;
     case "poll-copy": {
       const x = schedule().find(y => y.id === ui.sheet.id); if (!x) break;
@@ -4077,15 +4093,16 @@ document.addEventListener("click", ev => {
     }
     case "discord": ui.returnTo = ui.sheet && ui.sheet.type === "settings" ? "settings" : ui.returnTo; ui.sheet = { type: "discord", back: ui.sheet && ui.sheet.type === "poll" ? ui.sheet.id : null }; renderSheet(); break;
     case "dc-save": case "dc-test": {
-      const u = $("dc-url").value.trim(), sh = ui.sheet;
-      if (!okHook(u)) { sh.msg = "That doesn't look like a Discord webhook link. It starts with https://discord.com/api/webhooks/"; sh.ok = false; renderSheet(); break; }
-      try { localStorage.setItem("scorekept.discord", u); } catch (e) {}
+      const u = $("dc-url").value.trim(), gu = $("dc-game").value.trim(), sh = ui.sheet;
+      if ((u && !okHook(u)) || (gu && !okHook(gu)) || (!u && !gu)) { sh.msg = "That doesn't look like a Discord webhook link. It starts with https://discord.com/api/webhooks/"; sh.ok = false; renderSheet(); break; }
+      try { u ? localStorage.setItem(DC_KEYS.poll, u) : localStorage.removeItem(DC_KEYS.poll); gu ? localStorage.setItem(DC_KEYS.game, gu) : localStorage.removeItem(DC_KEYS.game); } catch (e) {}
       if (act === "dc-save") { if (sh.back) { ui.sheet = { type: "poll", id: sh.back }; } else { sh.msg = "Saved."; sh.ok = true; } renderSheet(); break; }
       sh.msg = "Testing…"; sh.ok = true; renderSheet();
-      discordPost({ content: "⚾ ScoreKept is connected to this channel." }).then(err => { sh.msg = err || "Connected ✅ Check the channel for a test message."; sh.ok = !err; renderSheet(); });
+      Promise.all([u ? discordPost({ content: "⚾ ScoreKept will post Who's in? polls here." }, "poll") : "", gu ? discordPost({ content: "⚾ ScoreKept will post game recaps here." }, "game") : ""])
+        .then(([a, b]) => { const err = a || b; sh.msg = err || "Connected ✅ Check each channel for a test message."; sh.ok = !err; renderSheet(); });
       break;
     }
-    case "dc-clear": try { localStorage.removeItem("scorekept.discord"); } catch (e) {} ui.sheet.msg = "Removed."; ui.sheet.ok = true; renderSheet(); break;
+    case "dc-clear": try { localStorage.removeItem(DC_KEYS.poll); localStorage.removeItem(DC_KEYS.game); } catch (e) {} ui.sheet.msg = "Removed."; ui.sheet.ok = true; renderSheet(); break;
     case "newseason": ui.msg = ""; ui.sheet = { type: "newseason" }; renderSheet(); break;
     case "startseason": {
       if (store.currentId) { ui.msg = "Finish or save the game in progress first."; renderSheet(); break; }

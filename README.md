@@ -79,7 +79,7 @@ Nothing is locked once the game starts:
 
 Each week, tap **Who's in? poll** on the Game tab's **Up next** card (or open any game on the schedule). ScoreKept posts a real Discord poll to your team's channel, like "Who's in? Wed 11/5 @ 9:15 PM vs Trailer Park Boys", with **✅ In** and **❌ Out**, closing at game time. Discord shows who voted; tap them in or out on **Who's here** when you start the game. (Reading the votes back automatically would need a Discord bot, which is a bigger project.)
 
-To set it up once: in Discord, open your team channel's settings → **Integrations → Webhooks → New Webhook → Copy Webhook URL**, then paste it in **Settings → Discord** and tap **Save & test**. The link stays on your phone and isn't in backups. No Discord? **Copy text** gives you the poll to paste in a group chat.
+To set it up once, give ScoreKept its own channels so your general chat stays clear, say **#whos-in** for polls and **#game-day** for recaps (and live play-by-play soon). In Discord, open each channel's settings → **Integrations → Webhooks → New Webhook → Copy Webhook URL**, paste each link in its box in **Settings → Discord**, and tap **Save & test** (a test message lands in each channel). With a game channel set, **Share recap** gets **Post to Discord**, which sends the picture and text there. The links stay on your phone and aren't in backups. No Discord? **Copy text** gives you the poll to paste in a group chat.
 
 ## Sharing a game recap
 
