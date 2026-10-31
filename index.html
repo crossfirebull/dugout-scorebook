@@ -843,7 +843,10 @@ html[data-layout="phone"] #atbat .walkup, html[data-layout="short"] #atbat .walk
 #install .obtn { border-radius: 14px; font: inherit; font-weight: 700; font-size: 17px; padding: 0 20px; border: 2px solid rgba(255, 255, 255, .35); background: transparent; color: #ffffff; }
 #install .obtn.go { background: var(--app-gold); color: #111111; border-color: transparent; }
 /* Player card: tap a name on the Book, Stats or Team page */
-.plink { all: unset; cursor: pointer; color: inherit; text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 30%, transparent); text-underline-offset: 3px; }
+.plink { all: unset; cursor: pointer; color: var(--ink-blue); font-weight: 600; -webkit-tap-highlight-color: rgba(0, 0, 0, .08); }
+.plink::after { content: " ›"; font-weight: 700; opacity: .7; }   /* a name you can tap for the player card */
+table.book .plink::after { content: none; }   /* tight column: the blue says it's tappable */
+table.book td.name .plink { display: inline; }
 .plink:focus-visible { outline: 2px solid var(--ink-blue); border-radius: 3px; }
 .pchead { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 14px; align-items: center; margin: -4px 44px 4px 0;
   padding: 12px; border-radius: 14px; background: linear-gradient(135deg, var(--app-navy), color-mix(in srgb, var(--app-navy) 70%, #000000)); color: #ffffff; box-shadow: inset 0 4px 0 var(--team-p, var(--app-red)); }
@@ -1983,7 +1986,7 @@ function renderBoard() {
   if (canAdd) h += `<th class="addinn"><button data-act="addinning" aria-label="Add an inning" title="Add an inning">+</button></th>`;
   h += '<th class="tot">R</th><th>H</th><th>E</th></tr></thead><tbody>';
   [0, 1].forEach(t => {
-    h += `<tr class="${live && S.half === t ? "batting" : ""}"><td class="team"><span class="bat"></span>${esc(names[t])}</td>`;
+    h += `<tr class="${live && S.half === t ? "batting" : ""}"><td class="team" title="${esc(names[t])}"><span class="bat"></span>${esc(teamAbbr(t))}</td>`;   // short names, so they never get cut off
     for (let i = 0; i < cols; i++) {
       const v = S.runs[t][i], now = live && S.half === t && S.inning === i + 1;
       let txt = v === undefined ? "" : v;
@@ -2118,6 +2121,8 @@ function mini(c) {
   return `<svg class="mini" viewBox="0 0 52 52" aria-label="${esc(c.code)}${c.scored ? ", scored" : ""}${c.out ? ", out " + c.out : ""}">
     <path class="path" d="M26 48 L48 26 L26 4 L4 26 Z" />${c.scored ? '<path class="scored" d="M26 48 L48 26 L26 4 L4 26 Z" />' : ""}${ran}${code}${out}${notes}</svg>`;
 }
+// The Book's name column is narrow: a long name becomes "J. Kowalski" so it isn't cut off mid-letter
+const bookName = n => { const w = String(n).trim().split(/\s+/); return n.length > 11 && w.length > 1 ? w[0][0] + ". " + w.slice(1).join(" ") : n; };
 function renderBook() {
   if (!$("book")) return;
   const names = teamNames(G), dug = modeOf(G) === "dugout";
@@ -2131,7 +2136,7 @@ function renderBook() {
   for (let slot = 0; slot < L; slot++) {
     const who = occ(S, t, slot);
     const st = S.stats[t][keyOf(who, t, slot)] || {};
-    h += `<tr class="${slot === up ? "up" : ""}"><td class="slot">${slot + 1}</td><td class="name">${who.pid && t === G.ourSide ? `<button class="plink" data-act="pcard" data-v="${esc(who.pid)}">${esc(entryName(who))}</button>` : esc(entryName(who))}${who.pos ? ` <span class="bpos">${esc(who.pos)}</span>` : ""}</td>`;
+    h += `<tr class="${slot === up ? "up" : ""}"><td class="slot">${slot + 1}</td><td class="name">${who.pid && t === G.ourSide ? `<button class="plink" data-act="pcard" data-v="${esc(who.pid)}" title="${esc(entryName(who))}">${esc(bookName(entryName(who)))}</button>` : esc(bookName(entryName(who)))}${who.pos ? ` <span class="bpos">${esc(who.pos)}</span>` : ""}</td>`;
     for (let i = 1; i <= cols; i++) h += `<td class="cell"><div class="stack">${S.book[t].filter(c => c.slot === slot && c.inning === i).map(c => c.ev == null ? mini(c) : `<div class="bcell" data-act="editplay" data-v="${c.ev}" role="button" tabindex="0" aria-label="Edit this at-bat">${mini(c)}</div>`).join("")}</div></td>`;
     ["AB", "R", "H", "RBI", "BB", "K"].forEach((k, j) => { const v = st[k] || 0; tot[k] += v; h += `<td class="st ${j === 0 ? "first" : ""}">${st.PA ? v : ""}</td>`; });
     h += "</tr>";
@@ -2988,7 +2993,7 @@ function tutorialsList() {
    the book rolls over to add a hit and a run. Reduced motion, or a return visit: shown finished. */
 const GEAR_SVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
 // Real recordings, kept next to the app: swap either file to change the sound. If one is missing the intro just plays silently.
-const APP_VERSION = "2026.10.31-13";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
+const APP_VERSION = "2026.10.31-14";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
 const INTRO_SOUNDS = [["sounds/intro-bat.mp3", 0], ["sounds/intro-cheer.mp3", .15]];   // file, seconds after the tap
 let introBytes = null;
 function loadIntro() {   // fetched while the title screen is up, so the tap plays right away
