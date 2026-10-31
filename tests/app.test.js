@@ -742,7 +742,7 @@ test("game recap: a picture and Discord-ready text for a finished game", async (
   const size = await page.$eval(".recapimg img", i => [i.naturalWidth, i.naturalHeight]);
   assert.deepEqual(size, [1080, 1350]);
   const txt = await page.$eval(".recaptext pre", x => x.textContent);
-  assert.match(txt, /^\*\*FINAL: /); assert.match(txt, /Top performers/); assert.match(txt, /R {2}H {2}E/);
+  assert.match(txt, /^\*\*FINAL: /); assert.match(txt, /Game MVP: /); assert.match(txt, /R {2}H {2}E/);
   // after a game ends, the final banner offers it too
   await page.click(".sheet [data-act=close]"); await page.click("[data-act=unpeek]");
   await page.click(".tabbar [data-v=game]");
@@ -985,6 +985,48 @@ test("Edit play from the Book shows the field; tap it, move the ball, and come b
   assert.match(await text(page, ".epwas"), /right/i, "the play now says right side");
   await page.click(".epfield"); await page.click(".ffhead [data-act=fieldback]");
   assert.match(await text(page, ".sheet h3"), /Edit play/, "Cancel also comes back");
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("saving a game to the season offers a one-tap backup right away", async () => {
+  const ev = [...threeOuts(), ...Array(10).fill(PA("HR")), ...ourOuts(), ...threeOuts(), ...Array(10).fill(PA("HR")), ...ourOuts(), ...threeOuts()];
+  const store = ruleGame({ runRule: [[3, 20], [4, 15], [5, 10]] }, ev); store.lastBackup = 0;
+  const { page, context, errors } = await openGame(store);
+  await page.click(".final [data-act=endgame]");
+  assert.match(await text(page, ".sheet h3"), /Saved to season/);
+  assert.match(await text(page, ".sheet .savedline"), /Win, 20–0/);
+  assert.ok(await page.$(".sheet [data-act=dl-backup]"), "Back up now");
+  assert.ok(await page.$(".sheet [data-act=recap]"), "Share recap");
+  await page.click(".sheet [data-act=close]");
+  assert.equal(await page.$(".sheet"), null);
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("keep the screen on: a switch in New game defaults, on unless turned off", async () => {
+  const { page, context, errors } = await open(390, 844);
+  await page.click("[data-act=settings]"); if (await page.$("[data-act=opensettings]")) await page.click("[data-act=opensettings]");
+  await page.click("[data-act=sub][data-v=gamedefaults]");
+  assert.equal(await page.isChecked("#p-awake"), true);
+  await page.click("label[for=p-awake]");
+  assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem("dugout-scorebook.v2")).prefs.awake), false);
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("a phone opening the link in Safari sees how to add ScoreKept to the Home Screen first", async () => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1", reducedMotion: "reduce" });
+  const page = await context.newPage(); const errors = []; page.on("pageerror", e => errors.push(e.message));
+  await page.goto(base); await page.waitForSelector("#install");
+  assert.match(await text(page, "#install h2"), /Home Screen/);
+  assert.equal((await page.$$("#install .isteps li")).length, 3);
+  assert.match(await text(page, "#install .isteps"), /Share[\s\S]*Add to Home Screen[\s\S]*Add/);
+  await page.click("[data-act=install-later]");
+  assert.equal(await page.$("#install"), null, "Not now goes on to the app");
+  assert.ok(await page.$(".onb .welcome"), "and the welcome screen is there");
+  await page.reload(); await page.waitForSelector(".tabbar button");
+  assert.equal(await page.$("#install"), null, "it doesn't come back every time");
   assert.deepEqual(errors, []);
   await context.close();
 });

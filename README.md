@@ -76,8 +76,8 @@ Nothing is locked once the game starts:
 ## Sharing a game recap
 
 When a game ends, tap **Share recap** on the final banner (or **Stats → Overview → View** on any saved game). It makes:
-- **a picture** in your team colors: the final score, win or loss, line score and top performers, sized for phones and Discord;
-- **text** formatted for Discord: bold final score, a line score that lines up, top performers and a box score.
+- **a picture**: the final score, win or loss, line score, and the stars of the game (the MVP plus up to two more), sized for phones and Discord;
+- **text** formatted for Discord: bold final score, a line score that lines up, the Game MVP and other stars, and a box score.
 
 **Share picture** and **Share text** open the share sheet (pick Discord, Messages and so on). **Copy text** puts it on the clipboard to paste.
 
@@ -99,9 +99,11 @@ Everyone can bat: pick **EH · bats only** in the lineup for anyone who isn't in
 
 - **Works with no signal.** After you open ScoreKept once with a connection, it keeps a copy of itself on the device and opens and scores with no signal at all. Updates arrive the next time it's online.
 - **Saves every tap** on the device as you go, so closing the app, a dead battery or losing signal mid-inning doesn't lose anything. Tap the wrong thing? **Undo**.
-- **Protected storage.** ScoreKept asks the device to keep its data out of the browser's automatic cleanup. Using it from the Home Screen icon helps too.
+- **Home Screen first.** The first time a phone opens the link in a browser, ScoreKept shows a three-step picture guide to adding it to the Home Screen (Safari can clear a website's saved data after about a week without a visit; Home Screen apps keep theirs). Android phones get an **Install** button where Chrome offers one. **Settings → Add to Home Screen** shows it again.
+- **Protected storage.** ScoreKept asks the device to keep its data out of the browser's automatic cleanup.
 - **Never overwrites a problem.** If saved data ever can't be read, ScoreKept sets it aside and tells you rather than starting over on top of it. If a save ever fails (for example in Private Browsing), a red warning appears.
-- **Backups in one tap.** **Stats → Overview → Export & backup → Save backup** opens the share sheet on iPhone and iPad with one file, named like `scorekept-backup-2026-10-30.json`: save it to Files or iCloud Drive, or email it to yourself. A reminder appears when it's been more than a week. **Restore from backup** brings everything back on any device.
+- **Backups in one tap.** **Stats → Overview → Export & backup → Save backup** opens the share sheet on iPhone and iPad with one file, named like `scorekept-backup-2026-10-30.json`: save it to Files or iCloud Drive, or email it to yourself. When you tap **Save to season** after a game, ScoreKept offers **Back up now** right there, and a reminder appears when it's been more than a week. **Restore from backup** brings everything back on any device.
+- **The screen stays on during a game**, so the phone doesn't dim or lock mid-inning, and goes back to normal after. Turn it off in **Settings → New game defaults**.
 
 ## Sounds and walk-up songs
 
@@ -170,21 +172,24 @@ The checks include simulated seasons: `tests/season-sim.js` plays random five-ga
 
 ## On the list
 
-**Next up**
-- Tests for seasons, substitutions, scouting and restoring older backups.
-- Refine the Help screen as questions come up at games.
+**Next up** (approved, in this order)
+- **Who's coming tonight:** mark players in or out before a game; the lineup builder shows only who's there.
+- **Defensive lineup card by inning:** who plays where and who sits each inning, with a count so playing time stays fair.
+- **Discord live updates:** runs and the final post to your team channel as they happen.
+- **Season schedule:** upcoming games (date, time, field, opponent) that fill in New Game; import from your league's schedule page if it can be read.
+- **Bigger text and better use of space:** a large-text switch, and more grouping so screens hold more.
 
 **Planned**
-- Polish each screen on its own display: phone, phone on its side, Raspberry Pi, iPad mini, iPad, iPad on its side and laptop.
-- Share a game summary (box score and line score) by text or email.
-- Choose a layout by hand instead of letting the app pick.
-- Your own organ clips to replace the built-in sounds.
+- **More rulesets built in:** baseball (with stolen bases), men's, women's and co-ed slow-pitch, fastpitch, and custom.
+- **Cloud backup:** copies of your season in Google Drive (needs a Google sign-in set up once).
+- **Live sync between devices**, so a second phone or a parent can follow the score.
+- **App Store version** (needs a Mac and Apple's $99/year developer account).
+- Keep refining each screen on phones, phones on their side and iPads; the tutorials; and the Help screen.
 
 **Someday**
-- Sync between devices, so a second iPad or a parent's phone sees the same season.
-- A baseball / softball switch (baseball would bring back stolen bases).
-- Apple Music for walk-up songs (needs an Apple developer account; see the note below).
-- An App Store version.
+- Milestone celebrations (first hit, first HR) with a sound.
+- Apple Music for walk-up songs (see the note below).
+- Your own organ clips to replace the built-in sounds.
 - The Python version (see `python/`), as a separate learning project.
 
 ### About Apple Music

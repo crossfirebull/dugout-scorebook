@@ -808,6 +808,33 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 #atbat { position: relative; }
 html[data-layout="phone"] #atbat .walkup, html[data-layout="short"] #atbat .walkup { position: absolute; top: 8px; right: 8px; margin: 0; min-height: 34px; padding: 0 10px; font-size: 14px; }
 .copyout { width: 100%; min-height: 120px; font-family: ui-monospace, Menlo, monospace; font-size: 12px; padding: 8px; border-radius: 6px; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); }
+/* Add to Home Screen guide: shown over everything the first time a phone opens ScoreKept in a browser tab */
+#install { position: fixed; inset: 0; z-index: 90; overflow-y: auto; display: grid; place-items: center; color: #f3f6f9;
+  background: radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--app-navy) 82%, #ffffff) 0%, var(--app-navy) 48%, color-mix(in srgb, var(--app-navy) 55%, #000000) 100%);
+  padding: calc(18px + env(safe-area-inset-top, 0px)) 16px calc(18px + env(safe-area-inset-bottom, 0px)); }
+#install .ibox { width: 100%; max-width: 440px; display: grid; gap: 11px; justify-items: center; text-align: center; }
+#install .iicon { width: 64px; height: 64px; border-radius: 15px; box-shadow: 0 8px 24px rgba(0, 0, 0, .4); }
+#install h2 { margin: 0; font-family: var(--f-title); font-weight: 400; font-size: clamp(24px, 6.5vw, 32px); line-height: 1.12; text-shadow: 3px 3px 0 var(--app-red); text-wrap: balance; }
+#install .iwhy { margin: 0; font-size: 15px; color: rgba(255, 255, 255, .8); max-width: 380px; }
+#install .isteps { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 10px; width: 100%; text-align: left; }
+#install .isteps li { display: grid; grid-template-columns: 28px 48px minmax(0, 1fr); align-items: center; gap: 12px; padding: 10px 14px; border-radius: 14px; background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .14); }
+#install .inum { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--app-gold); color: #1b1400; font-weight: 800; }
+#install .iic { width: 48px; height: 48px; border-radius: 12px; display: grid; place-items: center; background: #ffffff; color: #0a7aff; }
+#install .iic svg { width: 28px; height: 28px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+#install .iic svg circle { fill: currentColor; stroke: none; }
+#install .iic img { width: 48px; height: 48px; border-radius: 12px; }
+#install .it { display: block; font-size: 17px; font-weight: 600; } #install .it b { font-weight: 800; }
+#install small { display: block; color: rgba(255, 255, 255, .7); font-size: 14px; margin-top: 2px; }
+#install svg.inl { width: 18px; height: 18px; vertical-align: -4px; fill: currentColor; }
+#install .ibig { width: 100%; min-height: 56px; font-size: 19px; }
+#install .ior { margin: -4px 0 0; color: rgba(255, 255, 255, .7); font-size: 14px; }
+#install .ilater { width: 100%; min-height: 50px; margin-top: 4px; }
+#install .ipoint { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; background: var(--app-gold); color: #1b1400; animation: ibounce 1.2s ease-in-out infinite; }
+#install .ipoint svg { width: 30px; height: 30px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+@keyframes ibounce { 50% { transform: translateY(10px); } }   /* nudges you toward Safari's toolbar below */
+@media (prefers-reduced-motion: reduce) { #install .ipoint { animation: none; } }
+#install .obtn { border-radius: 14px; font: inherit; font-weight: 700; font-size: 17px; padding: 0 20px; border: 2px solid rgba(255, 255, 255, .35); background: transparent; color: #ffffff; }
+#install .obtn.go { background: var(--app-gold); color: #111111; border-color: transparent; }
 </style>
 </head>
 <body>
@@ -1713,11 +1740,35 @@ function soundPlan(prev, cur, g) {
   return items;
 }
 
-let wakeLock = null;
+/* Keep the screen on while a game is in progress, so the phone doesn't dim and lock mid-inning.
+   The Screen Wake Lock does it where it works. iPhone Home Screen apps before iOS 18.4 ignore it,
+   so there (or if it's refused) a silent, invisible looping video keeps the screen awake instead. */
+const AWAKE_MP4 = "data:video/mp4;base64,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b21hX21lPTEgdHJlbGxpcz0xIDh4OGRjdD0wIGNxbT0wIGRlYWR6b25lPTIxLDExIGZhc3RfcHNraXA9MSBjaHJvbWFfcXBfb2Zmc2V0PS0yIHRocmVhZHM9MSBsb29rYWhlYWRfdGhyZWFkcz0xIHNsaWNlZF90aHJlYWRzPTAgbnI9MCBkZWNpbWF0ZT0xIGludGVybGFjZWQ9MCBibHVyYXlfY29tcGF0PTAgY29uc3RyYWluZWRfaW50cmE9MCBiZnJhbWVzPTAgd2VpZ2h0cD0wIGtleWludD0yNTAga2V5aW50X21pbj0xIHNjZW5lY3V0PTQwIGludHJhX3JlZnJlc2g9MCByY19sb29rYWhlYWQ9NDAgcmM9Y3JmIG1idHJlZT0xIGNyZj0yMy4wIHFjb21wPTAuNjAgcXBtaW49MCBxcG1heD02OSBxcHN0ZXA9NCBpcF9yYXRpbz0xLjQwIGFxPTE6MS4wMACAAAAADmWIhAW///8PRQABT3+AARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcAAAAGQZo4CvqAARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAc=";
+let wakeLock = null, awakeVid = null;
+const wantAwake = () => !(store.prefs && store.prefs.awake === false) && !!curGame() && document.visibilityState === "visible";
+const isHomeScreenIOS = () => navigator.standalone === true;
+const screenKeptOn = () => !!wakeLock || !!(awakeVid && !awakeVid.paused);
 async function keepAwake() {
-  try { if ("wakeLock" in navigator && !wakeLock) { wakeLock = await navigator.wakeLock.request("screen"); wakeLock.addEventListener("release", () => { wakeLock = null; }); } } catch (e) {}
+  if (!wantAwake()) {
+    if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; }
+    if (awakeVid) awakeVid.pause();
+    return;
+  }
+  let locked = !!wakeLock;
+  if (!locked && "wakeLock" in navigator) {
+    try { wakeLock = await navigator.wakeLock.request("screen"); wakeLock.addEventListener("release", () => { wakeLock = null; }); locked = true; } catch (e) {}
+  }
+  if (!locked || isHomeScreenIOS()) {
+    if (!awakeVid) {
+      awakeVid = document.createElement("video");
+      awakeVid.setAttribute("playsinline", ""); awakeVid.setAttribute("aria-hidden", "true"); awakeVid.muted = true; awakeVid.loop = true; awakeVid.src = AWAKE_MP4;
+      awakeVid.style.cssText = "position:fixed;left:0;bottom:0;width:1px;height:1px;opacity:0;pointer-events:none";
+      document.body.appendChild(awakeVid);
+    }
+    if (awakeVid.paused) awakeVid.play().catch(() => {});   // needs a tap to start; every tap tries again
+  }
 }
-document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") keepAwake(); });
+document.addEventListener("visibilitychange", keepAwake);
 
 /* =====================================================================
    Rendering: shell
@@ -1733,6 +1784,7 @@ function render() {
   const hideSample = ui.view === "game" && /^(short|phone)$/.test(document.documentElement.dataset.layout || "");   // no height to spare; shown on other tabs
   $("sampleBox").innerHTML = store.sample && !hideSample ? `<div class="banner ${slim ? "slim" : ""}"><span>${slim ? "<b>Sample season</b> (made-up data)" : "This is a <b>made-up sample season</b> so you can see how the stats work."}</span><span class="spacer"></span>
     <button class="tbtn ${ui.confirm === "clear" ? "danger" : ""}" data-act="clearsample">${ui.confirm === "clear" ? "Tap again to erase sample data" : "Clear sample data"}</button></div>` : "";
+  keepAwake();
   if (ui.view === "game" || ui.view === "book") renderGameView();
   else if (ui.view === "stats") { shellKey = ""; renderStats(); }
   else if (ui.view === "scout") { shellKey = ""; renderScout(); }
@@ -2851,7 +2903,7 @@ function tutorialsList() {
    the book rolls over to add a hit and a run. Reduced motion, or a return visit: shown finished. */
 const GEAR_SVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
 // Real recordings, kept next to the app: swap either file to change the sound. If one is missing the intro just plays silently.
-const APP_VERSION = "2026.10.31-3";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
+const APP_VERSION = "2026.10.31-4";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
 const INTRO_SOUNDS = [["sounds/intro-bat.mp3", 0], ["sounds/intro-cheer.mp3", .15]];   // file, seconds after the tap
 let introBytes = null;
 function loadIntro() {   // fetched while the title screen is up, so the tap plays right away
@@ -3232,12 +3284,22 @@ function renderSheet() {
         ${link("sounds", "Sounds &amp; walk-up songs", "Game sounds, situation sounds, between-innings music and walk-ups.")}</div>
       <h4 style="margin:0">Help</h4>
       <div class="setlist">${link("help", "Help &amp; how to score", "Every button, moving runners, league rules, stats and backups.")}
-        ${link("sub", "Tutorials", `${Object.keys(TOURS).length} guided walk-throughs${done ? ` · ${done} done` : ""}.`, "tutorials")}</div>
+        ${link("sub", "Tutorials", `${Object.keys(TOURS).length} guided walk-throughs${done ? ` · ${done} done` : ""}.`, "tutorials")}
+        ${installedApp() ? "" : link("showinstall", "Add to Home Screen", "How to put ScoreKept on your Home Screen so it opens like an app and keeps your data safe.")}</div>
       <h4 style="margin:0">Your data</h4>
       <div class="setlist">${link("backup", "Backup &amp; restore", "Save everything to a file, or bring it back on any device.")}
         ${link("onb-again", "Run the welcome setup again", "Walk through team, colors, scoring style, rules and roster. Nothing is erased.")}</div>
       <p style="font-size:13px">Settings for a game in progress are under the gear during that game. ScoreKept version ${APP_VERSION}.</p>
       <div class="acts"><button class="tbtn primary" data-act="close">Done</button></div>`;
+  } else if (sh.type === "saved") {
+    const g = store.games.find(x => x.id === sh.gid), r = g && recapData(g);
+    const done = store.lastBackup && Date.now() - store.lastBackup < 60000;
+    body = `<h3>Saved to season</h3>
+      ${r ? `<p class="savedline"><b>${r.res === "W" ? "Win" : r.res === "L" ? "Loss" : "Tie"}, ${r.R[r.us]}–${r.R[r.them]}</b> vs ${esc(r.names[r.them])}. Everyone's stats are updated.</p>` : ""}
+      <p>${done ? "Backed up. Keep the file somewhere off this phone, like iCloud Drive or email." : "Back up now so a lost or reset phone never costs you the season. It saves one small file to Files, iCloud Drive or email."}</p>
+      ${ui.msg && !done ? `<p><b>${esc(ui.msg)}</b></p>` : ""}
+      <div class="acts" style="justify-content:space-between">${g ? `<button class="tbtn" data-act="recap" data-v="${esc(g.id)}">Share recap</button>` : ""}
+        ${done ? `<button class="tbtn primary" data-act="close">Done</button>` : `<span style="display:flex;gap:8px"><button class="tbtn" data-act="close">Not now</button><button class="tbtn primary" data-act="dl-backup">Back up now</button></span>`}</div>`;
   } else if (sh.type === "tutorials") {
     body = `<h3>Tutorials</h3>
       <p>Short guided walk-throughs. Each one points at the real buttons; skip out any time.</p>
@@ -3249,13 +3311,14 @@ function renderSheet() {
         : `<div class="setrow"><span><small>Parks you type in New Game show up here and in its dropdown. Delete any you don't need.</small></span></div>`}</div>
       <div class="acts"><button class="tbtn primary" data-act="close">Done</button></div>`;
   } else if (sh.type === "gamedefaults") {
-    const pf = Object.assign({ mode: "dugout", askHits: true }, store.prefs);
+    const pf = Object.assign({ mode: "dugout", askHits: true, awake: true }, store.prefs);
     const psw = (k, title, desc, on) => `<label class="setrow" for="p-${k}"><span><b>${title}</b><small>${desc}</small></span><input type="checkbox" class="switch" id="p-${k}" data-ch="pref" data-k="${k}" ${on ? "checked" : ""}></label>`;
     body = `<h3>New game defaults</h3>
       <p>Every new game starts with these. You can still change them for any game.</p>
       <div class="setlist">
         ${psw("dugout", "Dugout mode", "Score your batters one at a time; their half-innings with quick run and out buttons. Off: score every batter on both teams.", pf.mode === "dugout")}
         ${psw("askHits", "Hit location", "Ask which fielder made the play and where hits went, for spray charts and fielding stats.", pf.askHits !== false)}
+        ${psw("awake", "Keep the screen on during games", curGame() ? (screenKeptOn() ? "On now: the screen won't dim or lock while this game is going." : "Tap anywhere in the game and it switches on.") : "The screen stays on while a game is in progress, and goes back to normal after.", pf.awake !== false)}
         <div class="setrow"><span><b>Innings</b><small>The usual length of a game.</small></span>
           <span class="stepper"><button data-act="prefinn" data-v="-1" aria-label="One fewer inning">−</button><b>${prefRules().innings}</b><button data-act="prefinn" data-v="1" aria-label="One more inning">+</button></span></div>
         ${rulesRows(prefRules(), "p-", "prefrule")}
@@ -3379,7 +3442,9 @@ function applyGameMenu() {
 function endGame() {
   const g = curGame(); if (!g) return;
   g.done = true; store.currentId = null;
-  save(); ui.sheet = null; ui.draft = null; ui.view = "stats"; render();
+  ui.msg = ""; ui.draft = null; ui.view = "stats";
+  ui.sheet = store.sample ? null : { type: "saved", gid: g.id };   // the moment to back up: offer it right away
+  save(); render();
 }
 
 /* ---------- Game recap: a picture and Discord-ready text to share with the team ---------- */
@@ -3393,7 +3458,7 @@ function recapData(g) {
   const lineOf = st => { const b = [`${st.H}-for-${st.AB}`]; ["2B", "3B", "HR"].forEach(k => { if (st[k]) b.push((st[k] > 1 ? st[k] + " " : "") + k); });
     if (st.RBI) b.push(st.RBI + " RBI"); if (st.R) b.push(st.R + " R"); if (st.BB) b.push(st.BB + " BB"); return b.join(", "); };
   const score = st => st.TB + st.RBI + .6 * st.R + .5 * st.BB + .4 * st.H;
-  const top = batters.slice().sort((a, b) => score(b.st) - score(a.st)).filter(b => score(b.st) > 0).slice(0, 4);
+  const top = batters.slice().sort((a, b) => score(b.st) - score(a.st)).filter(b => score(b.st) > 0).slice(0, 3);   // the MVP and up to two more
   const R = [total(s, 0), total(s, 1)], res = R[us] > R[them] ? "W" : R[us] < R[them] ? "L" : "T";
   const why = s.endWhy === "run rule" ? "Run rule" : g.timeUp ? "Time limit" : "";
   return { s, names, abbr, cols, line, batters, top, lineOf, R, res, us, them, why, date: g.date, park: g.park || "", final: s.final || g.done };
@@ -3405,7 +3470,7 @@ function recapText(g) {
   const box = ["     " + Array.from({ length: r.cols }, (_, i) => pad(i + 1, 2)).join("") + "   R  H  E"]
     .concat([0, 1].map(t => r.abbr(t).padEnd(5).slice(0, 5) + r.line(t).map(v => pad(v, 2)).join("") + " " + pad(r.R[t], 3) + pad(r.s.hits[t], 3) + pad(r.s.errors[t], 3)));
   const out = [head, [prettyDate(r.date), r.park].filter(Boolean).join(" · "), "```", ...box, "```"];
-  if (r.top.length) out.push("**Top performers**", ...r.top.map(b => `• **${b.name}**: ${r.lineOf(b.st)}`));
+  if (r.top.length) out.push(`🏆 **Game MVP: ${r.top[0].name}**, ${r.lineOf(r.top[0].st)}`, ...r.top.slice(1).map(b => `⭐ **${b.name}**, ${r.lineOf(b.st)}`));
   if (r.batters.length) out.push("", "**Box score**", "```", ...r.batters.map(b => `${b.name.padEnd(14).slice(0, 14)} ${pad(b.st.H, 1)}-${b.st.AB}${b.st.RBI ? "  " + b.st.RBI + " RBI" : ""}${b.st.R ? "  " + b.st.R + " R" : ""}${b.st.HR ? "  " + b.st.HR + " HR" : ""}`), "```");
   out.push("_Scored with ScoreKept_");
   return out.join("\n");
@@ -3433,7 +3498,7 @@ async function recapCanvas(g) {
     c.fillStyle = "rgba(255,255,255,.06)"; c.beginPath(); c.roundRect(60, y - 105, W - 120, 150, 22); c.fill();
     c.fillStyle = ours ? chip : "rgba(255,255,255,.18)"; c.beginPath(); c.roundRect(85, y - 80, 190, 100, 14); c.fill();
     c.fillStyle = ours ? (v("--team-p-ink") || "#fff") : "#fff"; c.font = font(800, 64, DISP); c.textAlign = "center"; c.fillText(r.abbr(t).slice(0, 4), 180, y - 8);
-    c.textAlign = "left"; c.fillStyle = "#fff"; c.font = font(700, 44, BODY);
+    c.textAlign = "left"; c.fillStyle = "#fff"; c.font = font(400, 40, '"Alfa Slab One", ' + DISP);
     let name = r.names[t]; while (c.measureText(name).width > 470 && name.length > 4) name = name.slice(0, -2) + "…";
     c.fillText(name, 305, y - 12);
     c.font = font(800, 120, DISP); c.textAlign = "right"; c.fillStyle = win ? lamp : "#ffffff"; c.fillText(String(r.R[t]), W - 95, y + 20); c.textAlign = "left";
@@ -3458,19 +3523,19 @@ async function recapCanvas(g) {
     r.line(t).forEach((x, i) => { c.fillStyle = x === "" ? "rgba(255,255,255,.25)" : "#fff"; c.fillText(x === "" ? "·" : x, left + nameW + cw * (i + .5), y); });
     [r.R[t], r.s.hits[t], r.s.errors[t]].forEach((x, j) => { c.fillStyle = j ? "rgba(255,255,255,.8)" : lamp; c.fillText(String(x), left + nameW + cw * (r.cols + .5 + j * 1.15) + 12, y); });
   });
-  // top performers
-  let y = 900;
-  c.textAlign = "left"; c.font = font(700, 34, LAB); c.letterSpacing = "4px"; c.fillStyle = "rgba(255,255,255,.7)";
-  c.fillText(r.top.length ? "TOP PERFORMERS" : "", 70, y); c.letterSpacing = "0px";
+  // stars of the game: the MVP and up to two more, each with their line
+  const TITLE = '"Alfa Slab One", ' + DISP;
+  if (r.top.length) { c.textAlign = "left"; c.fillStyle = "#fff"; c.font = font(400, 40, TITLE); c.fillText(r.top.length > 1 ? "Stars of the game" : "Star of the game", 70, 890); }
   r.top.forEach((b, i) => {
-    const yy = y + 70 + i * 82;
-    c.fillStyle = i ? "rgba(255,255,255,.18)" : lamp; c.beginPath(); c.arc(98, yy - 14, 24, 0, Math.PI * 2); c.fill();
-    c.fillStyle = i ? "#fff" : "#1b1400"; c.font = font(800, 30, DISP); c.textAlign = "center"; c.fillText(String(i + 1), 98, yy - 3); c.textAlign = "left";
-    c.fillStyle = "#fff"; c.font = font(700, 40, BODY); c.fillText(b.name, 140, yy);
-    const nw = c.measureText(b.name).width;
+    const yy = 965 + i * 108;
+    c.font = font(800, 28, LAB); c.letterSpacing = "3px"; const tag = i ? "★" : "MVP", tw = 96;   // same width for every badge so the names line up
+    c.fillStyle = i ? "rgba(255,255,255,.16)" : lamp; c.beginPath(); c.roundRect(70, yy - 36, tw, 46, 23); c.fill();
+    c.fillStyle = i ? "#ffffff" : "#1b1400"; c.textAlign = "center"; c.fillText(tag, 70 + tw / 2 + 2, yy - 3); c.letterSpacing = "0px"; c.textAlign = "left";
+    c.fillStyle = "#fff"; c.font = font(700, 42, BODY); let nm = b.name; while (c.measureText(nm).width > W - 230 && nm.length > 4) nm = nm.slice(0, -2) + "…";
+    c.fillText(nm, 70 + tw + 22, yy);
     c.font = font(500, 32, BODY); c.fillStyle = "rgba(255,255,255,.75)";
-    let ln = r.lineOf(b.st); while (c.measureText(ln).width > W - 210 - nw && ln.length > 6) ln = ln.slice(0, ln.lastIndexOf(",")) || ln.slice(0, -2);
-    c.fillText(ln, 165 + nw, yy);
+    let ln = r.lineOf(b.st); while (c.measureText(ln).width > W - 160 - tw && ln.length > 6) ln = ln.slice(0, ln.lastIndexOf(",")) || ln.slice(0, -2);
+    c.fillText(ln, 70 + tw + 22, yy + 42);
   });
   // footer
   c.fillStyle = "rgba(255,255,255,.4)"; c.font = font(400, 30, '"Alfa Slab One", ' + DISP); c.textAlign = "center"; c.fillText("ScoreKept", W / 2, H - 50);
@@ -3826,6 +3891,7 @@ document.addEventListener("click", ev => {
     case "onb-rmp": store.team.players = store.team.players.filter(p => p.id !== v); save(); render(); break;
     case "onb-finish": finishOnboarding(v); break;
     case "backup": ui.returnTo = ui.sheet && ui.sheet.type === "settings" ? "settings" : null; ui.msg = ""; ui.sheet = { type: "backup" }; renderSheet(); break;
+    case "showinstall": closeSheet(); showInstall(true); break;
     case "sub": ui.returnTo = "settings"; ui.msg = ""; ui.confirm = null; ui.sheet = { type: v }; renderSheet(); break;   // a group inside Settings; Done comes back
     case "dl-backup":
       readDraftRows();
@@ -3982,6 +4048,45 @@ window.addEventListener("resize", () => { clearTimeout(layoutTimer); layoutTimer
 detectLayout();
 
 // First launch: the welcome setup. The screen preview page always shows the sample season.
+/* ---------- Add to Home Screen guide ----------
+   Opened in a browser tab on a phone, ScoreKept first shows how to add it to the Home Screen:
+   Home Screen apps open full screen and keep their saved data, while Safari can clear a website's
+   data after about a week without a visit. Skippable; Settings → Help can show it again. */
+const UA = navigator.userAgent;
+const onIOS = /iPhone|iPad|iPod/.test(UA) || (/Macintosh/.test(UA) && navigator.maxTouchPoints > 1);
+const onAndroid = /Android/.test(UA);
+const installedApp = () => navigator.standalone === true || matchMedia("(display-mode: standalone)").matches;
+let installPrompt = null;   // Android Chrome: the browser's own Install button, when it offers one
+addEventListener("beforeinstallprompt", e => { e.preventDefault(); installPrompt = e; if ($("install")) showInstall(true); });
+function installSkipped() { try { return localStorage.getItem("scorekept.install") === "skip"; } catch (e) { return false; } }
+const SHARE_ICON = '<svg viewBox="0 0 24 24"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5"/><path d="M8 10H6a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-9a1 1 0 0 0-1-1h-2"/></svg>';
+const ADD_ICON = '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3.5"/><path d="M12 8.5v7M8.5 12h7"/></svg>';
+const DOTS_ICON = '<svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18" cy="12" r="1.6"/></svg>';
+function showInstall(force) {
+  if (installedApp() || (!force && (installSkipped() || !(onIOS || onAndroid)))) return;
+  let o = $("install"); if (!o) { o = document.createElement("div"); o.id = "install"; o.setAttribute("role", "dialog"); o.setAttribute("aria-modal", "true"); o.setAttribute("aria-label", "Add ScoreKept to your Home Screen"); document.body.appendChild(o); }
+  const safari = onIOS && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(UA);
+  const steps = onIOS ? [
+      [SHARE_ICON, safari ? "Tap the <b>Share</b> button" : "Open this page in <b>Safari</b>, then tap <b>Share</b>", `At the bottom of Safari (top right on iPad). Don't see it? Tap ${DOTS_ICON.replace("<svg", '<svg class="inl"')} first.`],
+      [ADD_ICON, "Tap <b>Add to Home Screen</b>", "Scroll down the list if you need to."],
+      ['<img src="icons/apple-touch-icon.png" alt="">', "Tap <b>Add</b>, then open <b>ScoreKept</b>", "Use the new icon on your Home Screen from now on."]]
+    : [[DOTS_ICON.replace("<svg", '<svg style="transform:rotate(90deg)"'), "Tap the <b>⋮</b> menu", "Top right of Chrome."], [ADD_ICON, "Tap <b>Install app</b> or <b>Add to Home screen</b>", "Then tap Install or Add."], ['<img src="icons/icon-192.png" alt="">', "Open <b>ScoreKept</b> from your Home Screen", "Use the new icon from now on."]];
+  o.innerHTML = `<div class="ibox">
+      <img class="iicon" src="icons/apple-touch-icon.png" alt="">
+      <h2>Put ScoreKept on your Home Screen</h2>
+      <p class="iwhy">It opens full screen like an app, works with no signal, and keeps your season safe. ${onIOS ? "Safari can clear a website's saved data after about a week without a visit; Home Screen apps keep theirs." : ""}</p>
+      ${onAndroid && installPrompt ? `<button class="obtn go ibig" data-act="install-now">Install ScoreKept</button><p class="ior">or do it from the menu:</p>` : ""}
+      <ol class="isteps">${steps.map(([ic, t, sub], i) => `<li><span class="inum">${i + 1}</span><span class="iic">${ic}</span><span><b class="it">${t}</b><small>${sub}</small></span></li>`).join("")}</ol>
+      ${onIOS && safari ? `<div class="ipoint" aria-hidden="true">${SHARE_ICON}</div>` : ""}
+      <button class="obtn ilater" data-act="install-later">Not now, keep going in the browser</button>
+    </div>`;
+}
+document.addEventListener("click", async ev => {
+  const el = ev.target.closest("[data-act^=install-]"); if (!el) return;
+  if (el.dataset.act === "install-now" && installPrompt) { installPrompt.prompt(); try { await installPrompt.userChoice; } catch (e) {} installPrompt = null; }
+  try { localStorage.setItem("scorekept.install", "skip"); } catch (e) {}
+  const o = $("install"); if (o) o.remove();
+});
 const saved = load(), previewMode = /[?&]preview\b/.test(location.search);
 store = ensureSeasons(saved || (previewMode || safety.unreadable || safety.blocked ? sampleStore() : blankStore()));
 if (!saved && !previewMode && !safety.unreadable && !safety.blocked) ui.sheet = { type: "onboard", step: "welcome" };
@@ -3995,6 +4100,7 @@ if ("serviceWorker" in navigator && ((location.protocol === "https:" && /github\
   navigator.serviceWorker.register("sw.js").catch(() => {});
 }
 if (store.currentId) ui.view = "game";
+if (!previewMode) showInstall();
 render();
 })();
 </script>
