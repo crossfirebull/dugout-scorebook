@@ -909,6 +909,11 @@ table.book td.name .plink { display: inline; }
 .dpin { all: unset; cursor: pointer; display: block; width: 100%; }
 .dgrid tr.pinned td { background: color-mix(in srgb, var(--app-gold) 14%, var(--surface)); }
 .dwarn { color: var(--stitch); font-size: 14px; margin: 6px 0 0; }
+/* Who's in? poll and Discord setup */
+.pollcard { display: grid; gap: 6px; padding: 12px 14px; border-radius: 12px; background: #313338; color: #f2f3f5; }
+.pollcard b { font-size: 17px; } .pollcard span { padding: 8px 10px; border-radius: 8px; background: #2b2d31; border: 1px solid #3f4147; font-weight: 600; } .pollcard small { color: #b5bac1; }
+.sheet .okmsg, .okmsg { color: var(--safe); } .sheet .errmsg, .errmsg { color: var(--stitch); }
+.dsteps { margin: 0 0 8px; padding-left: 20px; display: grid; gap: 4px; } .dnote { color: var(--muted); font-size: 13px; }
 </style>
 </head>
 <body>
@@ -2927,6 +2932,7 @@ const HELP = [
     <li><b>Walk-offs:</b> the game ends the moment the home team takes the lead in the last inning. Only the winning run counts, unless it's a home run.</li></ul>`],
   ["Ending a game and seasons", `
     <ul><li>When the game is over, tap <b>Save to season</b> to add it to everyone's stats. <b>End game now</b> in Game settings ends it early.</li>
+    <li><b>Who's in? poll:</b> on the Game tab's Up next card (or any game on the schedule), <b>Who's in? poll</b> posts a real Discord poll to your team channel: "Who's in? Wed 11/5 @ 9:15 PM vs …" with ✅ In and ❌ Out, closing at game time. Set it up once in Settings → Discord with a channel webhook. <b>Copy text</b> works for a group chat instead.</li>
     <li><b>Schedule:</b> Stats → <b>Schedule</b> holds this season's games: date, time, opponent, field, and home or away if you know it. Between games the Game tab shows <b>Up next</b>; <b>Start this game</b> fills in New Game. Played games show their result.</li>
     <li>Start a new season (Spring, Summer or Fall) with <b>New Season</b> on the Stats tab. Your roster carries over and old seasons stay saved. The season menu switches between them or shows all seasons together.</li></ul>`],
   ["Stats, spray charts and scouting", `
@@ -3061,7 +3067,7 @@ function tutorialsList() {
    the book rolls over to add a hit and a run. Reduced motion, or a return visit: shown finished. */
 const GEAR_SVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
 // Real recordings, kept next to the app: swap either file to change the sound. If one is missing the intro just plays silently.
-const APP_VERSION = "2026.10.31-18";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
+const APP_VERSION = "2026.10.31-19";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
 const INTRO_SOUNDS = [["sounds/intro-bat.mp3", 0], ["sounds/intro-cheer.mp3", .15]];   // file, seconds after the tap
 let introBytes = null;
 function loadIntro() {   // fetched while the title screen is up, so the tap plays right away
@@ -3428,6 +3434,7 @@ function renderSheet() {
         <datalist id="parkList">${(store.parks || []).map(p => `<option value="${esc(p)}"></option>`).join("")}</datalist></div>
       <div class="field"><label for="sg-home">Home or away</label><select id="sg-home"><option value="" ${x.home == null ? "selected" : ""}>Not sure yet (coin toss)</option><option value="1" ${x.home === true ? "selected" : ""}>We're home</option><option value="0" ${x.home === false ? "selected" : ""}>We're visitors</option></select></div>
       ${ui.msg ? `<p style="color:var(--stitch)">${esc(ui.msg)}</p>` : ""}
+      ${sh.id ? `<button class="tbtn" data-act="poll" data-v="${sh.id}">${x.polled ? "✓ Poll posted · post again" : "Post a Who's in? poll"}</button>` : ""}
       <div class="acts" style="justify-content:space-between">${sh.id ? `<button class="tbtn ${ui.confirm === "sg-del" ? "danger" : ""}" data-act="sched-del">${ui.confirm === "sg-del" ? "Tap again to delete" : "Delete"}</button>` : "<span></span>"}
         <span style="display:flex;gap:8px"><button class="tbtn" data-act="schedule">Cancel</button><button class="tbtn primary" data-act="sched-save">Save</button></span></div>`;
   } else if (sh.type === "defense") {
@@ -3449,6 +3456,26 @@ function renderSheet() {
       ${missingAny ? `<p class="dwarn">A red inning (!) is missing a pitcher, catcher or infielder.</p>` : ""}
       ${ui.msg ? `<p><b>${esc(ui.msg)}</b></p>` : ""}
       <div class="acts" style="justify-content:space-between"><span style="display:flex;gap:8px;flex-wrap:wrap"><button class="tbtn" data-act="def-auto">Auto-rotate</button><button class="tbtn" data-act="def-reset">Reset</button></span><button class="tbtn primary" data-act="close">Done</button></div>`;
+  } else if (sh.type === "poll") {
+    const x = schedule().find(y => y.id === sh.id); if (!x) { ui.sheet = null; o.innerHTML = ""; return; }
+    const hook = discordHook(), b = pollBody(x).poll;
+    body = `<h3>Who's in?</h3>
+      <div class="pollcard"><b>${esc(b.question.text)}</b><span>✅ In</span><span>❌ Out</span><small>Closes in ${b.duration >= 48 ? Math.round(b.duration / 24) + " days" : b.duration + " hours"}, at game time</small></div>
+      ${hook ? `<p>Posts a real Discord poll to your team's channel. Discord shows who voted; tap them in or out on <b>Who's here</b> when you start the game.</p>`
+        : `<p>Set up Discord once and this posts as a real poll in your team's channel. Or copy the text for a group chat.</p>`}
+      ${sh.msg ? `<p class="${sh.ok ? "okmsg" : "errmsg"}"><b>${esc(sh.msg)}</b></p>` : ""}
+      <div class="acts" style="justify-content:space-between"><button class="tbtn" data-act="poll-copy">Copy text</button>
+        <span style="display:flex;gap:8px">${hook ? `<button class="tbtn primary" data-act="poll-post" ${sh.busy ? "disabled" : ""}>${sh.busy ? "Posting…" : x.polled ? "Post again" : "Post to Discord"}</button>` : `<button class="tbtn primary" data-act="discord">Set up Discord</button>`}</span></div>`;
+  } else if (sh.type === "discord") {
+    const hook = discordHook();
+    body = `<h3>Discord</h3>
+      <p>ScoreKept posts to one channel in your team's Discord: the weekly <b>Who's in?</b> poll, and later live game updates. It uses a webhook, a link Discord makes for posting to a channel.</p>
+      <ol class="dsteps"><li>In Discord, open your team channel's settings (<b>Edit Channel</b>).</li><li><b>Integrations → Webhooks → New Webhook</b>. Name it ScoreKept if you like.</li><li>Tap <b>Copy Webhook URL</b> and paste it below.</li></ol>
+      <div class="field"><label for="dc-url">Webhook link</label><input id="dc-url" type="url" inputmode="url" autocomplete="off" placeholder="https://discord.com/api/webhooks/…" value="${esc(hook)}"></div>
+      <p class="dnote">Only server admins (or people allowed to manage webhooks) can make one. The link stays on this phone and isn't in backups. Anyone with it can post to that channel, so don't share it.</p>
+      ${sh.msg ? `<p class="${sh.ok ? "okmsg" : "errmsg"}"><b>${esc(sh.msg)}</b></p>` : ""}
+      <div class="acts" style="justify-content:space-between">${hook ? `<button class="tbtn" data-act="dc-clear">Remove</button>` : "<span></span>"}
+        <span style="display:flex;gap:8px"><button class="tbtn" data-act="dc-test">Save &amp; test</button><button class="tbtn primary" data-act="dc-save">Save</button></span></div>`;
   } else if (sh.type === "newseason") {
     const cur = store.seasons.find(x => x.id === store.currentSeasonId);
     body = `<h3>New Season</h3>
@@ -3553,7 +3580,8 @@ function renderSheet() {
         ${link("sub", "Parks &amp; fields", np ? `${np} saved for the New Game dropdown.` : "Parks you type in New Game are saved here.", "parks")}</div>
       <h4 style="margin:0">Games</h4>
       <div class="setlist">${link("sub", "New game defaults", `${pf.mode === "dugout" ? "Dugout mode" : "Scorekeeper mode"} · ${prefRules().innings} innings · league rules`, "gamedefaults")}
-        ${link("sounds", "Sounds &amp; walk-up songs", "Game sounds, situation sounds, between-innings music and walk-ups.")}</div>
+        ${link("sounds", "Sounds &amp; walk-up songs", "Game sounds, situation sounds, between-innings music and walk-ups.")}
+        ${link("discord", "Discord", discordHook() ? "Connected: Who's in? polls post to your team channel." : "Post the weekly Who's in? poll to your team's channel.")}</div>
       <h4 style="margin:0">Help</h4>
       <div class="setlist">${link("help", "Help &amp; how to score", "Every button, moving runners, league rules, stats and backups.")}
         ${link("sub", "Tutorials", `${Object.keys(TOURS).length} guided walk-throughs${done ? ` · ${done} done` : ""}.`, "tutorials")}
@@ -3661,7 +3689,26 @@ function upNextCard() {
       <b class="unwhen">${esc(whenText(x))}</b>
       <span class="unopp">${x.home === true ? "vs" : x.home === false ? "at" : "vs"} ${esc(x.opp || "Opponent TBD")}</span>
       ${x.park ? `<small>${esc(x.park)}</small>` : ""}
-      <span class="unbtns"><button class="tbtn primary" data-act="newgame" data-v="${x.id}">Start this game</button><button class="tbtn" data-act="schedule">Schedule (${n})</button></span></div>`;
+      <span class="unbtns"><button class="tbtn primary" data-act="newgame" data-v="${x.id}">Start this game</button><button class="tbtn" data-act="poll" data-v="${x.id}">${x.polled ? "✓ Poll posted" : "Who's in? poll"}</button><button class="tbtn" data-act="schedule">Schedule (${n})</button></span></div>`;
+}
+/* ---------- Discord: post the weekly "Who's in?" poll through a channel webhook ----------
+   The webhook link stays on this device (not in backups). Discord shows the votes; a webhook can't read them back. */
+const discordHook = () => { try { return localStorage.getItem("scorekept.discord") || ""; } catch (e) { return ""; } };
+const okHook = u => /^https:\/\/(canary\.|ptb\.)?(discord|discordapp)\.com\/api\/webhooks\/\d+\/[\w-]+/.test(u);
+async function discordPost(body) {
+  const url = discordHook(); if (!url) return "Set up Discord first.";
+  try {
+    const r = await fetch(url + (url.includes("?") ? "&" : "?") + "wait=true", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(Object.assign({ username: "ScoreKept" }, body)) });
+    return r.ok ? "" : r.status === 404 ? "Discord doesn't know that webhook. It may have been deleted; paste a new link in Settings → Discord." : `Discord said no (error ${r.status}).`;
+  } catch (e) { return navigator.onLine === false ? "No signal. Try again when you're online." : "Couldn't reach Discord. Check the webhook link in Settings → Discord."; }
+}
+function pollQuestion(x) {
+  const d = new Date(x.date + "T12:00:00"), day = d.toLocaleDateString(undefined, { weekday: "short" });
+  return `Who's in? ${day} ${d.getMonth() + 1}/${d.getDate()}${x.time ? " @ " + prettyTime(x.time) : ""}${x.opp ? " vs " + x.opp : ""}`.slice(0, 300);
+}
+function pollBody(x) {   // a native Discord poll: In or Out, closing at game time
+  const start = new Date(x.date + "T" + (x.time || "18:00") + ":00"), hours = Math.min(768, Math.max(1, Math.ceil((start - Date.now()) / 3600000)));
+  return { poll: { question: { text: pollQuestion(x) }, answers: [{ poll_media: { text: "In", emoji: { name: "✅" } } }, { poll_media: { text: "Out", emoji: { name: "❌" } } }], duration: hours, allow_multiselect: false, layout_type: 1 } };
 }
 function openNewGame(schedId) {
   const sg = schedId && schedule().find(x => x.id === schedId);
@@ -4015,6 +4062,30 @@ document.addEventListener("click", ev => {
       const pins = Object.assign({}, defPins()); if (pins[v]) delete pins[v]; else pins[v] = true;
       G.pins = pins; ui.msg = G.autoRot ? autoRotate() : ""; save(); render(); break;
     }
+    case "poll": ui.sheet = { type: "poll", id: v }; renderSheet(); break;
+    case "poll-copy": {
+      const x = schedule().find(y => y.id === ui.sheet.id); if (!x) break;
+      const txt = pollQuestion(x) + "\nReply In or Out 👍";
+      (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => { ui.sheet.msg = "Copied. Paste it in your group chat."; ui.sheet.ok = true; renderSheet(); }, () => { ui.sheet.msg = txt; ui.sheet.ok = true; renderSheet(); });
+      break;
+    }
+    case "poll-post": {
+      const sh = ui.sheet, x = schedule().find(y => y.id === sh.id); if (!x || sh.busy) break;
+      sh.busy = true; sh.msg = ""; renderSheet();
+      discordPost(pollBody(x)).then(err => { sh.busy = false; sh.msg = err || "Posted to Discord ✅"; sh.ok = !err; if (!err) { x.polled = Date.now(); save(); } render(); });
+      break;
+    }
+    case "discord": ui.returnTo = ui.sheet && ui.sheet.type === "settings" ? "settings" : ui.returnTo; ui.sheet = { type: "discord", back: ui.sheet && ui.sheet.type === "poll" ? ui.sheet.id : null }; renderSheet(); break;
+    case "dc-save": case "dc-test": {
+      const u = $("dc-url").value.trim(), sh = ui.sheet;
+      if (!okHook(u)) { sh.msg = "That doesn't look like a Discord webhook link. It starts with https://discord.com/api/webhooks/"; sh.ok = false; renderSheet(); break; }
+      try { localStorage.setItem("scorekept.discord", u); } catch (e) {}
+      if (act === "dc-save") { if (sh.back) { ui.sheet = { type: "poll", id: sh.back }; } else { sh.msg = "Saved."; sh.ok = true; } renderSheet(); break; }
+      sh.msg = "Testing…"; sh.ok = true; renderSheet();
+      discordPost({ content: "⚾ ScoreKept is connected to this channel." }).then(err => { sh.msg = err || "Connected ✅ Check the channel for a test message."; sh.ok = !err; renderSheet(); });
+      break;
+    }
+    case "dc-clear": try { localStorage.removeItem("scorekept.discord"); } catch (e) {} ui.sheet.msg = "Removed."; ui.sheet.ok = true; renderSheet(); break;
     case "newseason": ui.msg = ""; ui.sheet = { type: "newseason" }; renderSheet(); break;
     case "startseason": {
       if (store.currentId) { ui.msg = "Finish or save the game in progress first."; renderSheet(); break; }
@@ -4066,8 +4137,9 @@ document.addEventListener("click", ev => {
     case "close": {
       const t = ui.sheet && ui.sheet.type;
       if (t === "sounds") stopClip(true);
+      if (t === "discord" && ui.sheet.back) { ui.sheet = { type: "poll", id: ui.sheet.back }; renderSheet(); break; }
       if (t === "player" && ui.sheet.back === "pcard" && player(ui.sheet.id)) { ui.sheet = { type: "pcard", id: ui.sheet.id }; render(); break; }
-      if (["sounds", "teamedit", "help", "backup", "tutorials", "parks", "gamedefaults"].includes(t) && ui.returnTo && (ui.returnTo === "settings" || ui.draft)) { ui.sheet = { type: ui.returnTo }; ui.returnTo = null; render(); break; }
+      if (["sounds", "teamedit", "help", "backup", "tutorials", "parks", "gamedefaults", "discord"].includes(t) && ui.returnTo && (ui.returnTo === "settings" || ui.draft)) { ui.sheet = { type: ui.returnTo }; ui.returnTo = null; render(); break; }
       closeSheet(); break;
     }
     case "newgame": openNewGame(v); break;

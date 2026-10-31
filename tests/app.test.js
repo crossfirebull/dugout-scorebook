@@ -1193,3 +1193,33 @@ test("defense by inning: pinned players stay put all game; unpin the pitcher and
   assert.deepEqual(errors, []);
   await context.close();
 });
+
+test("Who's in? poll: set up a Discord webhook, then post a real In/Out poll for the next scheduled game", async () => {
+  const { page, context, errors } = await open(390, 844);
+  let sent = [];
+  await page.route("https://discord.com/api/webhooks/**", r => { sent.push({ url: r.request().url(), body: r.request().postDataJSON() }); r.fulfill({ status: 200, contentType: "application/json", body: "{}", headers: { "access-control-allow-origin": "*" } }); });
+  await page.click("[data-act=settings]"); await page.click(".sheet [data-act=endgame]");
+  if (await page.$(".sheet [data-act=close]")) await page.click(".sheet [data-act=close]");
+  await page.click(".tabbar [data-v=game]");
+  await page.click(".upnext [data-act=poll]");
+  assert.match(await text(page, ".pollcard"), /Who's in\?.* vs /);
+  await page.click(".sheet [data-act=discord]");
+  await page.fill("#dc-url", "not a link"); await page.click(".sheet [data-act=dc-save]");
+  assert.match(await text(page, ".sheet .errmsg"), /doesn't look like/);
+  await page.fill("#dc-url", "https://discord.com/api/webhooks/123456/abc-DEF_9"); await page.click(".sheet [data-act=dc-save]");
+  assert.match(await text(page, ".sheet h3"), /Who's in/, "back to the poll");
+  await page.click(".sheet [data-act=poll-post]");
+  await page.waitForSelector(".sheet .okmsg");
+  assert.equal(sent.length, 1);
+  const poll = sent[0].body.poll;
+  assert.match(sent[0].url, /wait=true/);
+  assert.match(poll.question.text, /^Who's in\? \w{3} \d+\/\d+ @ \d+:\d\d (AM|PM) vs /);
+  assert.deepEqual(poll.answers.map(a => a.poll_media.text), ["In", "Out"]);
+  assert.ok(poll.duration >= 1 && poll.duration <= 768, "closes by game time");
+  await page.click(".sheet [data-act=close]");
+  assert.match(await text(page, ".upnext"), /Poll posted/);
+  const saved = await page.evaluate(() => localStorage.getItem("dugout-scorebook.v2"));
+  assert.ok(!saved.includes("webhooks"), "the webhook link isn't in the saved data (or backups)");
+  assert.deepEqual(errors, []);
+  await context.close();
+});

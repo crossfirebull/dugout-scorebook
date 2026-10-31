@@ -75,6 +75,12 @@ Nothing is locked once the game starts:
 - **Move a ball on a spray chart:** tap any dot on a chart (Stats → Charts or Scout) and drag it to where the ball really went, then **Save**.
 - **Fix any play from the Book:** tap a box in the scorebook grid, or a line in the play-by-play (✎), to change the result, what a runner did, who gets the RBI, or delete it. For a ball in play, the field at the top shows where it went: tap it to open the full-screen field and drag the ball (that also sets the fielder). Everything after it is re-scored automatically. Works on saved games too.
 
+## Who's in? polls on Discord
+
+Each week, tap **Who's in? poll** on the Game tab's **Up next** card (or open any game on the schedule). ScoreKept posts a real Discord poll to your team's channel, like "Who's in? Wed 11/5 @ 9:15 PM vs Trailer Park Boys", with **✅ In** and **❌ Out**, closing at game time. Discord shows who voted; tap them in or out on **Who's here** when you start the game. (Reading the votes back automatically would need a Discord bot, which is a bigger project.)
+
+To set it up once: in Discord, open your team channel's settings → **Integrations → Webhooks → New Webhook → Copy Webhook URL**, then paste it in **Settings → Discord** and tap **Save & test**. The link stays on your phone and isn't in backups. No Discord? **Copy text** gives you the poll to paste in a group chat.
+
 ## Sharing a game recap
 
 When a game ends, tap **Share recap** on the final banner (or **Stats → Overview → View** on any saved game). It makes:
@@ -175,7 +181,7 @@ The checks include simulated seasons: `tests/season-sim.js` plays random five-ga
 ## On the list
 
 **Next up** (approved, in this order)
-- **Discord live updates:** runs and the final post to your team channel as they happen.
+- **Discord live updates:** runs and the final post to your team channel as they happen (uses the same webhook as the Who's in? poll).
 - **Schedule import:** bring in your league's schedule from its web page (send the link).
 - **Bigger text and better use of space:** a large-text switch, and more grouping so screens hold more.
 
