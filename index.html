@@ -2794,8 +2794,11 @@ const HELP = [
     <li>Keep game sounds to 2–4 seconds and walk-ups to 8–12 seconds so the game keeps moving.</li></ul>`],
   ["Keeping your data safe", `
     <ul><li>Every tap is saved on this device right away, and ScoreKept works with no signal after the first visit.</li>
-    <li>Add it to your Home Screen (Share → Add to Home Screen) so it opens like an app and the device keeps its data.</li>
-    <li><b>Deleting the Home Screen icon deletes ScoreKept's data</b> on that phone. Save a backup first if you ever remove or re-add it.</li>
+    <li>Add it to your Home Screen (≡ in Safari's address bar → Share → Add to Home Screen, with Open as Web App on) so it opens like an app and keeps its data.</li>
+    <li><b>Deleting the Home Screen icon deletes ScoreKept's data</b> on that phone. To replace the icon (for a new look or new team colors), or move to a new phone:
+      <ol><li><b>Back up first:</b> Settings → Backup &amp; restore → <b>Save backup</b>. Save the file to Files, iCloud Drive or email.</li>
+        <li>Delete the icon, then add ScoreKept to the Home Screen again (Safari: ≡ in the address bar → Share → Add to Home Screen).</li>
+        <li>Open the new icon and choose <b>Restore from backup</b> in Settings → Backup &amp; restore.</li></ol></li>
     <li>Back up now and then: <b>Stats → Overview → Export &amp; backup</b>. Save the file to Files or iCloud Drive, or email it to yourself. <b>Restore</b> brings everything back on any device. Sound files aren't in the backup.</li></ul>`]
 ];
 function helpBody() {
@@ -2911,7 +2914,7 @@ function tutorialsList() {
    the book rolls over to add a hit and a run. Reduced motion, or a return visit: shown finished. */
 const GEAR_SVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
 // Real recordings, kept next to the app: swap either file to change the sound. If one is missing the intro just plays silently.
-const APP_VERSION = "2026.10.31-9";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
+const APP_VERSION = "2026.10.31-10";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
 const INTRO_SOUNDS = [["sounds/intro-bat.mp3", 0], ["sounds/intro-cheer.mp3", .15]];   // file, seconds after the tap
 let introBytes = null;
 function loadIntro() {   // fetched while the title screen is up, so the tap plays right away
