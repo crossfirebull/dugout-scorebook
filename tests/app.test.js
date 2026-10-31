@@ -1054,6 +1054,9 @@ test("phone on its side: main screens fit with no sideways scrolling, key button
   assert.ok(steps <= 390 + 1, "all three steps show without scrolling");
   await page.click("[data-act=install-later]");
   await fits("welcome", ".onb .wstage");
+  await fits("welcome name", ".onb .welcome .brand");
+  const nm = await page.$eval(".onb .welcome .brand", e => e.scrollWidth <= e.clientWidth + 1 && e.getBoundingClientRect().left >= 0);
+  assert.ok(nm, "the ScoreKept name isn't cut off");
   await page.click(".onb [data-act=onb-sample]");
   if (await page.$("[data-act=tour-skip]")) await page.click("[data-act=tour-skip]");
   await fits("game", ".bug");

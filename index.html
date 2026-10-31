@@ -715,7 +715,7 @@ html[data-layout="short"] body { padding-left: calc(88px + env(safe-area-inset-l
 @media (orientation: landscape) and (max-height: 500px) {
   .onb .welcome { grid-template-columns: minmax(0, .75fr) minmax(0, 1.25fr); grid-template-rows: auto auto 1fr; grid-template-areas: "book stage" "brand stage" ". stage"; column-gap: 28px; row-gap: 2px; padding-top: 0; max-width: 760px; }
   .onb .welcome .wbook { grid-area: book; width: min(26vw, 50vh, 180px); }
-  .onb .welcome .brand { grid-area: brand; font-size: clamp(28px, 9vh, 42px); }
+  .onb .inner.welcome .brand { grid-area: brand; font-size: clamp(22px, min(9vh, 5.6vw), 42px); max-width: 100%; }   /* Alfa Slab is wide: sized by the column as well as the height */
   .onb .welcome .wstage { grid-area: stage; align-self: center; }
   .onb .welcome.w-gate .wrest { display: none; }   /* sideways there's room beside the book, so the button just sits centered */
   .onb .welcome.w-gate .wstage .wplay { margin-top: 0; align-self: center; }
@@ -3151,7 +3151,7 @@ function tutorialsList() {
    the book rolls over to add a hit and a run. Reduced motion, or a return visit: shown finished. */
 const GEAR_SVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
 // Real recordings, kept next to the app: swap either file to change the sound. If one is missing the intro just plays silently.
-const APP_VERSION = "2026.10.31-21";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
+const APP_VERSION = "2026.10.31-22";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
 const INTRO_SOUNDS = [["sounds/intro-bat.mp3", 0], ["sounds/intro-cheer.mp3", .15]];   // file, seconds after the tap
 let introBytes = null;
 function loadIntro() {   // fetched while the title screen is up, so the tap plays right away
