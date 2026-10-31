@@ -2910,7 +2910,7 @@ function tutorialsList() {
    the book rolls over to add a hit and a run. Reduced motion, or a return visit: shown finished. */
 const GEAR_SVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
 // Real recordings, kept next to the app: swap either file to change the sound. If one is missing the intro just plays silently.
-const APP_VERSION = "2026.10.31-7";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
+const APP_VERSION = "2026.10.31-8";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
 const INTRO_SOUNDS = [["sounds/intro-bat.mp3", 0], ["sounds/intro-cheer.mp3", .15]];   // file, seconds after the tap
 let introBytes = null;
 function loadIntro() {   // fetched while the title screen is up, so the tap plays right away
@@ -4077,7 +4077,7 @@ function showInstall(force) {
   const steps = onIOS ? [
       [MENU_ICON, safari ? `Tap ${MENU_ICON.replace("<svg", '<svg class="inl"')} in the address bar, then ${SHARE_ICON.replace("<svg", '<svg class="inl"')} <b>Share</b>` : "Open this page in <b>Safari</b>", safari ? `Older iPhones: tap ${SHARE_ICON.replace("<svg", '<svg class="inl"')} Share at the bottom.` : "Then tap Share."],
       [ADD_ICON, "Scroll down, tap <b>Add to Home Screen</b>", "Tap View More if you don't see it."],
-      ['<img src="icons/apple-touch-icon.png" alt="">', "Tap <b>Add</b>", "Then open ScoreKept from your Home Screen."]]
+      ['<img src="icons/apple-touch-icon.png" alt="">', "Leave <b>Open as Web App</b> on, tap <b>Add</b>", "Then open ScoreKept from your Home Screen."]]
     : [[DOTS_ICON.replace("<svg", '<svg style="transform:rotate(90deg)"'), "Tap the <b>⋮</b> menu", "Top right of Chrome."], [ADD_ICON, "Tap <b>Install app</b>", "Or Add to Home screen."], ['<img src="icons/icon-192.png" alt="">', "Open <b>ScoreKept</b>", "From your Home Screen."]];
   o.innerHTML = `<div class="ibox">
       <img class="iicon" src="icons/apple-touch-icon.png" alt="">
