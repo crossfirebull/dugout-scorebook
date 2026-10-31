@@ -68,7 +68,7 @@ Tap what the batter did. The app moves the runners the usual way, and you can fi
 ## Changing things mid-game
 
 Nothing is locked once the game starts:
-- **Defense by inning:** **Defense** at the top of the Game tab is a grid of who plays where each inning. Tap a box to change a position (taking someone's spot swaps them) or pick **Sit**; each inning keeps the one before until you change it. Each player shows innings played and sat, and **Auto-rotate** fills the innings still to come so playing time evens out (pitcher and catcher stay in unless you turn that off). Fielding stats follow the card.
+- **Defense by inning:** **Defense** at the top of the Game tab is a grid of who plays where each inning. Tap a box to change a position (taking someone's spot swaps them) or pick **Sit**; each inning keeps the one before until you change it. Each player shows innings played and sat, tap a name to 📌 **pin** a player to their position all game (the pitcher and catcher start pinned), and **Auto-rotate** fills the innings still to come so playing time evens out without moving anyone pinned. Fielding stats follow the card.
 - **Game settings** changes the opponent, date, park, **home or away**, and the league rules any time. Switching home and away mid-game moves each play to the other half of its inning, so every play stays with the team that made it.
 - **+ New player** on the lineup screens adds a late fill-in. Leave the name blank and they're "Fill-in" (rename them on the Team tab later; their stats follow).
 - **Lineups** subs players in and out once play has started, and **Undo** takes back any tap.

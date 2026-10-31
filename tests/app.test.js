@@ -1148,7 +1148,7 @@ test("defense by inning: auto-rotate evens out playing time, and swaps never dou
   await page.click("[data-act=defense]");
   assert.match(await text(page, ".sheet h3"), /Defense by inning/);
   await page.click("[data-act=def-auto]");
-  const counts = await page.$$eval(".dgrid tbody tr", rows => rows.map(r => ({ pos1: r.querySelector("td select").value, field: +r.querySelector(".dname small").textContent.match(/(\d+) field/)[1] })));
+  const counts = await page.$$eval(".dgrid tbody tr", rows => rows.map(r => { const v = [...r.querySelectorAll("td select")].map(x => x.value); return { pos1: v[0], field: v.filter(x => x !== "EH").length }; }));
   const movable = counts.filter(c => !["P", "C"].includes(c.pos1)).map(c => c.field);
   assert.ok(Math.max(...movable) - Math.min(...movable) <= 1, "fair: " + movable.join(","));
   assert.ok(counts.filter(c => ["P", "C"].includes(c.pos1)).every(c => c.field === 7), "pitcher and catcher stay in");
@@ -1171,6 +1171,25 @@ test("defense by inning: a play in an inning credits whoever the card has at tha
   const plays = n => +fld.rows.find(r => r.Player.includes(n)).Plays;
   assert.equal(plays("Player 6"), 3, "the lineup's shortstop gets inning 1");
   assert.equal(plays("Player 11"), 3, "the card's shortstop gets inning 2");
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("defense by inning: pinned players stay put all game; unpin the pitcher and they can rotate", async () => {
+  const store = ruleGame({ mode: "scorekeeper" }, []);
+  const { page, context, errors } = await openGame(store);
+  await page.click("[data-act=defense]");
+  const row = n => `.dgrid tbody tr:nth-child(${n})`;
+  assert.match(await text(page, row(1) + " .dname"), /📌/, "pitcher starts pinned");
+  await page.click(row(4) + " [data-act=def-pin]");   // pin the second baseman
+  await page.click("[data-act=def-auto]");
+  const line = async n => page.$$eval(row(n) + " td select", s => s.map(x => x.value));
+  const second = await line(4);
+  assert.ok(second.every(v => v === second[0] && v !== "EH"), "pinned player plays one position all game: " + second.join(","));
+  await page.click(row(1) + " [data-act=def-pin]");   // unpin the pitcher: rotation re-runs on its own
+  assert.doesNotMatch(await text(page, row(1) + " .dname"), /📌/);
+  const pitcher = await line(1);
+  assert.ok(pitcher.includes("EH"), "unpinned pitcher can sit now: " + pitcher.join(","));
   assert.deepEqual(errors, []);
   await context.close();
 });
