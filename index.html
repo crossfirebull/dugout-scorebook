@@ -1008,24 +1008,17 @@ const contrast = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - 
 const mixHex = (a, b, t) => "#" + rgbOf(a).map((c, i) => Math.round((c * (1 - t) + rgbOf(b)[i] * t) * 255).toString(16).padStart(2, "0")).join("");
 const textOn = h => contrast(h, "#ffffff") >= contrast(h, "#111111") ? "#ffffff" : "#111111";
 // Turn the two picked colors into the app's accent tokens, keeping every pairing readable.
-// The Home Screen icon stays in your team's colors: primary darkened until white numbers read well, and a lit color that shows on it
-function iconColors(P, Q) {
-  let board = P;
-  for (let t = .15; contrast(board, "#ffffff") < 7 && t < .9; t += .1) board = mixHex(P, "#000000", t);
-  return { board, lamp: [Q, P, "#ffc93c"].find(x => contrast(x, board) >= 3.5) || "#ffc93c" };
-}
 function applyTeamColors() {
-  const c = teamColors(), P = COLOR[c.primary] || COLOR.navy, Q = COLOR[c.secondary] || COLOR.red, { board, lamp } = iconColors(P, Q);
+  const c = teamColors(), P = COLOR[c.primary] || COLOR.navy, Q = COLOR[c.secondary] || COLOR.red;
   const set = (k, v) => document.documentElement.style.setProperty(k, v);
   // Your team's badge on the app's navy scoreboard: primary, unless it blends in; then secondary
   const chip = [P, Q].find(x => contrast(x, "#14284b") >= 1.6) || mixHex(P, "#ffffff", .3);
   set("--team-p", chip); set("--team-p-ink", textOn(chip)); set("--team-q", chip === P ? Q : P);
-  updateHomeIcon(P, Q, board, lamp, chip);
 }
 
-// Home Screen icon: a hardbound scorebook in the team's colors, with score-bug touches
-// (gloss, a two-color stripe, and a lit R·H·E panel). iPhone and iPad read it when you tap
-// Add to Home Screen.
+// Home Screen icon: a hardbound scorebook with score-bug touches (gloss, a two-color stripe and a
+// lit R·H·E panel). Always ScoreKept's own colors: it draws the files in icons/, which iPhone and
+// iPad read when you tap Add to Home Screen.
 function makeIcon(size, P, Q, board, lamp, cover) {
   const cv = document.createElement("canvas"); cv.width = cv.height = size;
   const x = cv.getContext("2d"); x.scale(size / 1024, size / 1024);
@@ -1078,16 +1071,6 @@ function makeIcon(size, P, Q, board, lamp, cover) {
   return cv;
 }
 window.scoreKeepIcon = makeIcon;   // used to draw the default icon files for the site
-let iconKey = "";
-async function updateHomeIcon(P, Q, board, lamp, cover) {
-  const key = [P, Q, board, lamp, cover].join(); if (key === iconKey) return; iconKey = key;
-  try { await document.fonts.load("800 96px 'Big Shoulders Display'"); } catch (e) {}
-  if (key !== iconKey) return;
-  let link = document.querySelector('link[rel="apple-touch-icon"]');
-  if (!link) { link = document.createElement("link"); link.rel = "apple-touch-icon"; document.head.appendChild(link); }
-  try { link.href = makeIcon(180, P, Q, board, lamp, cover).toDataURL("image/png"); } catch (e) {}
-  const theme = document.querySelector('meta[name="theme-color"]'); if (theme) theme.content = board;
-}
 const curGame = () => store.games.find(g => g.id === store.currentId) || null;
 const viewGame = () => ui.peekId ? store.games.find(g => g.id === ui.peekId) : curGame();
 
@@ -2886,7 +2869,7 @@ const HELP = [
   ["Keeping your data safe", `
     <ul><li>Every tap is saved on this device right away, and ScoreKept works with no signal after the first visit.</li>
     <li>Add it to your Home Screen (≡ in Safari's address bar → Share → Add to Home Screen, with Open as Web App on) so it opens like an app and keeps its data.</li>
-    <li><b>Deleting the Home Screen icon deletes ScoreKept's data</b> on that phone. To replace the icon (for a new look or new team colors), or move to a new phone:
+    <li><b>Deleting the Home Screen icon deletes ScoreKept's data</b> on that phone. To replace the icon (say, after an icon update), or move to a new phone:
       <ol><li><b>Back up first:</b> Settings → Backup &amp; restore → <b>Save backup</b>. Save the file to Files, iCloud Drive or email.</li>
         <li>Delete the icon, then add ScoreKept to the Home Screen again (Safari: ≡ in the address bar → Share → Add to Home Screen).</li>
         <li>Open the new icon and choose <b>Restore from backup</b> in Settings → Backup &amp; restore.</li></ol></li>
@@ -3005,7 +2988,7 @@ function tutorialsList() {
    the book rolls over to add a hit and a run. Reduced motion, or a return visit: shown finished. */
 const GEAR_SVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
 // Real recordings, kept next to the app: swap either file to change the sound. If one is missing the intro just plays silently.
-const APP_VERSION = "2026.10.31-12";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
+const APP_VERSION = "2026.10.31-13";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
 const INTRO_SOUNDS = [["sounds/intro-bat.mp3", 0], ["sounds/intro-cheer.mp3", .15]];   // file, seconds after the tap
 let introBytes = null;
 function loadIntro() {   // fetched while the title screen is up, so the tap plays right away
@@ -3078,11 +3061,6 @@ function bugPreview() {
     <div class="inn"><span class="arrow">▲</span><span>6</span></div>
     <div class="bases"><svg viewBox="0 0 100 44">${base(80, 30, true)}${base(50, 13, false)}${base(20, 30, true)}</svg><div class="outs"><i class="on"></i><i></i><span>OUT</span></div></div></div>`;
 }
-function iconPreview() {
-  try { const st = document.documentElement.style, v = k => st.getPropertyValue(k).trim(), c = teamColors();
-    const { board, lamp } = iconColors(COLOR[c.primary], COLOR[c.secondary]);
-    return makeIcon(180, COLOR[c.primary], COLOR[c.secondary], board, lamp, v("--team-p")).toDataURL("image/png"); } catch (e) { return "icons/apple-touch-icon.png"; }
-}
 function onboardHTML(sh) {
   const step = sh.step, i = ONB_STEPS.indexOf(step), pf = Object.assign({ mode: "dugout", askHits: true, ties: false, innings: 7 }, store.prefs);
   const top = step === "welcome" ? "" : `<div class="dots" aria-label="Step ${i + 1} of ${ONB_STEPS.length}">${ONB_STEPS.map((x, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("")}</div>${step !== "done" ? `<button class="skip" data-act="onb-finish" data-v="team">Skip setup</button>` : ""}`;
@@ -3103,9 +3081,9 @@ function onboardHTML(sh) {
   } else if (step === "colors") {
     const c = teamColors();
     const row = (k, label) => `<div class="fld"><span class="clabel">${label}: ${esc(colorName(c[k]))}</span><div class="swatches">${PALETTE.map(([id, name, hex]) => `<button class="swatch" style="--sw:${hex}" data-act="teamcolor" data-k="${k}" data-v="${id}" aria-pressed="${c[k] === id}" aria-label="${label}: ${name}" title="${name}"></button>`).join("")}</div></div>`;
-    inner = `<div class="inner">${head(2, "Pick your colors", "Close enough to your uniforms is perfect. They color the scoreboard, buttons and your Home Screen icon.")}
+    inner = `<div class="inner">${head(2, "Pick your colors", "Close enough to your uniforms is perfect. They color your team's badge and stripe on the scoreboard.")}
       ${row("primary", "Primary")}${row("secondary", "Secondary")}
-      <div class="preview">${bugPreview()}<img src="${iconPreview()}" alt="Home Screen icon preview"></div></div>`;
+      <div class="preview">${bugPreview()}</div></div>`;
     foot = next();
   } else if (step === "style") {
     const card = (v, tag, title, desc) => `<button class="ocard" data-act="onb-mode" data-v="${v}" aria-pressed="${pf.mode === v}"><span class="tag">${tag}</span><b>${title}</b><small>${desc}</small></button>`;
@@ -3140,7 +3118,7 @@ function onboardHTML(sh) {
     const c = teamColors();
     inner = `<div class="inner">
       <span class="stepno">Setup complete</span><h2>Ready to play ball</h2>
-      <div class="preview">${bugPreview()}<img src="${iconPreview()}" alt=""></div>
+      <div class="preview">${bugPreview()}<img src="icons/apple-touch-icon.png" alt=""></div>
       <div class="summary">
         <div><span>Team</span><b>${esc(store.team.name)} (${esc(store.team.abbr || abbrOf(store.team.name))})</b></div>
         <div><span>Colors</span><b>${esc(colorName(c.primary))} &amp; ${esc(colorName(c.secondary))}</b></div>
