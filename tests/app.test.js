@@ -1243,3 +1243,73 @@ test("Discord: polls and recaps go to their own channels; the recap posts with i
   assert.deepEqual(errors, []);
   await context.close();
 });
+
+test("bench rules: sits-first goes first, sits-last goes last, and nobody sits twice before everyone has sat once", async () => {
+  const store = ruleGame({ mode: "scorekeeper" }, []);
+  store.team.players[2].sit = "first";   // the manager (plays 1B)
+  store.team.players[3].sit = "last";
+  const { page, context, errors } = await openGame(store);
+  await page.click("[data-act=defense]"); await page.click("[data-act=def-auto]");
+  const grid = await page.$$eval(".dgrid tbody tr", rows => rows.map(r => [...r.querySelectorAll("td select")].map(x => x.value)));
+  assert.equal(grid[2][1], "EH", "sits-first player sits in the 2nd (the first inning that rotates)");
+  const pinned = [0, 1];   // pitcher and catcher
+  const firstSit = grid.map(row => row.indexOf("EH"));
+  const free = grid.map((_, i) => i).filter(i => !pinned.includes(i));
+  assert.ok(free.every(i => firstSit[i] >= 0 && firstSit[i] <= 4), "everyone not pinned sits once in innings 1–5");
+  assert.equal(Math.max(...free.map(i => firstSit[i])), firstSit[3], "sits-last player is the last to sit");
+  for (let inn = 0; inn < 5; inn++) {
+    const sat = free.filter(i => grid[i].slice(0, inn + 1).filter(v => v === "EH").length >= 2);
+    if (sat.length) assert.ok(free.every(i => grid[i].slice(0, inn).includes("EH")), "a second sit only after everyone has sat once");
+  }
+  assert.match(await text(page, ".sheet"), /Plan for 5 innings/);
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("batting order helper: Suggest order puts a strong bat in every three and alternates sides, wrap included", async () => {
+  const store = ruleGame({}, []);
+  store.team.players.slice(0, 8).forEach((p, i) => { p.hit = [5, 5, 3, 2, 5, 3, 2, 2][i]; p.bats = i < 4 ? "R" : "L"; });   // four of each side, strong bats on both, so a perfect order exists
+  store.currentId = null; store.games[0].done = true;
+  const { page, context, errors } = await open(390, 844, { keepSetup: true });
+  await loadSeason(page, store);
+  await page.click(".tabbar [data-v=game]"); await page.click("[data-act=newgame]");
+  for (let i = 8; i < 12; i++) await page.click(`.hrow >> nth=${i}`);
+  await page.click("[data-act=ng-lineup]"); await page.click("[data-act=lu-auto]"); await page.click("[data-act=lu-suggest]");
+  assert.match(await text(page, ".lucheck"), /✓ Order check/);
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("team tools: depth chart flags thin spots, dues split and track payments, reserves sit apart", async () => {
+  const { page, context, errors } = await open(390, 844);
+  await page.click(".tabbar [data-v=roster]");
+  await page.click("[data-act=depth]");
+  assert.match(await text(page, ".sheet .dwarn"), /Thin spots: .*C \(only Sam\)/);
+  await page.click(".sheet [data-act=close]");
+  await page.click("[data-act=dues]");
+  await page.fill("#du-total", "600"); await page.press("#du-total", "Tab");
+  await page.click("[data-act=duex] >> nth=0");   // first player exempt: 600 split 10 ways
+  assert.match(await text(page, ".dushare"), /\$60\.00/);
+  await page.fill("[data-ch=dupaid] >> nth=1", "65"); await page.press("[data-ch=dupaid] >> nth=1", "Tab");
+  assert.match(await text(page, ".dulist li >> nth=1"), /change \$5\.00/);
+  assert.match(await text(page, ".dutot"), /Collected \$65\.00 of \$600\.00/);
+  await page.click(".sheet [data-act=close]");
+  // a reserve: off the regular roster and out of Who's here until added
+  await page.click(".plist [data-act=pcard] >> nth=10"); await page.click(".sheet [data-act=editplayer]");
+  await page.click("label[for=pl-res]"); await page.fill("#pl-phone", "555-0100"); await page.press("#pl-phone", "Tab");
+  await page.click(".sheet [data-act=close]"); await page.click(".sheet [data-act=close]");
+  assert.match(await text(page, "#view"), /Reserves/);
+  assert.ok(await page.$(".resrow a[href^='sms:5550100']"), "a Text button for the reserve");
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("whiteboard: the defense card drawn in the 1&5, 2&6, 3&7, 4 layout", async () => {
+  const { page, context, errors } = await openGame(ruleGame({ mode: "scorekeeper" }, []));
+  await page.click("[data-act=defense]"); await page.click("[data-act=def-auto]"); await page.click("[data-act=whiteboard]");
+  await page.waitForSelector(".recapimg img");
+  const size = await page.$eval(".recapimg img", i => [i.naturalWidth, i.naturalHeight]);
+  assert.equal(size[0], 1080); assert.ok(size[1] > 900, "a row per player");
+  assert.deepEqual(errors, []);
+  await context.close();
+});

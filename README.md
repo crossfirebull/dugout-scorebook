@@ -12,7 +12,7 @@ A tab bar along the bottom has five pages, so there's little scrolling:
 - **Book**: the full inning-by-inning line score, the scorebook grid and play-by-play.
 - **Stats**: Overview (games and leaders), Batting tables, Charts (spray charts: a whole-team chart with All / Hits / Outs filters, then one per player) and Lineups, for any season.
 - **Scout**: every team you've played, with a spray chart for the team and each of its hitters, and where to shade your defense.
-- **Team**: your team name and colors up top (**Edit team** changes them), then the roster. ScoreKept keeps its own navy, red and gold look everywhere so titles always read well; your team colors show on your team's badge and the score-bug stripe. The Home Screen icon is always the standard ScoreKept book. Tap a player for their **player card**: a photo (add one from the camera or photo library), AVG, OBP and OPS, season and career totals, the last 3 games, recent form, games by position and their spray chart. Names on the Book and Stats tabs open the card too. **Edit player** on the card changes their number, up to three positions, batting side and walk-up song. **+ Add player** sits right under the list. Photos stay on the device and are included in backups.
+- **Team**: your team name and colors up top (**Edit team** changes them), then the roster. ScoreKept keeps its own navy, red and gold look everywhere so titles always read well; your team colors show on your team's badge and the score-bug stripe. The Home Screen icon is always the standard ScoreKept book. Tap a player for their **player card**: a photo (add one from the camera or photo library), AVG, OBP and OPS, season and career totals, the last 3 games, recent form, games by position and their spray chart. Names on the Book and Stats tabs open the card too. **Edit player** on the card changes their number, up to three positions, batting side and walk-up song. **+ Add player** sits right under the list. Photos stay on the device and are included in backups. The Team tab also has a **Depth chart** (who can play each position, thin spots flagged) and **Dues** (the league fee split across everyone paying, with paid, exempt and change owed). Mark a player as a **Reserve** in Edit player to keep them off the regular roster and out of Who's here; with a phone number they get a **Text** button for a quick sub request. **Limited mobility** steers a player to right field.
 
 ScoreKept picks a layout for the screen it's on, and switches when you rotate the device:
 
@@ -68,7 +68,8 @@ Tap what the batter did. The app moves the runners the usual way, and you can fi
 ## Changing things mid-game
 
 Nothing is locked once the game starts:
-- **Defense by inning:** **Defense** at the top of the Game tab is a grid of who plays where each inning. Tap a box to change a position (taking someone's spot swaps them) or pick **Sit**; each inning keeps the one before until you change it. Each player shows innings played and sat, tap a name to 📌 **pin** a player to their position all game (the pitcher and catcher start pinned), and **Auto-rotate** fills the innings still to come so playing time evens out without moving anyone pinned. Fielding stats follow the card.
+- **Defense by inning:** **Defense** at the top of the Game tab is a grid of who plays where each inning. Tap a box to change a position (taking someone's spot swaps them) or pick **Sit**; each inning keeps the one before until you change it. Each player shows innings played and sat, tap a name to 📌 **pin** a player to their position all game (the pitcher and catcher start pinned), and **Auto-rotate** fills the innings still to come so playing time evens out without moving anyone pinned. Fielding stats follow the card. Auto-rotate follows your bench rules: everyone sits once before anyone sits twice, **Sits first** players (set in Edit player) go first and **Sits last** go last, and players come back in at a position they play. **Plan for 5 innings** sets which innings the fairness covers, and **Whiteboard** draws the card in the dugout layout (innings 1&5, 2&6, 3&7, then 4) to copy or share.
+- **Suggested batting order:** give players a 1–5 hitter rating in Edit player (or let this season's OPS stand in), then **Suggest order** in the lineup puts a strong bat in every three slots and alternates lefties and righties, checking the wrap from the last batter back to the top. A live order check under the lineup says what's off.
 - **Game settings** changes the opponent, date, park, **home or away**, and the league rules any time. Switching home and away mid-game moves each play to the other half of its inning, so every play stays with the team that made it.
 - **+ New player** on the lineup screens adds a late fill-in. Leave the name blank and they're "Fill-in" (rename them on the Team tab later; their stats follow).
 - **Lineups** subs players in and out once play has started, and **Undo** takes back any tap.
@@ -181,9 +182,9 @@ The checks include simulated seasons: `tests/season-sim.js` plays random five-ga
 ## On the list
 
 **Next up** (approved, in this order)
-- **Discord live updates:** runs and the final post to your team channel as they happen (uses the same webhook as the Who's in? poll).
 - **Schedule import:** bring in your league's schedule from its web page (send the link).
 - **Bigger text and better use of space:** a large-text switch, and more grouping so screens hold more.
+- **Live play-by-play to Discord:** runs and the final post to your game channel as they happen.
 
 **Planned**
 - **More rulesets built in:** baseball (with stolen bases), men's, women's and co-ed slow-pitch, fastpitch, and custom.

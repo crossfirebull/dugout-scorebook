@@ -406,6 +406,7 @@ table.stats tfoot td:first-child { background: var(--paper); }
 .pcard .flag { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font-family: var(--f-label); font-weight: 800; font-size: 14px; border: 2px dashed var(--rule); color: var(--muted); }
 .pcard.in { border-color: var(--sel-bg); box-shadow: inset 0 0 0 1px var(--sel-bg); background: var(--paper); }
 .pcard.in .flag { background: var(--safe); color: #ffffff; border: 0; }
+.lucheck { margin: 6px 0 0; font-size: 13px; color: var(--stitch); } .lucheck i { color: var(--muted); font-style: normal; } .lucheck.ok { color: var(--safe); }
 .luout { margin: 10px 0 0; color: var(--muted); font-size: 14px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 /* Who's here tonight */
 .hlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
@@ -908,12 +909,31 @@ table.book td.name .plink { display: inline; }
 .dgrid td.past select { opacity: .55; }
 .dpin { all: unset; cursor: pointer; display: block; width: 100%; }
 .dgrid tr.pinned td { background: color-mix(in srgb, var(--app-gold) 14%, var(--surface)); }
+.dgrid th.extra, .dgrid td.extra { opacity: .55; }
+.dgrid thead th.extra { font-style: italic; }
 .dwarn { color: var(--stitch); font-size: 14px; margin: 6px 0 0; }
 /* Who's in? poll and Discord setup */
 .pollcard { display: grid; gap: 6px; padding: 12px 14px; border-radius: 12px; background: #313338; color: #f2f3f5; }
 .pollcard b { font-size: 17px; } .pollcard span { padding: 8px 10px; border-radius: 8px; background: #2b2d31; border: 1px solid #3f4147; font-weight: 600; } .pollcard small { color: #b5bac1; }
 .sheet .okmsg, .okmsg { color: var(--safe); } .sheet .errmsg, .errmsg { color: var(--stitch); }
 .dsteps { margin: 0 0 8px; padding-left: 20px; display: grid; gap: 4px; } .dnote { color: var(--muted); font-size: 13px; }
+/* Team tools: depth chart, dues, reserves */
+.teamtools .setlist { margin: 0; }
+.dlist { display: grid; gap: 6px; }
+.drow { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; align-items: center; padding: 8px 10px; border-radius: 10px; background: var(--paper); border: 1px solid var(--rule); }
+.drow.thin { border-color: #d9a400; background: color-mix(in srgb, #ffc93c 14%, var(--paper)); } .drow.none { border-color: var(--stitch); background: var(--stitch-soft); }
+.drow .dp { font-family: var(--f-display); font-weight: 800; font-size: 20px; }
+.dwho { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; } .dwho i { color: var(--stitch); font-style: normal; font-weight: 700; }
+.dchip { padding: 3px 9px; border-radius: 6px; background: var(--rule-soft); font-weight: 600; font-size: 14px; } .dchip.first { background: var(--sel-bg); color: var(--sel-ink); }
+.dres { color: var(--muted); font-size: 13px; width: 100%; }
+.dushare { font-family: var(--f-display); font-weight: 800; font-size: 28px; padding-top: 4px; } .dushare small { display: block; font-family: var(--f-body); font-weight: 500; font-size: 13px; color: var(--muted); }
+.dulist { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; }
+.dulist li { display: grid; grid-template-columns: minmax(0, 1fr) 96px auto; gap: 8px; align-items: center; padding: 6px 8px; border-radius: 10px; border: 1px solid var(--rule); background: var(--surface); }
+.dulist li.ok { border-color: var(--safe); background: var(--safe-soft); } .dulist li.ex { opacity: .6; }
+.dulist input { font: inherit; font-size: 16px; padding: 7px 8px; border-radius: 8px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); width: 100%; box-sizing: border-box; }
+.duname b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .duname small { color: var(--muted); font-size: 13px; }
+.dutot { font-weight: 700; margin: 10px 0 0; }
+.resrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; } .resrow a.tbtn { text-decoration: none; display: inline-grid; place-items: center; }
 </style>
 </head>
 <body>
@@ -2569,6 +2589,25 @@ function setPhoto(file) {
   img.onerror = () => URL.revokeObjectURL(url);
   img.src = url;
 }
+// Dues: the season's fee split across everyone who pays (exempt players don't), and who's paid what
+function duesInfo() {
+  const c = curSeason() || {}, d = c.dues || {}, total = +d.total || 0, ex = d.exempt || {}, paid = d.paid || {};
+  const roster = store.team.players.filter(p => !p.reserve || paid[p.id]), payers = roster.filter(p => !ex[p.id]);
+  const share = payers.length ? Math.ceil(total / payers.length * 100) / 100 : 0;
+  const paidN = payers.filter(p => (+paid[p.id] || 0) >= share - .004 && share > 0).length;
+  const collected = roster.reduce((a, p) => a + (+paid[p.id] || 0), 0);
+  return { total, ex, paid, roster, payers, share, paidN, collected };
+}
+// Depth chart: who can play each position (main position first); thin spots stand out
+function depthChart() {
+  const ps = store.team.players.filter(p => !p.reserve), res = store.team.players.filter(p => p.reserve);
+  const used = FIELD_POS.filter(x => x !== "SF" || store.team.players.some(p => posList(p).includes("SF")));
+  return used.map(pos => {
+    const by = list => list.filter(p => posList(p).includes(pos) || (p.mob && pos === "RF")).sort((a, b) => posList(a).indexOf(pos) - posList(b).indexOf(pos));
+    const reg = by(ps), sub = by(res);
+    return { pos, reg, sub, thin: reg.length <= 1 };
+  });
+}
 function renderRoster() {
   const ps = store.team.players, c = teamColors();
   const flash = ui.flash; ui.flash = "";
@@ -2579,14 +2618,22 @@ function renderRoster() {
       <small><span class="cdots"><i style="--sw:${COLOR[c.primary]}"></i><i style="--sw:${COLOR[c.secondary]}"></i></span>${esc(colorName(c.primary))} &amp; ${esc(colorName(c.secondary))} · ${ps.length} player${ps.length === 1 ? "" : "s"}</small></div>
     <button class="tbtn" data-act="teamedit">Edit team</button>
   </section>
+  <section class="panel teamtools"><div class="setlist">
+    <button class="setrow" data-act="depth"><span><b>Depth chart</b><small>Every position's options, and where you're thin.</small></span><span class="chev" aria-hidden="true">›</span></button>
+    <button class="setrow" data-act="dues"><span><b>Dues</b><small>${(() => { const d = duesInfo(); return d.total ? `$${d.share.toFixed(2)} each · ${d.paidN} of ${d.payers.length} paid` : "Split the league fee and track who's paid."; })()}</small></span><span class="chev" aria-hidden="true">›</span></button>
+  </div></section>
   <section class="panel">
     <div class="rosterhead"><h2>Roster</h2><span class="spacer" style="flex:1"></span><button class="tbtn" data-act="sounds">Walk-up songs</button></div>
-    ${ps.length ? `<ul class="plist">${ps.map(p => `<li><button class="prow2" data-act="pcard" data-v="${p.id}">
+    ${ps.length ? `<ul class="plist">${ps.filter(p => !p.reserve).map(p => `<li><button class="prow2" data-act="pcard" data-v="${p.id}">
         ${p.photo ? `<img class="pthumb" src="${p.photo}" alt="">` : `<span class="pnum">${esc(p.num || "–")}</span>`}
         <span><b>${esc(p.name || "Unnamed player")}</b><small>${esc(posList(p).join(" / ") || "No position yet")} · ${p.bats ? "Bats " + esc(p.bats) : "Batting side not set"}${clips["walkup:" + p.id] ? " · ♪ walk-up" : ""}</small></span>
         <span class="chev" aria-hidden="true">›</span></button></li>`).join("")}</ul>`
       : `<p style="color:var(--muted);margin:6px 0 0">No players yet. Add your first player below.</p>`}
     <button class="tbtn primary addbtn" data-act="addplayer">+ Add player</button>
+    ${ps.some(p => p.reserve) ? (() => { const x = nextScheduled(), ask = x ? `Can you sub ${pollQuestion(x).replace(/^Who's in\? /, "")}?` : "Can you sub for us this week?";
+      return `<h2 style="margin:16px 0 6px">Reserves</h2><ul class="plist">${ps.filter(p => p.reserve).map(p => `<li class="resrow"><button class="prow2" data-act="pcard" data-v="${p.id}">
+        ${p.photo ? `<img class="pthumb" src="${p.photo}" alt="">` : `<span class="pnum">${esc(p.num || "–")}</span>`}<span><b>${esc(p.name || "Unnamed")}</b><small>${esc(posList(p).join(" / ") || "No position")}${p.phone ? " · " + esc(p.phone) : ""}</small></span><span class="chev" aria-hidden="true">›</span></button>
+        ${p.phone ? `<a class="tbtn" href="sms:${esc(p.phone.replace(/[^\d+]/g, ""))}${/iPhone|iPad/.test(navigator.userAgent) ? "&" : "?"}body=${encodeURIComponent(ask)}">Text</a>` : ""}</li>`).join("")}</ul>`; })() : ""}
     <p style="color:var(--muted);font-size:14px;margin:12px 0 0">Tap a player for their card: stats, photo, and Edit player for number, positions, batting side and walk-up song. Removing a player keeps their past games in the season totals.</p>
   </section>`;
 }
@@ -2641,6 +2688,36 @@ function lastLineup() {
   rows.forEach((r, i) => { if (!r.pos || takenBy(rows.slice(0, i), -1).has(r.pos)) r.pos = firstOpenPos(rows.slice(0, i), -1, player(r.pid)); });
   return rows;
 }
+/* ---------- Batting order helper ----------
+   Your rules: a strong bat in every three straight slots, lefties and righties alternating, and the same checks
+   across the wrap from the last batter back to the top. Hitter ratings (1–5) come from Edit player; without one,
+   this season's OPS stands in. */
+function hitterRating(pid, stats) {
+  const p = player(pid); if (p && p.hit) return p.hit;
+  const st = stats && stats[pid], o = st && st.PA >= 4 ? st.OPS : null;
+  return o == null ? 3 : o >= 1 ? 5 : o >= .85 ? 4 : o >= .7 ? 3 : o >= .55 ? 2 : 1;
+}
+function orderIssues(pids, stats) {   // what breaks the rules, slot numbers 1-based, wrap included
+  const n = pids.length, r = pids.map(id => hitterRating(id, stats)), side = pids.map(id => (player(id) || {}).bats || "");
+  const strongAt = r.map(v => v >= 4), anyStrong = strongAt.some(Boolean), out = { gaps: [], pairs: [] };
+  if (n < 4) return out;
+  for (let i = 0; i < n; i++) {
+    const a = i, b = (i + 1) % n, c = (i + 2) % n;
+    if (anyStrong && !strongAt[a] && !strongAt[b] && !strongAt[c]) out.gaps.push(`${a + 1}–${c + 1}`);
+    if (side[a] && side[a] === side[b] && side[a] !== "S") out.pairs.push(`${a + 1}–${b + 1}`);
+  }
+  return out;
+}
+function suggestOrder(rows, stats) {
+  const n = rows.length; if (n < 3) return rows;
+  const rate = r => hitterRating(r.pid, stats);
+  const cost = ord => { const is = orderIssues(ord.map(x => x.pid), stats); let c = is.gaps.length * 3 + is.pairs.length;
+    ord.forEach((x, i) => { c += (5 - rate(x)) * i * .02; }); return c; };   // and better bats a little higher, for more at-bats
+  let best = rows.slice().sort((a, b) => rate(b) - rate(a)), bc = cost(best), improved = true;
+  while (improved) { improved = false;
+    for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) { const t = best.slice(); [t[i], t[j]] = [t[j], t[i]]; const c = cost(t); if (c < bc - 1e-9) { best = t; bc = c; improved = true; } } }
+  return best;
+}
 function lineupBuilder(d) {
   const rows = d.rows, stats = cardStats(), order = rows.map(r => r.pid);
   const items = rows.map((r, i) => {
@@ -2650,7 +2727,7 @@ function lineupBuilder(d) {
     return `<li class="lurow" data-i="${i}">
       <button class="grip" data-grip="${i}" aria-label="Move ${esc(p.name)}. Drag, or use the arrow keys.">${GRIP}</button>
       <span class="n">${i + 1}</span>
-      <span class="who"><b>${esc(p.name || "Unnamed")}</b><small>${p.num ? "#" + esc(p.num) + " · " : ""}${esc(mine.join("/") || "No position")}${p.bats ? " · " + esc(p.bats) : ""}</small></span>
+      <span class="who"><b>${esc(p.name || "Unnamed")}</b><small>${p.num ? "#" + esc(p.num) + " · " : ""}${esc(mine.join("/") || "No position")}${p.bats ? " · " + esc(p.bats) : ""} · ★${hitterRating(p.id, stats)}</small></span>
       <select aria-label="Position for ${esc(p.name)}" data-row="pos" data-i="${i}" data-ch="lu">${posOpts}</select>
       <button class="ibtn" data-act="lu-rm" data-v="${i}" aria-label="Take ${esc(p.name)} out of the lineup">✕</button></li>`;
   }).join("");
@@ -2679,10 +2756,15 @@ function lineupBuilder(d) {
   return `<div class="lubuild">
     <section class="luorder">
       <div class="luhead"><h4>Batting order${rows.length ? ` · ${rows.length}` : ""}</h4><span class="spacer"></span>
-        <button class="tbtn" data-act="lu-auto">Auto-fill</button>${last ? `<button class="tbtn" data-act="lu-last">Same as last game</button>` : ""}${rows.length ? `<button class="tbtn" data-act="lu-clear">Clear</button>` : ""}</div>
+        <button class="tbtn" data-act="lu-auto">Auto-fill</button>${rows.length >= 4 ? `<button class="tbtn" data-act="lu-suggest">Suggest order</button>` : ""}${last ? `<button class="tbtn" data-act="lu-last">Same as last game</button>` : ""}${rows.length ? `<button class="tbtn" data-act="lu-clear">Clear</button>` : ""}</div>
       ${rows.length ? `<ol class="lurows">${items}</ol>` : `<div class="luempty">Tap players to add them in batting order. Drag the ☰ handle to move a batter.</div>`}
       ${rows.length ? `<p class="lusum">Batting ${rows.length} · In the field ${field.length} (${of} outfielder${of === 1 ? "" : "s"})${rows.length > field.length ? ` · ${rows.length - field.length} bat only` : ""}</p>
-      <div class="dstrip" aria-label="Defense">${defense}</div>` : ""}
+      <div class="dstrip" aria-label="Defense">${defense}</div>
+      ${rows.length >= 4 ? (() => { const is = orderIssues(rows.map(r => r.pid), stats);
+        const strong = rows.filter(r => hitterRating(r.pid, stats) >= 4).length, need = Math.ceil(rows.length / 3);
+        const sides = rows.map(r => (player(r.pid) || {}).bats || ""), L = sides.filter(x => x === "L").length, R = sides.filter(x => x === "R").length;
+        const why = [is.gaps.length && strong < need ? `${strong} strong bat${strong === 1 ? "" : "s"} (★4–5) for ${rows.length} spots; it takes ${need}` : "", is.pairs.length && Math.abs(L - R) > 1 ? `${L} lefties and ${R} righties can't fully alternate` : ""].filter(Boolean);
+        return `<p class="lucheck ${is.gaps.length || is.pairs.length ? "" : "ok"}">${is.gaps.length || is.pairs.length ? `Order check (wraps from ${rows.length} back to 1): ${[is.gaps.length ? `no big bat in ${is.gaps.join(", ")}` : "", is.pairs.length ? `same side back to back at ${is.pairs.join(", ")}` : ""].filter(Boolean).join(" · ")}${why.length ? `. <i>${why.join("; ")}.</i>` : ""}` : "✓ Order check: a strong bat in every three, lefties and righties mixed, including the wrap back to the top."}</p>`; })() : ""}` : ""}
     </section>
     <section class="lupool"><div class="luhead"><h4>${d.out ? "Here tonight" : "Your players"}</h4><span class="spacer"></span>${newPlayerForm()}</div>
       ${pool || `<p>No players yet. Add them on the Team tab.</p>`}
@@ -2887,6 +2969,7 @@ const HELP = [
     <p>Tap <b>New Game</b> or <b>Start this game</b> on the Game tab. It goes: who's here, the lineup, then the game details.</p>
     <ul><li><b>Who's here:</b> everyone starts in. Tap anyone who isn't coming; they stay on the roster but won't show in tonight's lineup. <b>Everyone's here</b> resets it.</li>
     <li><b>Lineup:</b> tonight's players, grouped by position, each on one line with their AVG and OPS. Tap them in batting order (their spot shows on the right); tap again to take one out. <b>Auto-fill</b> uses last game's order for whoever's here, then everyone else. Drag the <b>☰</b> handle to move a batter up or down. Anyone marked out is listed underneath with <b>add back</b>.</li>
+    <li><b>Suggest order:</b> uses each player's hitter rating (1–5 in Edit player, or this season's OPS) to put a strong bat in every three slots and alternate lefties and righties, including the wrap from the last batter back to the top. The order check under the lineup says what's off, and why when the roster can't do better.</li>
     <li><b>Positions:</b> each player gets their main position if it's open. Change it in their row; a position that's taken is locked. Pick <b>EH · bats only</b> for anyone who bats but doesn't field. Everyone can bat.</li>
     <li><b>Game details:</b> the opponent, home or away, league rules, and a pregame checklist for sound, walk-up songs and your last backup.</li>
     <li><b>Dugout mode</b> scores your batters one at a time. When the other team bats you just tap <b>+1 Run</b> and <b>+1 Out</b>.</li>
@@ -2916,8 +2999,9 @@ const HELP = [
     <li><b>Courtesy runner</b>: pick who runs instead. Once per inning for each team. If they score, the run counts for the courtesy runner.</li></ul>`],
   ["Fixing mistakes", `
     <ul><li><b>Undo</b> takes back the last tap, as many times as you need.</li>
+    <li><b>Team tools:</b> on the Team tab, <b>Depth chart</b> lists who can play each position and flags thin spots; <b>Dues</b> splits the league fee across everyone paying (exempt players don't) and tracks who's paid and change owed. In Edit player, mark someone a <b>Reserve</b> to keep them off the regular roster (they show under Reserves with a <b>Text</b> button if you add a phone number) and <b>Limited mobility</b> to steer them to right field.</li>
     <li><b>Player cards:</b> tap a player's name on the Book, Stats or Team tab for their card: AVG, OBP and OPS, season (and career) totals, their last 3 games, recent form, positions played and spray chart. <b>Add photo</b> uses the camera or your photo library; <b>Edit player</b> changes their details.</li>
-    <li><b>Defense by inning:</b> tap <b>Defense</b> at the top of the Game tab for a grid of who plays where each inning. Tap a box to change a position (taking someone's spot swaps them) or pick <b>Sit</b>. Each inning keeps the one before until you change it, and each player shows how many innings they've played and sat. Tap a player's name to 📌 <b>pin</b> them: they stay at their position all game. The pitcher and catcher start pinned; tap to unpin. <b>Auto-rotate</b> fills the innings still to come so playing time evens out, and never moves anyone pinned. Fielding stats credit whoever the card has at that position.</li>
+    <li><b>Defense by inning:</b> tap <b>Defense</b> at the top of the Game tab for a grid of who plays where each inning. Tap a box to change a position (taking someone's spot swaps them) or pick <b>Sit</b>. Each inning keeps the one before until you change it, and each player shows how many innings they've played and sat. Tap a player's name to 📌 <b>pin</b> them: they stay at their position all game. <b>Auto-rotate follows your bench rules</b>: everyone sits once before anyone sits twice, players set to <b>Sits first</b> (Edit player) go first and <b>Sits last</b> go last, and players come back in at a position they play. <b>Plan for 5 innings</b> sets which innings the fairness counts cover; later innings are shaded. <b>Whiteboard</b> draws it in the 1&amp;5, 2&amp;6, 3&amp;7, 4 layout to copy or share. The pitcher and catcher start pinned; tap to unpin. <b>Auto-rotate</b> fills the innings still to come so playing time evens out, and never moves anyone pinned. Fielding stats credit whoever the card has at that position.</li>
     <li><b>Fix a play:</b> on the Book tab, tap a box in the scorebook grid, or any line in the play-by-play (it has a ✎). Change the result, what a runner did, or who gets the RBI, or delete it. For a ball in play, tap the little field to move the ball on the full-screen field. Everything after it is re-scored. Works on saved games too.</li>
     <li><b>Game settings</b> changes the opponent, date, park, home or away, and league rules at any point. Switching home and away mid-game moves each play to the other half of its inning, so stats stay with the right team.</li>
     <li><b>+ New player</b> on the lineup screens adds a late fill-in. Leave the name blank and they're "Fill-in" until you rename them on the Team tab; their stats follow them.</li>
@@ -3067,7 +3151,7 @@ function tutorialsList() {
    the book rolls over to add a hit and a run. Reduced motion, or a return visit: shown finished. */
 const GEAR_SVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
 // Real recordings, kept next to the app: swap either file to change the sound. If one is missing the intro just plays silently.
-const APP_VERSION = "2026.10.31-20";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
+const APP_VERSION = "2026.10.31-21";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
 const INTRO_SOUNDS = [["sounds/intro-bat.mp3", 0], ["sounds/intro-cheer.mp3", .15]];   // file, seconds after the tap
 let introBytes = null;
 function loadIntro() {   // fetched while the title screen is up, so the tap plays right away
@@ -3236,33 +3320,72 @@ function defPins() {
   Object.keys(base).forEach(pid => { if (G.keepPC !== false && ["P", "C"].includes(base[pid])) pins[pid] = true; });
   return pins;
 }
-// Fair innings for the rest of the game: whoever has sat the most comes in for whoever has played the most,
-// ideally at a position they play. Pinned players never move. Innings already played don't change.
+// Fair innings for the rest of the game, by your bench rules:
+//  - nobody sits a second time until everyone (not pinned) has sat once;
+//  - "Sits first" players go first, "Sits last" players last; no sitting two innings in a row if it can be helped;
+//  - whoever comes back in takes a position they play (limited-mobility players head for right field).
+// Pinned players never move. Innings already played don't change.
 function autoRotate() {
   const t = G.ourSide, lu = S.lu[t].filter((x, i, a) => x.pid && a.findIndex(y => y.pid === x.pid) === i), N = Math.max(G.settings.innings, S.inning);
   const from = !S.final && G.events.length ? S.inning + 1 : 2, def = G.defense || (G.defense = {}), pins = defPins();
   Object.keys(def).forEach(k => { if (+k >= from) delete def[k]; });
-  const home = defenseFor(def, from - 1, S.lu[t]);   // where the pinned players are, they stay
-  const count = {}; lu.forEach(x => { count[x.pid] = 0; });
-  for (let i = 1; i < from; i++) { const m = defenseFor(def, i, S.lu[t]); lu.forEach(x => { if (FIELD_POS.includes(m[x.pid])) count[x.pid]++; }); }
+  const home = defenseFor(def, from - 1, S.lu[t]);
+  const pri = pid => { const p = player(pid); return p && p.sit === "first" ? 0 : p && p.sit === "last" ? 2 : 1; };
+  const order = pid => lu.findIndex(x => x.pid === pid);
+  const sits = {}, field = {}; lu.forEach(x => { sits[x.pid] = 0; field[x.pid] = 0; });
+  let prevSit = new Set();
+  for (let i = 1; i < from; i++) { const m = defenseFor(def, i, S.lu[t]); prevSit = new Set(); lu.forEach(x => { if (FIELD_POS.includes(m[x.pid])) field[x.pid]++; else { sits[x.pid]++; prevSit.add(x.pid); } }); }
+  const fits = (pid, pos) => { const p = player(pid); if (!p) return 1; if (p.mob) return pos === "RF" ? 3 : pos === "RCF" || pos === "1B" ? 2 : 0;
+    const l = posList(p); return l[0] === pos ? 3 : l.includes(pos) ? 2 : 0; };   // main position 3, another they play 2
   let moved = 0;
   for (let i = from; i <= N; i++) {
     const m = Object.assign({}, defenseFor(def, i - 1, S.lu[t]));
     lu.forEach(x => { if (pins[x.pid] && m[x.pid] !== home[x.pid]) { const o = Object.keys(m).find(k => m[k] === home[x.pid]); if (o) m[o] = m[x.pid]; m[x.pid] = home[x.pid]; } });
-    const sitters = lu.filter(x => !FIELD_POS.includes(m[x.pid]) && !pins[x.pid]).sort((a, b) => count[a.pid] - count[b.pid]);
-    let pool = lu.filter(x => FIELD_POS.includes(m[x.pid]) && !pins[x.pid]);
-    sitters.forEach(inc => {
-      if (!pool.length) return;
-      const top = Math.max(...pool.map(x => count[x.pid]));
-      if (count[inc.pid] >= top) return;   // already even
-      const plays = x => posList(player(inc.pid)).includes(m[x.pid]);
-      const fit = pool.find(x => count[x.pid] >= top && plays(x)) || pool.find(x => count[x.pid] >= top - 1 && count[x.pid] > count[inc.pid] && plays(x)) || pool.find(x => count[x.pid] >= top);
-      m[inc.pid] = m[fit.pid]; m[fit.pid] = "EH"; pool = pool.filter(x => x.pid !== fit.pid); moved++;
-    });
-    def[i] = m; lu.forEach(x => { if (FIELD_POS.includes(m[x.pid])) count[x.pid]++; });
+    const free = lu.filter(x => !pins[x.pid]), k = free.filter(x => !FIELD_POS.includes(m[x.pid])).length;
+    if (k && k < free.length) {
+      const sitNow = free.slice().sort((a, b) => sits[a.pid] - sits[b.pid] || pri(a.pid) - pri(b.pid) || (prevSit.has(a.pid) ? 1 : 0) - (prevSit.has(b.pid) ? 1 : 0) || field[b.pid] - field[a.pid] || order(a.pid) - order(b.pid)).slice(0, k);
+      const sitSet = new Set(sitNow.map(x => x.pid));
+      // re-seat everyone playing this inning: main position first, then others they play, and stay put when you can
+      const slots = free.filter(x => FIELD_POS.includes(m[x.pid])).map(x => m[x.pid]), playing = free.filter(x => !sitSet.has(x.pid));
+      const was = Object.fromEntries(free.map(x => [x.pid, m[x.pid]]));
+      sitNow.forEach(x => { if (FIELD_POS.includes(m[x.pid])) moved++; m[x.pid] = "EH"; });
+      const score = (pid, pos) => fits(pid, pos) * 10 + (was[pid] === pos ? 3 : 0) + (home[pid] === pos ? 1 : 0);
+      let left = playing.slice();
+      while (left.length && slots.length) {
+        let bp = 0, bs = 0, bv = -1;
+        left.forEach((x, i) => slots.forEach((pos, j) => { const v = score(x.pid, pos); if (v > bv) { bv = v; bp = i; bs = j; } }));
+        m[left[bp].pid] = slots.splice(bs, 1)[0]; left.splice(bp, 1);
+      }
+    }
+    def[i] = m; prevSit = new Set();
+    lu.forEach(x => { if (FIELD_POS.includes(m[x.pid])) field[x.pid]++; else { sits[x.pid]++; prevSit.add(x.pid); } });
   }
   G.autoRot = true;
-  return moved ? "Rotated so playing time evens out. Pinned players stay put. Change any box you like." : "Everyone's already playing every inning.";
+  return moved ? "Rotated by your bench rules: everyone sits once before anyone sits twice. Change any box you like." : "Everyone's already playing every inning.";
+}
+// The defense card drawn in the dugout whiteboard layout: 1&5, 2&6, 3&7, 4
+async function whiteboardCanvas() {
+  try { await document.fonts.load("700 30px 'Barlow Condensed'"); } catch (e) {}
+  const t = G.ourSide, lu = S.lu[t].filter((x, i, a) => x.pid && a.findIndex(y => y.pid === x.pid) === i), def = G.defense || {};
+  const pos = (pid, i) => { const v = defenseFor(def, i, S.lu[t])[pid] || "EH"; return FIELD_POS.includes(v) ? v : "–"; };
+  const cols = [[1, 5], [2, 6], [3, 7], [4]], W = 1080, rowH = 74, top = 170, H = top + lu.length * rowH + 60;
+  const cv = document.createElement("canvas"); cv.width = W; cv.height = H; const c = cv.getContext("2d");
+  c.fillStyle = "#ffffff"; c.fillRect(0, 0, W, H);
+  const LAB = '"Barlow Condensed", "Arial Narrow", sans-serif', nameW = 330, cw = (W - 60 - nameW) / 4;
+  c.fillStyle = "#14284b"; c.font = `400 44px "Alfa Slab One", Georgia, serif`; c.fillText(`Defense vs ${G.opponent}`.slice(0, 34), 30, 70);
+  c.font = `700 40px ${LAB}`; c.textAlign = "center";
+  cols.forEach((cl, j) => { c.fillStyle = "#c8102e"; c.fillText(cl.join(" & "), 30 + nameW + cw * (j + .5), 140); });
+  lu.forEach((x, r) => {
+    const y = top + r * rowH;
+    if (r % 2 === 0) { c.fillStyle = "#f2f5f8"; c.fillRect(20, y, W - 40, rowH); }
+    c.textAlign = "left"; c.fillStyle = "#14212c"; c.font = `700 38px ${LAB}`;
+    c.fillText(`${r + 1}. ${bookName((player(x.pid) || x).name)}`.slice(0, 22), 34, y + 50);
+    c.textAlign = "center";
+    cols.forEach((cl, j) => { const v = cl.map(i => pos(x.pid, i)), txt = v.length > 1 && v[0] === v[1] ? v[0] : v.join(" / ");
+      c.fillStyle = txt === "–" || txt === "– / –" ? "#9aa8b4" : "#14212c"; c.font = `700 ${txt.length > 6 ? 34 : 40}px ${LAB}`; c.fillText(txt, 30 + nameW + cw * (j + .5), y + 50); });
+  });
+  c.strokeStyle = "#c9d3dc"; c.lineWidth = 2; for (let j = 0; j <= 4; j++) { const x = 30 + nameW + cw * j; c.beginPath(); c.moveTo(x, 100); c.lineTo(x, H - 40); c.stroke(); }
+  return cv;
 }
 function renderSheet() {
   const sh = ui.sheet, o = $("overlay");
@@ -3311,7 +3434,7 @@ function renderSheet() {
       <div class="luhead"><h4>Who's here tonight? · ${here} of ${ps.length}</h4><span class="spacer"></span>${out.size ? `<button class="tbtn" data-act="here-all">Everyone's here</button>` : ""}</div>
       <ul class="hlist">${ps.map(p => { const inn = !out.has(p.id); return `<li><button class="hrow ${inn ? "in" : "out"}" data-act="here" data-v="${p.id}" aria-pressed="${inn}">
         ${p.photo ? `<img src="${p.photo}" alt="">` : `<span class="hnum">${esc(p.num || "–")}</span>`}
-        <span class="hwho"><b>${esc(p.name || "Unnamed")}</b><small>${esc(posList(p).join(" / ") || "No position")}</small></span>
+        <span class="hwho"><b>${esc(p.name || "Unnamed")}</b><small>${p.reserve ? "Reserve · " : ""}${esc(posList(p).join(" / ") || "No position")}</small></span>
         <span class="htag">${inn ? "✓ Here" : "Out"}</span></button></li>`; }).join("")}</ul>
       <p class="hnote">Tap anyone who isn't coming. They stay on the roster; they just won't show in tonight's lineup.</p>
       <div class="acts"><button class="tbtn" data-act="close">Cancel</button><button class="tbtn primary" data-act="ng-lineup">Next: lineup</button></div>`;
@@ -3441,21 +3564,23 @@ function renderSheet() {
     wide = "xwide";
     const t = G.ourSide, lu = S.lu[t].filter((x, i, a) => x.pid && a.findIndex(y => y.pid === x.pid) === i);
     const N = Math.max(G.settings.innings, S.inning), def = G.defense || {}, maps = Array.from({ length: N }, (_, i) => defenseFor(def, i + 1, S.lu[t]));
-    const live = !S.final && G.events.length ? S.inning : 0;
+    const live = !S.final && G.events.length ? S.inning : 0, plan = G.planInn || (store.prefs && store.prefs.planInn) || 5;
     const head = maps.map((m, i) => { const missing = ["P", "C", "1B", "2B", "3B", "SS"].filter(x => !lu.some(y => m[y.pid] === x));
-      return `<th class="${i + 1 === live ? "now" : ""} ${missing.length ? "bad" : ""}" ${missing.length ? `title="Missing ${missing.join(", ")}"` : ""}>${i + 1}${missing.length ? "!" : ""}</th>`; }).join("");
+      return `<th class="${i + 1 === live ? "now" : ""} ${missing.length ? "bad" : ""} ${i + 1 > plan ? "extra" : ""}" ${missing.length ? `title="Missing ${missing.join(", ")}"` : ""}>${i + 1}${missing.length ? "!" : ""}</th>`; }).join("");
     const pins = defPins();
     const rows = lu.map(x => { const p = player(x.pid) || { name: x.name };
-      const fieldN = maps.filter(m => FIELD_POS.includes(m[x.pid])).length, pin = !!pins[x.pid];
-      return `<tr class="${pin ? "pinned" : ""}"><th class="dname"><button class="dpin" data-act="def-pin" data-v="${esc(x.pid)}" aria-pressed="${pin}" aria-label="${pin ? "Unpin" : "Pin"} ${esc(p.name)}"><b>${pin ? "📌 " : ""}${esc(bookName(p.name || x.name))}</b><small>${pin ? "stays put" : `${fieldN} field · ${N - fieldN} sit`}</small></button></th>${maps.map((m, i) => { const pos = m[x.pid] || "EH", sit = !FIELD_POS.includes(pos);
-        return `<td class="${sit ? "sit" : ""} ${i + 1 < live ? "past" : ""}"><select data-ch="def" data-i="${i + 1}" data-pid="${esc(x.pid)}" aria-label="${esc(p.name)}, inning ${i + 1}">${FIELD_POS.map(q => `<option ${q === pos ? "selected" : ""}>${q}</option>`).join("")}<option value="EH" ${sit ? "selected" : ""}>Sit</option></select></td>`; }).join("")}</tr>`; }).join("");
+      const fieldN = maps.slice(0, plan).filter(m => FIELD_POS.includes(m[x.pid])).length, pin = !!pins[x.pid], pp = player(x.pid) || {};
+      return `<tr class="${pin ? "pinned" : ""}"><th class="dname"><button class="dpin" data-act="def-pin" data-v="${esc(x.pid)}" aria-pressed="${pin}" aria-label="${pin ? "Unpin" : "Pin"} ${esc(p.name)}"><b>${pin ? "📌 " : ""}${esc(bookName(p.name || x.name))}</b><small>${pin ? "stays put" : `${fieldN} field · ${Math.min(plan, N) - fieldN} sit`}${pp.sit === "first" ? " · sits 1st" : pp.sit === "last" ? " · sits last" : ""}</small></button></th>${maps.map((m, i) => { const pos = m[x.pid] || "EH", sit = !FIELD_POS.includes(pos);
+        return `<td class="${sit ? "sit" : ""} ${i + 1 < live ? "past" : ""} ${i + 1 > plan ? "extra" : ""}"><select data-ch="def" data-i="${i + 1}" data-pid="${esc(x.pid)}" aria-label="${esc(p.name)}, inning ${i + 1}">${FIELD_POS.map(q => `<option ${q === pos ? "selected" : ""}>${q}</option>`).join("")}<option value="EH" ${sit ? "selected" : ""}>Sit</option></select></td>`; }).join("")}</tr>`; }).join("");
     const missingAny = maps.some(m => ["P", "C", "1B", "2B", "3B", "SS"].some(x => !lu.some(y => m[y.pid] === x)));
     body = `<h3>Defense by inning</h3>
       <p class="dhelp">Tap a box to change a position; picking one someone else has swaps them. Each inning keeps the one before until you change it. Tap a name to 📌 pin them: they stay put all game and Auto-rotate leaves them alone. The pitcher and catcher start pinned.</p>
       <div class="tscroll dwrap"><table class="dgrid"><thead><tr><th class="dname">Player</th>${head}</tr></thead><tbody>${rows}</tbody></table></div>
       ${missingAny ? `<p class="dwarn">A red inning (!) is missing a pitcher, catcher or infielder.</p>` : ""}
+      <div class="setrow"><span><b>Plan for ${plan} innings</b><small>Games usually run about ${plan}. Counts and fairness cover innings 1–${plan}; later innings are shaded, if the game goes long.</small></span>
+        <span class="stepper"><button data-act="planinn" data-v="-1" aria-label="One fewer">−</button><b>${plan}</b><button data-act="planinn" data-v="1" aria-label="One more">+</button></span></div>
       ${ui.msg ? `<p><b>${esc(ui.msg)}</b></p>` : ""}
-      <div class="acts" style="justify-content:space-between"><span style="display:flex;gap:8px;flex-wrap:wrap"><button class="tbtn" data-act="def-auto">Auto-rotate</button><button class="tbtn" data-act="def-reset">Reset</button></span><button class="tbtn primary" data-act="close">Done</button></div>`;
+      <div class="acts" style="justify-content:space-between"><span style="display:flex;gap:8px;flex-wrap:wrap"><button class="tbtn" data-act="def-auto">Auto-rotate</button><button class="tbtn" data-act="whiteboard">Whiteboard</button><button class="tbtn" data-act="def-reset">Reset</button></span><button class="tbtn primary" data-act="close">Done</button></div>`;
   } else if (sh.type === "poll") {
     const x = schedule().find(y => y.id === sh.id); if (!x) { ui.sheet = null; o.innerHTML = ""; return; }
     const hook = discordHook(), b = pollBody(x).poll;
@@ -3477,6 +3602,34 @@ function renderSheet() {
       ${sh.msg ? `<p class="${sh.ok ? "okmsg" : "errmsg"}"><b>${esc(sh.msg)}</b></p>` : ""}
       <div class="acts" style="justify-content:space-between">${hook || discordHook("game") ? `<button class="tbtn" data-act="dc-clear">Remove</button>` : "<span></span>"}
         <span style="display:flex;gap:8px"><button class="tbtn" data-act="dc-test">Save &amp; test</button><button class="tbtn primary" data-act="dc-save">Save</button></span></div>`;
+  } else if (sh.type === "depth") {
+    wide = true;
+    const rows = depthChart(), thin = rows.filter(r => r.thin);
+    const who = (p, i) => `<span class="dchip ${i === 0 ? "first" : ""}">${esc(bookName(p.name || "Unnamed"))}${p.mob ? " 🐢" : ""}${posList(p)[0] === undefined ? "" : posList(p)[0] === "EH" ? "" : ""}</span>`;
+    body = `<h3>Depth chart</h3>
+      <p class="dhelp">Who can play each position, from each player's positions on the Team tab (main position first). 🐢 = limited mobility, best in right field.</p>
+      ${thin.length ? `<p class="dwarn"><b>Thin spots:</b> ${thin.map(r => `${r.pos} (${r.reg.length ? "only " + esc(r.reg[0].name.split(" ")[0]) : "nobody"})`).join(", ")}. Worth a backup.</p>` : `<p class="okmsg"><b>✓ Every position has at least two options.</b></p>`}
+      <div class="dlist">${rows.map(r => `<div class="drow ${r.reg.length === 0 ? "none" : r.thin ? "thin" : ""}"><b class="dp">${r.pos}</b><span class="dwho">${r.reg.map(who).join("") || "<i>Nobody</i>"}${r.sub.length ? `<span class="dres">Reserves: ${r.sub.map(p => esc(p.name.split(" ")[0])).join(", ")}</span>` : ""}</span></div>`).join("")}</div>
+      <div class="acts"><button class="tbtn primary" data-act="close">Done</button></div>`;
+  } else if (sh.type === "dues") {
+    const d = duesInfo(), money = v => "$" + (Math.round(v * 100) / 100).toFixed(2);
+    body = `<h3>Dues</h3>
+      <div class="two"><div class="field"><label for="du-total">League fee for the team</label><input id="du-total" type="number" inputmode="decimal" step="0.01" min="0" data-ch="dutotal" value="${d.total || ""}" placeholder="e.g. 591"></div>
+        <div class="field"><label>Each player pays</label><div class="dushare">${d.total ? money(d.share) : "—"}<small>${d.payers.length} paying${d.roster.length > d.payers.length ? ` · ${d.roster.length - d.payers.length} exempt` : ""}</small></div></div></div>
+      <ul class="dulist">${d.roster.map(p => { const ex = !!d.ex[p.id], amt = +d.paid[p.id] || 0, diff = amt - d.share;
+        const status = ex ? "Exempt" : !d.total ? "" : amt === 0 ? `Owes ${money(d.share)}` : diff < -.004 ? `Owes ${money(-diff)}` : diff > .004 ? `Paid · change ${money(diff)}` : "Paid ✓";
+        return `<li class="${ex ? "ex" : amt && diff >= -.004 ? "ok" : ""}"><span class="duname"><b>${esc(p.name || "Unnamed")}</b><small>${status}</small></span>
+          <input type="number" inputmode="decimal" step="0.01" min="0" aria-label="${esc(p.name)} paid" data-ch="dupaid" data-id="${p.id}" value="${amt || ""}" placeholder="Paid $" ${ex ? "disabled" : ""}>
+          <button class="tbtn" data-act="duex" data-v="${p.id}" aria-pressed="${ex}">${ex ? "Exempt" : "Exempt?"}</button></li>`; }).join("")}</ul>
+      <p class="dutot">Collected ${money(d.collected)} of ${money(d.total)}${d.collected > d.total + .004 ? ` · ${money(d.collected - d.total)} over (change to give back)` : d.total ? ` · ${money(Math.max(0, d.total - d.collected))} to go` : ""}</p>
+      <p class="dhelp">The share updates as people are added or marked exempt. Kept with this season; included in backups.</p>
+      <div class="acts"><button class="tbtn primary" data-act="close">Done</button></div>`;
+  } else if (sh.type === "whiteboard") {
+    wide = true;
+    body = `<h3>Whiteboard</h3>
+      <p class="dhelp">Your dugout layout: innings 1 &amp; 5, 2 &amp; 6 and 3 &amp; 7 share a column, and 4 stands alone. Copy it to the board, or share the picture.</p>
+      <div class="recapimg">${sh.img ? `<img src="${sh.img}" alt="Defense whiteboard">` : `<div class="luempty">Drawing…</div>`}</div>
+      <div class="acts" style="justify-content:space-between"><button class="tbtn" data-act="defense">Back to defense</button><button class="tbtn primary" data-act="wb-share" ${sh.img ? "" : "disabled"}>Share picture</button></div>`;
   } else if (sh.type === "newseason") {
     const cur = store.seasons.find(x => x.id === store.currentSeasonId);
     body = `<h3>New Season</h3>
@@ -3540,6 +3693,16 @@ function renderSheet() {
         <div class="posset">${[0, 1, 2].map(k => `<select aria-label="${["Main", "Second", "Third"][k]} position" data-ch="ppos" data-k="${k}" data-id="${pl.id}"><option value="">—</option>${LINEUP_POS.map(x => `<option ${x === cur[k] ? "selected" : ""}>${x}</option>`).join("")}</select>`).join("")}</div></div>
       <div class="pfield"><span style="font-family:var(--f-label);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Bats</span>
         <div class="bbrow">${[["R", "Right"], ["L", "Left"], ["S", "Switch"]].map(([v, l]) => `<button data-act="pbats" data-id="${pl.id}" data-v="${v}" aria-pressed="${pl.bats === v}">${l}</button>`).join("")}</div></div>
+      <h4 style="margin:4px 0 0">Coach's notes</h4>
+      <div class="pfield"><span class="clabel" style="font-family:var(--f-label);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Hitter (1 = light, 5 = big bat)</span>
+        <div class="bbrow">${[1, 2, 3, 4, 5].map(v => `<button data-act="phit" data-id="${pl.id}" data-v="${v}" aria-pressed="${pl.hit === v}">${v}</button>`).join("")}</div></div>
+      <div class="pfield"><span class="clabel" style="font-family:var(--f-label);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">On the bench</span>
+        <div class="bbrow">${[["first", "Sits first"], ["", "Normal"], ["last", "Sits last"]].map(([v, l]) => `<button data-act="psit" data-id="${pl.id}" data-v="${v}" aria-pressed="${(pl.sit || "") === v}">${l}</button>`).join("")}</div></div>
+      <div class="setlist">
+        <label class="setrow" for="pl-mob"><span><b>Limited mobility</b><small>Auto-rotate and the depth chart steer them to right field.</small></span><input type="checkbox" class="switch" id="pl-mob" data-ch="pmob" data-id="${pl.id}" ${pl.mob ? "checked" : ""}></label>
+        <label class="setrow" for="pl-res"><span><b>Reserve</b><small>A sub you can call when you're short. Not on the regular roster or in Who's here unless you add them.</small></span><input type="checkbox" class="switch" id="pl-res" data-ch="pres" data-id="${pl.id}" ${pl.reserve ? "checked" : ""}></label>
+        <div class="setrow"><span><b>Phone</b><small>For a quick text when you need a sub. Stays on this phone.</small></span><input id="pl-phone" type="tel" inputmode="tel" autocomplete="off" data-ch="pphone" data-id="${pl.id}" value="${esc(pl.phone || "")}" placeholder="Optional" style="max-width:150px"></div>
+      </div>
       <div class="setlist"><div class="setrow"><span><b>Walk-up song</b><small>${song ? "♪ " + esc(song.name) : "Your own song file. Until you pick one, the built-in tune below plays."}</small></span>
         <span style="display:flex;gap:6px">${song ? `<button class="tbtn" data-act="clip-play" data-v="${wslot}">▶</button>` : ""}<button class="tbtn" data-act="clip-choose" data-v="${wslot}">${song ? "Change" : "Choose file"}</button></span></div>
         <div class="setrow col"><span><b>Built-in tune</b><small>${song ? "Used if you remove the song file." : "An organ riff, about 7 seconds. Each player gets one to start."}</small></span>
@@ -3723,7 +3886,7 @@ function openNewGame(schedId) {
     mode: (store.prefs && store.prefs.mode) || "dugout", trackCount: !(store.prefs && store.prefs.trackCount === false), rows: [], opp: "" };   // the lineup starts empty: you build it each game
   Object.assign(ui.draft, prefRules());
   if (sg) Object.assign(ui.draft, { schedId: sg.id, opponent: sg.opp || "", park: sg.park || "", date: sg.date || today(), schedHome: sg.home });   // from the schedule
-  ui.draft.out = [];   // who's not here tonight: everyone starts in
+  ui.draft.out = store.team.players.filter(p => p.reserve).map(p => p.id);   // who's not here tonight: everyone starts in, reserves start out
   ui.msg = ""; ui.sheet = { type: "newgame", step: "here" }; renderSheet();
 }
 function startGame() {
@@ -4065,6 +4228,7 @@ document.addEventListener("click", ev => {
       G.autoRot = false; ui.msg = ""; save(); render(); break;
     }
     case "def-auto": ui.msg = autoRotate(); save(); render(); break;
+    case "planinn": { const n = Math.max(3, Math.min(Math.max(G.settings.innings, S.inning), (G.planInn || (store.prefs && store.prefs.planInn) || 5) + +v)); G.planInn = n; store.prefs = Object.assign({}, store.prefs, { planInn: n }); save(); renderSheet(); break; }
     case "def-pin": {   // pin a player to their position all game, or unpin them
       const pins = Object.assign({}, defPins()); if (pins[v]) delete pins[v]; else pins[v] = true;
       G.pins = pins; ui.msg = G.autoRot ? autoRotate() : ""; save(); render(); break;
@@ -4078,6 +4242,13 @@ document.addEventListener("click", ev => {
       }, "image/png");
       break;
     }
+    case "depth": ui.sheet = { type: "depth" }; renderSheet(); break;
+    case "dues": ui.sheet = { type: "dues" }; renderSheet(); break;
+    case "duex": { const c = curSeason(), d = c.dues || (c.dues = {}), ex = d.exempt || (d.exempt = {}); if (ex[v]) delete ex[v]; else ex[v] = true; save(); renderSheet(); break; }
+    case "whiteboard": ui.sheet = { type: "whiteboard" }; renderSheet(); whiteboardCanvas().then(cv => { if (ui.sheet && ui.sheet.type === "whiteboard") { ui.sheet.canvas = cv; ui.sheet.img = cv.toDataURL("image/png"); renderSheet(); } }); break;
+    case "wb-share": (async () => { const sh = ui.sheet; if (!sh.canvas) return; const blob = await new Promise(r => sh.canvas.toBlob(r, "image/png")), file = new File([blob], `defense-${G.date}.png`, { type: "image/png" });
+      try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file] }); return; } } catch (e) { if (e && e.name === "AbortError") return; }
+      download(file.name, blob, "image/png"); })(); break;
     case "poll": ui.sheet = { type: "poll", id: v }; renderSheet(); break;
     case "poll-copy": {
       const x = schedule().find(y => y.id === ui.sheet.id); if (!x) break;
@@ -4178,6 +4349,7 @@ document.addEventListener("click", ev => {
       ui.msg = ""; renderSheet(); break;
     }
     case "lu-last": { const out = new Set(ui.draft.out || []), rows = lastLineup(); if (rows) ui.draft.rows = rows.filter(r => !out.has(r.pid)); ui.msg = ""; renderSheet(); break; }
+    case "lu-suggest": readDraftRows(); ui.draft.rows = suggestOrder(ui.draft.rows, cardStats()); ui.msg = ""; renderSheet(); break;
     case "lu-auto": {   // last game's order for whoever's here, then everyone else who's here
       readDraftRows(); const out = new Set(ui.draft.out || []), rows = (lastLineup() || []).filter(r => !out.has(r.pid));
       store.team.players.filter(p => !out.has(p.id) && !rows.some(r => r.pid === p.id)).forEach(p => rows.push({ pid: p.id, pos: firstOpenPos(rows, rows.length, p) }));
@@ -4278,6 +4450,8 @@ document.addEventListener("click", ev => {
       break;
     }
     case "pbats": { const pl = player(el.dataset.id); if (pl) { pl.bats = pl.bats === v ? "" : v; save(); render(); } break; }
+    case "phit": { const pl = player(el.dataset.id); if (pl) { if (pl.hit === +v) delete pl.hit; else pl.hit = +v; save(); render(); } break; }
+    case "psit": { const pl = player(el.dataset.id); if (pl) { if (v) pl.sit = v; else delete pl.sit; save(); render(); } break; }
     case "rmplayer":
       if (ui.confirm !== "rm:" + v) { ui.confirm = "rm:" + v; render(); break; }
       store.team.players = store.team.players.filter(p => p.id !== v); ui.confirm = null;
@@ -4383,6 +4557,8 @@ document.addEventListener("change", ev => {
   else if (ch === "ptune") { if (p) { p.tune = el.value; save(); stopClip(false); renderSheet(); } }
   else if (ch === "prefrule") { store.prefs = Object.assign({}, store.prefs, readRules("p-")); save(); render(); }
   else if (ch === "incCur") { ui.incCur = el.checked; render(); }
+  else if (ch === "dutotal") { const c = curSeason(), d = c.dues || (c.dues = {}); d.total = Math.max(0, +el.value || 0); save(); renderSheet(); }
+  else if (ch === "dupaid") { const c = curSeason(), d = c.dues || (c.dues = {}), paid = d.paid || (d.paid = {}); const v = Math.max(0, +el.value || 0); if (v) paid[el.dataset.id] = v; else delete paid[el.dataset.id]; save(); renderSheet(); }
   else if (ch === "def") {   // one box on the defensive card; taking someone's position swaps them
     const i = +el.dataset.i, pid = el.dataset.pid, pos = el.value, def = G.defense || (G.defense = {});
     const m = Object.assign({}, defenseFor(def, i, S.lu[G.ourSide])), was = m[pid] || "EH";
@@ -4423,6 +4599,9 @@ document.addEventListener("change", ev => {
       render();
     }
     if (ch === "pbats") p.bats = el.value;
+    if (ch === "pmob") { if (el.checked) p.mob = true; else delete p.mob; }
+    if (ch === "pres") { if (el.checked) p.reserve = true; else delete p.reserve; render(); }
+    if (ch === "pphone") p.phone = el.value.trim();
     save();
   }
 });
