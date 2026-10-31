@@ -934,6 +934,7 @@ table.book td.name .plink { display: inline; }
 .duname b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .duname small { color: var(--muted); font-size: 13px; }
 .dutot { font-weight: 700; margin: 10px 0 0; }
 .resrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; } .resrow a.tbtn { text-decoration: none; display: inline-grid; place-items: center; }
+a.sndlib { text-decoration: none; color: inherit; border: 1px solid var(--rule); border-radius: 12px; margin-bottom: 8px; }
 </style>
 </head>
 <body>
@@ -1621,7 +1622,7 @@ function sampleStore() {
 let actx = null;
 function audio() {
   if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } }
-  if (actx.state === "suspended") actx.resume();
+  if (actx.state === "suspended" && !(window.OfflineAudioContext && actx instanceof OfflineAudioContext)) actx.resume();
   return actx;
 }
 function tone(f, at, dur, type, vol, slideTo) {
@@ -1756,6 +1757,17 @@ const SIT_EVENTS = [["lead", "We take the lead", "lead"], ["tie", "We tie it up"
 const FX_EVENTS = [["hr", "Home run", "charge"], ["run", "Run scores", "run"], ["hit", "Base hit", "hit"], ["walk", "Walk", "walk"],
                    ["k", "Strikeout", "k"], ["out", "Other outs", null], ["side", "Side retired", "side"]];
 const clips = {};
+// Records any built-in sound to audio data, for the sound library page (sounds/). Not used by the app itself.
+window.scoreKeptSounds = {
+  list: () => [...FX_EVENTS.filter(e => e[2]).map(([, name, key]) => ({ group: "Game sounds", key, name })), ...SIT_EVENTS.map(([, name, key]) => ({ group: "Situations", key, name })),
+    ...WALKUPS.map(([k, name]) => ({ group: "Walk-up tunes", key: "wu-" + k, name }))],
+  async render(key, secs = 12) {
+    const keep = [actx, organBus], sr = 44100;
+    actx = new OfflineAudioContext(2, sr * secs, sr); organBus = null;
+    try { const len = SFX[key](); const buf = await actx.startRendering(); return { len: Math.min(secs, len + .3), sr, ch: [buf.getChannelData(0), buf.getChannelData(1)].map(d => Array.from(d.subarray(0, Math.ceil(Math.min(secs, len + .3) * sr)))) }; }
+    finally { [actx, organBus] = keep; }
+  }
+};
 let idb = null, nowPlaying = null;
 function idbOpen() {
   return new Promise(res => {
@@ -3151,7 +3163,7 @@ function tutorialsList() {
    the book rolls over to add a hit and a run. Reduced motion, or a return visit: shown finished. */
 const GEAR_SVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
 // Real recordings, kept next to the app: swap either file to change the sound. If one is missing the intro just plays silently.
-const APP_VERSION = "2026.10.31-22";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
+const APP_VERSION = "2026.10.31-23";   // bump with each update: shown on the welcome screen and in Settings, so you can tell which version a phone has
 const INTRO_SOUNDS = [["sounds/intro-bat.mp3", 0], ["sounds/intro-cheer.mp3", .15]];   // file, seconds after the tap
 let introBytes = null;
 function loadIntro() {   // fetched while the title screen is up, so the tap plays right away
@@ -3516,7 +3528,8 @@ function renderSheet() {
     };
     const ps = store.team.players;
     body = `<h3>Sounds</h3>
-      <p>Choose audio files saved on this iPad, such as MP3 or M4A files in the Files app. They stay on this device. Nothing is uploaded, and they aren't in the backup file. “Play for 0” plays the whole clip.</p>
+      <a class="setrow sndlib" href="sounds/" target="_blank" rel="noopener"><span><b>🎵 Sound library</b><small>Listen to every built-in sound and walk-up tune in one place.</small></span><span class="chev" aria-hidden="true">›</span></a>
+      <p>Choose audio files saved on this phone, such as MP3 or M4A files in the Files app. They stay on this device. Nothing is uploaded, and they aren't in the backup file. “Play for 0” plays the whole clip.</p>
       ${ui.msg ? `<p style="color:var(--stitch)">${esc(ui.msg)}</p>` : ""}
       ${ui.sound ? "" : `<p style="color:var(--ink)"><b>Sound is off.</b> Turn it on with the button at the top to hear these during the game.</p>`}
       <h4>Game sounds</h4>

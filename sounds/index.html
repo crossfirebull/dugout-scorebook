@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ScoreKept Sounds</title>
+<link rel="icon" href="../icons/icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@700&display=swap">
+<style>
+  :root { --navy: #14284b; --red: #c8102e; --gold: #ffc93c; --ink: #14212c; --muted: #5b6b78; --paper: #f4f7f9; --card: #ffffff; --rule: #d9e1e7; }
+  @media (prefers-color-scheme: dark) { :root { --ink: #e5ecf1; --muted: #93a5b4; --paper: #0e1418; --card: #161f26; --rule: #2b3b48; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: "Barlow", system-ui, sans-serif; font-size: 17px; }
+  header { background: radial-gradient(120% 90% at 50% 0%, #3a5384 0%, var(--navy) 55%, #0b1830 100%); color: #fff; padding: 28px 16px 22px; text-align: center; }
+  header img { width: 64px; height: 64px; border-radius: 15px; box-shadow: 0 6px 18px rgba(0,0,0,.35); }
+  h1 { font-family: "Alfa Slab One", Georgia, serif; font-weight: 400; font-size: clamp(30px, 8vw, 44px); margin: 10px 0 4px; text-shadow: 3px 3px 0 var(--red); }
+  header p { margin: 0 auto; max-width: 520px; color: rgba(255,255,255,.8); }
+  main { max-width: 760px; margin: 0 auto; padding: 16px 16px 40px; }
+  h2 { font-family: "Barlow Condensed", sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; font-size: 15px; color: var(--muted); margin: 22px 0 8px; }
+  ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  li { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 12px; align-items: center; background: var(--card); border: 1px solid var(--rule); border-radius: 14px; padding: 8px 12px 8px 8px; }
+  button.play { width: 52px; height: 52px; border-radius: 50%; border: 0; background: var(--navy); color: #fff; font-size: 20px; cursor: pointer; }
+  li.on button.play { background: var(--red); }
+  li b { display: block; font-size: 18px; } li small { color: var(--muted); font-size: 14px; }
+  a.dl { color: var(--muted); font-size: 14px; text-decoration: none; border: 1px solid var(--rule); border-radius: 10px; padding: 6px 10px; }
+  .bar { height: 3px; background: var(--rule); border-radius: 2px; margin-top: 6px; overflow: hidden; } .bar i { display: block; height: 100%; width: 0; background: var(--red); }
+  footer { text-align: center; color: var(--muted); font-size: 14px; padding: 0 16px 30px; } footer a { color: inherit; }
+</style>
+</head>
+<body>
+<header>
+  <img src="../icons/apple-touch-icon.png" alt="">
+  <h1>ScoreKept Sounds</h1>
+  <p>Every built-in sound in the app, to listen to anytime. Tap ▶ to play, or Save to keep a copy. All made for ScoreKept, except the crowd cheer (Pixabay, free license).</p>
+</header>
+<main id="list"><p>Loading…</p></main>
+<footer><a href="../">← Back to ScoreKept</a></footer>
+<script>
+const INTRO = [{ group: "First launch", name: "Aluminum bat hit", file: "intro-bat.mp3", note: "Plays on Play Ball!" }, { group: "First launch", name: "Crowd cheer", file: "intro-cheer.mp3", note: "From Pixabay (free license)" }];
+const NOTES = { charge: "Home run", run: "Run scores", hit: "Base hit", walk: "Walk", k: "Strikeout", side: "Side retired" };
+let now = null;
+fetch("library/list.json").then(r => r.json()).then(list => {
+  const all = INTRO.concat(list.map(s => Object.assign({}, s, { file: "library/" + s.file, note: s.group === "Walk-up tunes" ? `About ${Math.round(s.secs)} seconds · organ and drums` : s.group === "Situations" ? "Plays at big moments" : "" })));
+  const groups = [...new Set(all.map(s => s.group))];
+  document.getElementById("list").innerHTML = groups.map(g => `<h2>${g}</h2><ul>${all.filter(s => s.group === g).map((s, i) => `<li data-file="${s.file}"><button class="play" aria-label="Play ${s.name}">▶</button><span><b>${s.name}</b>${s.note ? `<small>${s.note}</small>` : ""}<div class="bar"><i></i></div></span><a class="dl" href="${s.file}" download>Save</a></li>`).join("")}</ul>`).join("");
+});
+document.addEventListener("click", e => {
+  const b = e.target.closest("button.play"); if (!b) return;
+  const li = b.closest("li");
+  if (now && now.li === li) { now.a.pause(); stop(); return; }
+  if (now) { now.a.pause(); stop(); }
+  const a = new Audio(li.dataset.file); now = { a, li }; li.classList.add("on"); b.textContent = "■";
+  a.addEventListener("timeupdate", () => { li.querySelector(".bar i").style.width = (a.currentTime / (a.duration || 1) * 100) + "%"; });
+  a.addEventListener("ended", stop); a.play();
+});
+function stop() { if (!now) return; now.li.classList.remove("on"); now.li.querySelector("button").textContent = "▶"; now.li.querySelector(".bar i").style.width = "0"; now = null; }
+</script>
+</body>
+</html>

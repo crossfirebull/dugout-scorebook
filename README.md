@@ -116,6 +116,8 @@ Everyone can bat: pick **EH · bats only** in the lineup for anyone who isn't in
 
 ## Sounds and walk-up songs
 
+**Sound library:** every built-in sound and walk-up tune is on one page to listen to or save: [crossfirebull.github.io/dugout-scorebook/sounds/](https://crossfirebull.github.io/dugout-scorebook/sounds/), also linked from **Settings → Sounds & walk-up songs**. The files live in `sounds/library/`; after changing a built-in sound, re-record them with `tools/render-sounds.js`.
+
 ScoreKept comes with a set of **built-in ballpark organ sounds**: a "Charge!" for home runs, short stings for hits, walks and runs, a strikeout taunt, "shave and a haircut" when the side is retired, a clap-along rally riff, and fanfares for taking the lead, tying it and winning. Each is 1 to 4 seconds long. Any one of them can be swapped for your own clip, and the rest keep working.
 
 ### Built-in walk-up tunes

@@ -1,0 +1,135 @@
+[
+ {
+  "file": "charge.mp3",
+  "secs": 4.4,
+  "group": "Game sounds",
+  "key": "charge",
+  "name": "Home run"
+ },
+ {
+  "file": "run.mp3",
+  "secs": 2,
+  "group": "Game sounds",
+  "key": "run",
+  "name": "Run scores"
+ },
+ {
+  "file": "hit.mp3",
+  "secs": 1.4,
+  "group": "Game sounds",
+  "key": "hit",
+  "name": "Base hit"
+ },
+ {
+  "file": "walk.mp3",
+  "secs": 1.5,
+  "group": "Game sounds",
+  "key": "walk",
+  "name": "Walk"
+ },
+ {
+  "file": "k.mp3",
+  "secs": 2.7,
+  "group": "Game sounds",
+  "key": "k",
+  "name": "Strikeout"
+ },
+ {
+  "file": "side.mp3",
+  "secs": 3,
+  "group": "Game sounds",
+  "key": "side",
+  "name": "Side retired"
+ },
+ {
+  "file": "lead.mp3",
+  "secs": 2.7,
+  "group": "Situations",
+  "key": "lead",
+  "name": "We take the lead"
+ },
+ {
+  "file": "tie.mp3",
+  "secs": 2.1,
+  "group": "Situations",
+  "key": "tie",
+  "name": "We tie it up"
+ },
+ {
+  "file": "rally.mp3",
+  "secs": 4.4,
+  "group": "Situations",
+  "key": "rally",
+  "name": "Rally: runner in scoring position, we're tied or behind"
+ },
+ {
+  "file": "bigout.mp3",
+  "secs": 2,
+  "group": "Situations",
+  "key": "bigout",
+  "name": "Big out: on defense with runners in scoring position"
+ },
+ {
+  "file": "win.mp3",
+  "secs": 3.8,
+  "group": "Situations",
+  "key": "win",
+  "name": "We win"
+ },
+ {
+  "file": "walkup-charge.mp3",
+  "secs": 5.8,
+  "group": "Walk-up tunes",
+  "key": "wu-charge",
+  "name": "Charge Up"
+ },
+ {
+  "file": "walkup-stomp.mp3",
+  "secs": 8.3,
+  "group": "Walk-up tunes",
+  "key": "wu-stomp",
+  "name": "Stomp & Clap"
+ },
+ {
+  "file": "walkup-boogie.mp3",
+  "secs": 7.5,
+  "group": "Walk-up tunes",
+  "key": "wu-boogie",
+  "name": "Ballpark Boogie"
+ },
+ {
+  "file": "walkup-heat.mp3",
+  "secs": 8.1,
+  "group": "Walk-up tunes",
+  "key": "wu-heat",
+  "name": "Bring the Heat"
+ },
+ {
+  "file": "walkup-bounce.mp3",
+  "secs": 6.3,
+  "group": "Walk-up tunes",
+  "key": "wu-bounce",
+  "name": "Rally Bounce"
+ },
+ {
+  "file": "walkup-bigleague.mp3",
+  "secs": 8.3,
+  "group": "Walk-up tunes",
+  "key": "wu-bigleague",
+  "name": "Big League"
+ },
+ {
+  "file": "walkup-hotcorner.mp3",
+  "secs": 6.7,
+  "group": "Walk-up tunes",
+  "key": "wu-hotcorner",
+  "name": "Hot Corner Funk"
+ },
+ {
+  "file": "walkup-swing.mp3",
+  "secs": 5,
+  "group": "Walk-up tunes",
+  "key": "wu-swing",
+  "name": "Dugout Swing"
+ }
+]

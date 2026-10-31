@@ -1316,3 +1316,22 @@ test("whiteboard: the defense card drawn in the 1&5, 2&6, 3&7, 4 layout", async 
   assert.deepEqual(errors, []);
   await context.close();
 });
+
+test("sound library page lists and plays every built-in sound; Settings links to it", async () => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const page = await context.newPage(); const errors = []; page.on("pageerror", e => errors.push(e.message));
+  await page.goto(base.replace(/index\.html$/, "").replace(/\/?$/, "/") + "sounds/");
+  await page.waitForSelector("li button.play");
+  const n = (await page.$$("li")).length;
+  assert.ok(n >= 21, "19 recorded sounds plus the two intro sounds: " + n);
+  assert.deepEqual(await page.$$eval("h2", h => h.map(x => x.textContent)), ["First launch", "Game sounds", "Situations", "Walk-up tunes"]);
+  const missing = await page.$$eval("li", async lis => { const bad = []; for (const li of lis) { const r = await fetch(li.dataset.file); if (!r.ok || (await r.arrayBuffer()).byteLength < 5000) bad.push(li.dataset.file); } return bad; });
+  assert.deepEqual(missing, [], "every file is there");
+  assert.deepEqual(errors, []);
+  await context.close();
+  const app = await open(390, 844);
+  await app.page.click("[data-act=settings]"); if (await app.page.$("[data-act=opensettings]")) await app.page.click("[data-act=opensettings]");
+  await app.page.click(".sheet [data-act=sounds]");
+  assert.equal(await app.page.getAttribute(".sheet a.sndlib", "href"), "sounds/");
+  await app.context.close();
+});
